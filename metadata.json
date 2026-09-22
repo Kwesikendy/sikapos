@@ -1,0 +1,9 @@
+{
+  "name": "SikaPOS",
+  "description": "Multi-tenant SaaS Cloud POS & Inventory System tailored for Ghanaian & West African SMB Retailers.",
+  "prompt": "Multi-tenant SaaS Cloud POS & Inventory System tailored for Ghanaian & West African SMB Retailers.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ],
+  "permissions": []
+}
