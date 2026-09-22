@@ -1,0 +1,407 @@
+# SikaPOS / Akoma — Design System Specification (Stage 1 Lock)
+**Version:** 1.0.0-PROD-LOCK  
+**Status:** Locked & Implementation-Ready  
+**Target:** Multi-tenant SaaS Cloud POS & Inventory (Ghanaian & West African SMB Retailers)  
+**Hand-off Consumer:** Google AI Studio / Frontend Engineering Agent  
+
+---
+
+## 1. BRAND & IDENTITY
+
+### Product Name
+- **Primary Market Brand:** SikaPOS (Ghana / Retail)
+- **Platform Code / Suite:** Akoma Commerce Cloud
+- **Currency Representation:** Ghanaian Cedi (`GH₵` / `GHS`), formatted strictly with fixed non-breaking spacing (`GH₵ 1,450.00`).
+
+### Brand Personality
+- **Dependable & Resilient:** Works reliably under poor connectivity, shop glare, and high footfall checkout rush.
+- **Accessible & Warm:** Welcoming to non-tech savvy market traders, boutique owners, pharmacy cashiers, and provision store keepers.
+- **High-Velocity & Tactile:** Clear tap confirmations, instant cart feedback, zero ambiguous states.
+- **Prosperity & Growth:** Expressed through Ghanaian emeralds and warm gold accents (*Sika* = Gold / Money).
+
+### Visual Principles
+1. **Zero Mis-tap Tolerance:** Minimum 48px to 56px touch target heights for cashiers working quickly on entry-level Android devices.
+2. **Glanceable Financial Hierarchy:** Totals and balances use high-contrast tabular typography that never wrap or reflow unpredictably.
+3. **Optimistic Offline-First Feedback:** Visual status pill is pinned persistently: `Online (Synced)`, `Offline (3 txns pending sync)`.
+4. **Color as an Accompanying Signal, Never Sole Meaning:** Every status badge combines an icon + localized semantic label + color token.
+
+---
+
+### Brand Color Tokens (Exact HEX & Functional States)
+
+```css
+/* Core Brand */
+--brand-primary:              #0D5C3A; /* Deep Ghanaian Forest Green */
+--brand-primary-hover:        #09432A;
+--brand-primary-active:       #062F1D;
+--brand-primary-subtle:       #E8F5EE; /* 10% tint for selected state backdrops */
+--brand-primary-border:       #15803D;
+
+--brand-secondary:            #D97706; /* Warm Gold / Amber Accent */
+--brand-secondary-hover:      #B45309;
+--brand-secondary-active:     #92400E;
+--brand-secondary-subtle:     #FEF3C7;
+
+/* Neutral Surface Hierarchy (Light Mode) */
+--surface-bg:                 #F8FAFC; /* Page Canvas / App Shell Background */
+--surface-card:               #FFFFFF; /* Elevated Cards, Product Tiles, Modals */
+--surface-subtle:             #F1F5F9; /* Input backgrounds, inactive tab bars */
+--surface-muted:              #E2E8F0; /* Dividers, inactive border lines */
+--surface-overlay:            rgba(15, 23, 42, 0.6); /* Backdrop for bottom sheets/drawers */
+
+/* Text & Content Tokens */
+--text-primary:               #0F172A; /* Slate 900 - 15.8:1 AAA contrast on #FFFFFF */
+--text-secondary:             #475569; /* Slate 600 - 6.2:1 AAA contrast on #FFFFFF */
+--text-tertiary:              #94A3B8; /* Slate 400 - Placeholders & metadata */
+--text-inverse:               #FFFFFF; /* White on primary badges & buttons */
+--text-disabled:              #94A3B8;
+
+/* Border & Divider Tokens */
+--border-subtle:              #F1F5F9;
+--border-default:             #E2E8F0;
+--border-strong:              #CBD5E1;
+--border-focus:               #0D5C3A;
+
+/* Feedback & Semantic Tokens */
+--status-success:             #16A34A; /* Emerald 600 */
+--status-success-bg:          #DCFCE7; /* Emerald 50 */
+--status-success-border:      #86EFAC;
+
+--status-warning:             #D97706; /* Amber 600 */
+--status-warning-bg:          #FEF3C7; /* Amber 50 */
+--status-warning-border:      #FCD34D;
+
+--status-error:               #DC2626; /* Crimson Red 600 */
+--status-error-bg:            #FEE2E2; /* Red 50 */
+--status-error-border:        #FCA5A5;
+
+--status-info:                #0284C7; /* Sky 600 */
+--status-info-bg:             #E0F2FE; /* Sky 50 */
+--status-info-border:         #7DD3FC;
+```
+
+---
+
+## 2. TYPOGRAPHY SYSTEM
+
+- **Primary Font Family:** `'Plus Jakarta Sans', system-ui, -apple-system, sans-serif`
+- **Numerical / Tabular Font Feature:** `font-feature-settings: "tnum" 1, "cv05" 1, "cv08" 1;` strictly applied to prices, inventory stock counts, SKU quantities, and timers.
+
+| Role | Font Size (rem / px) | Weight | Line Height | Letter Spacing | CSS Rule / Example Usage |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Page Title** | 1.5rem (24px) | 700 (Bold) | 1.25 (30px) | -0.02em | `font-bold text-2xl tracking-tight text-slate-900` |
+| **Section Heading** | 1.125rem (18px) | 600 (SemiBold) | 1.35 (24px) | -0.01em | `font-semibold text-lg text-slate-900` |
+| **Card / Item Title**| 1.0rem (16px) | 600 (SemiBold) | 1.4 (22px) | 0.0em | `font-semibold text-base text-slate-800` |
+| **Body (Default)** | 0.875rem (14px) | 400 (Regular) | 1.5 (21px) | 0.0em | `font-normal text-sm text-slate-600` |
+| **Body Bold** | 0.875rem (14px) | 600 (SemiBold) | 1.5 (21px) | 0.0em | `font-semibold text-sm text-slate-800` |
+| **Caption / Meta** | 0.75rem (12px) | 500 (Medium) | 1.35 (16px) | +0.01em | `font-medium text-xs text-slate-500` |
+| **Badge / Label** | 0.6875rem (11px)| 700 (Bold) | 1.2 (14px) | +0.04em | `font-bold text-[11px] uppercase tracking-wider` |
+| **Price (Item)** | 1.0rem (16px) | 700 (Bold) | 1.2 (20px) | -0.01em | `font-bold text-base tabular-nums text-slate-900` |
+| **Total / Due Display**| 1.75rem (28px) | 800 (ExtraBold) | 1.2 (34px) | -0.03em | `font-extrabold text-3xl tabular-nums text-emerald-800` |
+| **POS Quantity Pill**| 0.875rem (14px) | 700 (Bold) | 1.0 (14px) | 0.0em | `font-bold text-sm tabular-nums text-slate-900` |
+
+---
+
+## 3. SPACING & ELEVATION SCALE
+
+### 8pt Grid System (with 4pt Micro-Rhythm)
+```css
+--space-1:   0.25rem; /* 4px  - Internal badge padding, icon gap */
+--space-2:   0.5rem;  /* 8px  - Tight button padding, micro card gaps */
+--space-3:   0.75rem; /* 12px - Input field horizontal padding */
+--space-4:   1.0rem;  /* 16px - Standard card padding, list gap */
+--space-5:   1.25rem; /* 20px - Mobile view gutter padding */
+--space-6:   1.5rem;  /* 24px - Section gap, modal padding */
+--space-8:   2.0rem;  /* 32px - Layout division */
+--space-10:  2.5rem;  /* 40px - POS Checkout Sticky Bottom Tray */
+```
+
+### Radius Scale
+- `rounded-xs`: `4px` (Badge pills, micro tags)
+- `rounded-sm`: `6px` (Checkboxes, radio indicators)
+- `rounded-md`: `8px` (Form fields, sub-buttons, dropdowns)
+- `rounded-lg`: `12px` (Product cards, cart tiles, containers)
+- `rounded-xl`: `16px` (Modals, bottom sheets, checkout summary drawers)
+- `rounded-full`: `9999px` (Avatars, count badges, sync status dots)
+
+### Elevation & Shadows
+- **Level 0 (Flat):** `border: 1px solid var(--border-default); box-shadow: none;`
+- **Level 1 (Card Rest):** `box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.04);`
+- **Level 2 (Hover / Active Tile):** `box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -2px rgba(15, 23, 42, 0.06);`
+- **Level 3 (Modal / Bottom Sheet / Sticky Drawer):** `box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1);`
+
+---
+
+## 4. BASE COMPONENT SYSTEM SPECIFICATION
+
+### Buttons
+- **Primary Action (Touch Ergonomic):**
+  - Height: `52px` (Mobile/POS) or `44px` (Desktop backoffice).
+  - Background: `var(--brand-primary)` (`#0D5C3A`).
+  - Text: `#FFFFFF`, `font-semibold text-base`.
+  - Border Radius: `10px`.
+  - States:
+    - *Hover:* Background `#09432A`.
+    - *Active:* Background `#062F1D`, transform scale `0.985`.
+    - *Disabled:* Background `#E2E8F0`, Text `#94A3B8`, Cursor `not-allowed`.
+    - *Focus-Visible:* `outline: 2px solid #0D5C3A; outline-offset: 2px;`.
+- **Secondary (Outline / Light):**
+  - Background: `#FFFFFF`, Border: `1.5px solid var(--border-strong)` (`#CBD5E1`), Text: `#0F172A`.
+  - Active: Background `#F1F5F9`.
+- **Destructive:**
+  - Background: `#DC2626`, Text `#FFFFFF`. Subtle variant: Background `#FEE2E2`, Text `#DC2626`.
+- **Icon Button:**
+  - Minimum hit area: `48px x 48px` with centered `20px x 20px` SVG icon.
+
+### Form Inputs & Search Fields
+- Height: `48px` minimum.
+- Font Size: `16px` (`1.0rem`) strictly to eliminate automatic iOS/Android WebKit input zoom.
+- Background: `#FFFFFF` (resting), `#F8FAFC` (read-only/disabled).
+- Border: `1.5px solid var(--border-default)`.
+- Focus State: Border `1.5px solid var(--brand-primary)`, Ring `3px solid rgba(13, 92, 58, 0.15)`.
+- Search field: Fixed leading Search icon (20px, `#64748B`) + Trailing "Clear (X)" button (32px touch target) when text is entered.
+
+### Dropdowns & Selects
+- Trigger height: `48px`.
+- Chevron: Trailing 18px down-arrow with 180° rotation on open state.
+- Dropdown menu: `bg-white`, `border border-slate-200`, `rounded-xl`, `shadow-xl`, z-index 50. Max-height `280px` with momentum touch scroll.
+
+### Selection Controls
+- **Checkbox:** `20px x 20px`, `rounded-md`, border `#CBD5E1`. Checked state: `bg-[#0D5C3A] text-white` with checkmark icon.
+- **Radio Button:** `20px x 20px`, `rounded-full`. Selected: outer ring `#0D5C3A`, inner dot `8px solid #0D5C3A`.
+- **Toggle Switch:** Track `44px x 26px`, thumb `22px x 22px`. Off: `bg-slate-300`. On: `bg-[#0D5C3A]` with thumb slide transition `200ms ease-out`.
+
+### Tabs & Segmented Filters
+- Segmented pill track: `bg-slate-100 p-1 rounded-xl`.
+- Selected tab: `bg-white text-slate-900 font-semibold shadow-sm rounded-lg`.
+- Inactive tab: `text-slate-500 font-medium hover:text-slate-700`.
+
+### Cards & Tables
+- **Card:** `bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm`.
+- **Table:** Header `bg-slate-50 text-slate-500 font-semibold text-xs uppercase px-4 py-3`. Row `border-b border-slate-100 hover:bg-slate-50/50`. Numbers strictly aligned right with `tabular-nums`.
+
+### Badges & Status Indicators
+- Height: `24px`, padding `0 10px`, `rounded-full`, `font-bold text-[11px] uppercase`.
+- Built-in status dot (`w-1.5 h-1.5 rounded-full mr-1.5`):
+  - *Active / Paid / Synced:* Green dot on `#DCFCE7` badge, text `#15803D`.
+  - *Pending / MoMo Processing:* Amber pulsing dot on `#FEF3C7` badge, text `#B45309`.
+  - *Failed / Void / Out-of-Stock:* Red dot on `#FEE2E2` badge, text `#B91C1C`.
+  - *Offline:* Slate dot on `#F1F5F9` badge, text `#475569`.
+
+### Alerts & Toasts
+- **Toast:** Bottom floating notification on mobile (`bottom-20 z-50 mx-4`), `bg-slate-900 text-white rounded-xl px-4 py-3 shadow-2xl flex items-center justify-between`. Auto-dismisses in 3500ms with manual swipe dismiss.
+- **Alert Banner:** Inline full-width container with left colored accent border (4px solid), background 5% tint.
+
+### Modals, Drawers & Bottom Sheets
+- **Mobile Mode (< 768px):** Always convert modals into **Snap Bottom Sheets** with top grab handle (`w-12 h-1.5 bg-slate-300 rounded-full mx-auto my-2.5`).
+- **Desktop Mode (≥ 768px):** Center modal dialog with max-width `480px` or `640px`, backdrop blur `backdrop-blur-sm bg-slate-900/40`.
+
+### Loading & Skeleton States
+- Skeleton loaders: `bg-slate-200 animate-pulse rounded-md`.
+- Spinner: Concentric dual-ring spinner in `brand-primary` (`#0D5C3A`).
+
+---
+
+## 5. POS-SPECIFIC COMPONENT SYSTEM
+
+### 1. Product Card (POS Grid)
+- Aspect ratio: Compact portrait or square card (`min-height: 120px;`).
+- Thumbnail: Top or left `64px x 64px` image / category color fallback with 2-letter uppercase initials.
+- Details: Item title (2 lines max, ellipsis), SKU/Barcode subtitle (`text-xs text-slate-400`), Stock indicator pill (`14 in stock`), Price (`font-bold text-slate-900 text-base tabular-nums`).
+- Tap state: Instant `scale(0.97)` animation + green badge flash `+1`.
+
+### 2. POS Cart & Cart Item
+- Cart Item Row:
+  - Left: Item title + unit price (`GH₵ 35.00`).
+  - Center: Stepper (`-` [36px], `qty display` [tabular-nums], `+` [36px]).
+  - Right: Line item subtotal (`GH₵ 70.00`) + swipe-left to remove.
+- Quick Modifier / Discount button per item (`% / Tag` trigger).
+
+### 3. POS Sticky Bottom Tray & Totals
+- Summary Breakdown:
+  - Subtotal: `GH₵ 1,200.00`
+  - Tax (e.g., VAT / NHIL / GETFund / COVID Levy toggleable): `GH₵ 60.00`
+  - Discounts / Promo: `-GH₵ 20.00`
+- **Grand Total Bar:**
+  - Height: `72px` sticky bottom dock.
+  - Large amount due: `GH₵ 1,240.00` (`text-2xl font-extrabold text-slate-900`).
+  - Primary "CHARGE / PAY" CTA Button: High-contrast green button with right arrow icon (`h-14 px-6 bg-[#0D5C3A] text-white font-bold text-lg rounded-xl`).
+
+### 4. Split-Payment & Cash Calculator
+- Preset Cash Quick-Chips for Ghana Cedi notes:
+  - `Exact (GH₵ 1,240)`
+  - `GH₵ 1,300 (+60 change)`
+  - `GH₵ 1,500 (+260 change)`
+  - `GH₵ 2,000 (+760 change)`
+- On-screen touch numeric keypad: 3x4 grid, 54px button height, large bold digits.
+
+### 5. Offline & Cloud Sync Indicator
+- Pinned status bar pill (Always visible on POS header):
+  - **Online & Synced:** Green dot + `Synced`.
+  - **Syncing:** Blue rotating arrows + `Syncing (4 txns)...`
+  - **Offline Active:** Amber badge + `Offline Mode (6 local txns saved)`.
+
+---
+
+## 6. PAYMENT METHOD TOKENS (UI BRAND SIGNALS)
+
+*Notice: These tokens are UI identifiers designed for rapid cashier recognition. They represent visual classification only and do not imply technical API lock-in.*
+
+```css
+/* Payment UI Token 1: MTN MoMo */
+--pay-momo-bg:        #FFCC00; /* MTN Signature Warm Yellow */
+--pay-momo-text:      #000000;
+--pay-momo-accent:    #004F71; /* Deep Navy MTN Sub-tone */
+--pay-momo-border:    #EAB308;
+
+/* Payment UI Token 2: Telecel Cash */
+--pay-telecel-bg:     #E60000; /* Telecel Red */
+--pay-telecel-text:   #FFFFFF;
+--pay-telecel-accent: #B30000;
+--pay-telecel-border: #DC2626;
+
+/* Payment UI Token 3: AT Money (AirtelTigo) */
+--pay-at-bg:          #0284C7; /* AT Royal Blue / Cyan */
+--pay-at-text:        #FFFFFF;
+--pay-at-accent:      #E11D48; /* AT Secondary Coral Red */
+--pay-at-border:      #0369A1;
+
+/* Payment UI Token 4: Physical Cash */
+--pay-cash-bg:        #15803D; /* Ghana Note Forest Green */
+--pay-cash-text:      #FFFFFF;
+--pay-cash-border:    #166534;
+
+/* Payment UI Token 5: Bank Card (Gh-Link / Visa / Mastercard) */
+--pay-card-bg:        #334155; /* Slate 700 */
+--pay-card-text:      #FFFFFF;
+--pay-card-border:    #1E293B;
+
+/* Payment UI Token 6: Ghana QR / Bank App Pay */
+--pay-qr-bg:          #7C3AED; /* Purple 600 */
+--pay-qr-text:        #FFFFFF;
+--pay-qr-border:      #6D28D9;
+```
+
+---
+
+## 7. RESPONSIVE BREAKPOINTS & POS LAYOUT ADAPTATION
+
+| Screen Class | Viewport Range | Primary POS Layout Model | Cart Presentation |
+| :--- | :--- | :--- | :--- |
+| **Mobile Phone** (e.g., Transsion / Tecno / Infinix / Samsung A-series) | `< 640px` (Typical 360px - 412px) | **Single-column vertical stack.** Top sticky search + Barcode trigger. 2-column product card grid. | **Floating Sticky Cart Drawer at bottom.** Tap opens full Bottom Sheet with slide-to-confirm checkout. |
+| **Small Tablet / Handheld POS Terminal** (e.g., Sunmi, Pax, 8" Android tab) | `640px - 1023px` (Landscape / Portrait) | **Split Layout:** 60% Left Product Grid / Category list, 40% Right Persistent Cart Panel. | **Persistent Right-hand Cart Sidebar** with instant recalculation and fixed keypad bottom. |
+| **Desktop / Laptop Backoffice** | `1024px - 1439px` | **3-Column Architecture:** Left collapsible Nav Sidebar (240px), Main workspace (Reports, Inventory, Employees), Quick info drawer. | Modals and full-screen tables with sticky header & bulk actions. |
+| **Wide Screen Terminal** (Supermarket checkout desk) | `≥ 1440px` | Wide catalog matrix with instant shortcut key mappings (F1-F12, Enter to tender). | Full-height side-by-side transaction log. |
+
+---
+
+## 8. ACCESSIBILITY & SHOP-FLOOR ERGONOMICS (WCAG 2.1 AA/AAA)
+
+1. **Touch Targets:**
+   - Absolute minimum target size: `48px x 48px`.
+   - Primary POS transaction buttons: `54px to 60px` height.
+   - Steppers (`+` / `-` buttons): `44px x 44px` separated by at least 8px to prevent accidental mis-taps.
+2. **Contrast Guarantees:**
+   - Slate 900 (`#0F172A`) on White (`#FFFFFF`) = **15.8:1** (Exceeds WCAG AAA).
+   - Brand Green (`#0D5C3A`) on White = **7.1:1** (Exceeds WCAG AAA).
+   - MTN MoMo Yellow token (`#FFCC00`) strictly pairs with Black text (`#000000`) = **13.5:1** (Never white text on yellow).
+3. **Keyboard & Hardware Barcode Scanner Friendly:**
+   - Standard hardware USB/Bluetooth barcode scanners output keystrokes terminating in `Enter`.
+   - Global auto-focus capture route: Barcode listener catches raw input without requiring the search input to be manually tapped first.
+4. **Color-Blind Safe Redundancy:**
+   - Low-stock warnings contain both amber shading AND a triangle exclamation icon + "Low: 3 left".
+   - Out-of-stock items contain a distinct strikethrough badge + disabled overlay.
+
+---
+
+## 9. DATA VISUALIZATION SPECIFICATION (Backoffice & KPI)
+
+- **Revenue / Sales Sparklines & Area Charts:**
+  - Stroke: `var(--brand-primary)` (`#0D5C3A`), stroke-width: `2.5px`.
+  - Fill Gradient: `linear-gradient(180deg, rgba(13, 92, 58, 0.25) 0%, rgba(13, 92, 58, 0.0) 100%)`.
+- **Expense Charts:** Crimson Stroke (`#DC2626`) with 10% red fade.
+- **Inventory Status Doughnut Chart:**
+  - In Stock: `#15803D` (Green)
+  - Low Stock: `#D97706` (Amber)
+  - Out of Stock / Expired: `#DC2626` (Red)
+- **KPI Summary Card Standard:**
+  - Card background: `#FFFFFF`, border: `1px solid #E2E8F0`, padding: `16px`, rounded: `12px`.
+  - Metric Label: `text-xs font-semibold text-slate-500 uppercase tracking-wider`.
+  - Value: `text-2xl font-extrabold text-slate-900 tabular-nums`.
+  - Trend Pill: `inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full`.
+    - Positive: `bg-emerald-50 text-emerald-700` (`+14.2% vs yesterday`).
+    - Negative: `bg-rose-50 text-rose-700` (`-3.1% vs target`).
+
+---
+
+## 10. STRUCTURED DESIGN TOKENS (TAILWIND CONFIG JSON)
+
+For frontend developers and the Google AI Studio coding agent, copy-paste this direct Tailwind extension object:
+
+```json
+{
+  "theme": {
+    "extend": {
+      "colors": {
+        "brand": {
+          "primary": "#0D5C3A",
+          "primary-hover": "#09432A",
+          "primary-active": "#062F1D",
+          "primary-subtle": "#E8F5EE",
+          "secondary": "#D97706",
+          "secondary-hover": "#B45309",
+          "secondary-subtle": "#FEF3C7"
+        },
+        "surface": {
+          "canvas": "#F8FAFC",
+          "card": "#FFFFFF",
+          "subtle": "#F1F5F9",
+          "muted": "#E2E8F0"
+        },
+        "momo": {
+          "yellow": "#FFCC00",
+          "telecel": "#E60000",
+          "at": "#0284C7",
+          "cash": "#15803D"
+        }
+      },
+      "fontFamily": {
+        "sans": ["'Plus Jakarta Sans'", "system-ui", "sans-serif"]
+      },
+      "borderRadius": {
+        "card": "12px",
+        "btn": "10px",
+        "sheet": "16px"
+      },
+      "boxShadow": {
+        "card": "0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.04)",
+        "sheet": "0 20px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1)"
+      }
+    }
+  }
+}
+```
+
+---
+
+## 11. STRICT CONSISTENCY & ENFORCEMENT RULES
+
+To ensure that downstream screens generated in Stages 2 through 7 maintain 100% cohesion:
+
+1. **NO Invented Button Styles:** Only 4 button classes are permitted: `btn-primary`, `btn-secondary`, `btn-outline`, and `btn-destructive`. Never create custom inline gradients, shadows, or border radii.
+2. **Currency Standardization:** Always use the symbol `GH₵` followed by a single space and comma-separated numbers with exactly 2 decimal places (e.g., `GH₵ 45.00`, never `GHS45`, `45ghc`, or `GH₵45`).
+3. **Strict Mobile-First Input Heights:** Never render text inputs, select dropdowns, or quantity increment controls with a height smaller than `48px`.
+4. **Elevation Rules:** Never stack multiple shadows or use saturated colored drop-shadows. Stick strictly to Elevation Level 0, 1, 2, or 3.
+5. **No Isolated Modals on Mobile:** Every mobile modal must attach to the bottom viewport boundary as a Bottom Sheet with an accessible drag-handle indicator.
+
+---
+
+## 12. SIKAPOS DESIGN SYSTEM HANDOFF (AI CODING AGENT CHEAT SHEET)
+
+> **To Google AI Studio / Coding Agent:**
+> 1. Load Google Font `'Plus Jakarta Sans':wght@400;500;600;700;800`.
+> 2. Base layout background must be `#F8FAFC`. All primary cards use `#FFFFFF` with `border: 1px solid #E2E8F0` and `border-radius: 12px`.
+> 3. Primary action button is `#0D5C3A` with `#FFFFFF` text and `border-radius: 10px`.
+> 4. All financial numbers and checkout amounts must include the class `tabular-nums` and format with `GH₵ X,XXX.XX`.
+> 5. Payment chips use dedicated tokens: MTN MoMo (`#FFCC00` bg, black text), Telecel Cash (`#E60000` bg, white text), AT Money (`#0284C7` bg, white text), Cash (`#15803D` bg, white text).
+> 6. Adhere strictly to the 48px minimum touch target on mobile viewports.

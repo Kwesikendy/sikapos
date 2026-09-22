@@ -1,0 +1,447 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_standard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface":"#faf8ff","on-secondary":"#ffffff","secondary":"#904d00","on-secondary-fixed":"#2f1500","on-tertiary-container":"#8bc9ff","on-primary":"#ffffff","inverse-surface":"#283044","primary-container":"#0d5c3a","surface-container":"#eaedff","on-error-container":"#93000a","primary-fixed-dim":"#8ed6aa","tertiary":"#003d5f","primary":"#004328","surface-container-low":"#f2f3ff","on-surface":"#131b2e","primary-fixed":"#a9f3c5","surface-bright":"#faf8ff","error-container":"#ffdad6","on-surface-variant":"#404942","on-primary-container":"#8ad2a7","inverse-primary":"#8ed6aa","on-tertiary":"#ffffff","on-primary-fixed-variant":"#005232","on-error":"#ffffff","tertiary-fixed":"#cce5ff","surface-container-highest":"#dae2fd","secondary-fixed":"#ffdcc3","outline":"#707971","outline-variant":"#bfc9c0","surface-container-high":"#e2e7ff","surface-dim":"#d2d9f4","secondary-fixed-dim":"#ffb77d","on-tertiary-fixed-variant":"#004b73","on-tertiary-fixed":"#001d31","secondary-container":"#fe932c","error":"#ba1a1a","on-background":"#131b2e","on-secondary-fixed-variant":"#6e3900","on-primary-fixed":"#002111","inverse-on-surface":"#eef0ff","tertiary-fixed-dim":"#93ccff","surface-tint":"#226b47","background":"#faf8ff","tertiary-container":"#005582","surface-container-lowest":"#ffffff","on-secondary-container":"#663500","surface-variant":"#dae2fd"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"gutter":"1rem","space-xs":"0.25rem","gutter-mobile":"0.75rem","space-lg":"1rem","margin-mobile":"1rem","space-sm":"0.5rem","margin":"1.5rem","space-md":"0.75rem","space-xl":"1.5rem"},fontFamily:{"headline-lg":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-numeric-lg":["JetBrains Mono"],"body-md":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"label-numeric-md":["JetBrains Mono"],"display-mobile":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"label-caps":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"label-numeric-sm":["JetBrains Mono"]},fontSize:{"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"700"}],"headline-lg-mobile":["20px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"headline-sm":["16px",{"lineHeight":"22px","fontWeight":"600"}],"label-numeric-lg":["22px",{"lineHeight":"28px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"body-sm":["12px",{"lineHeight":"16px","fontWeight":"500"}],"label-numeric-md":["16px",{"lineHeight":"20px","fontWeight":"600"}],"display-mobile":["26px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"700"}],"display":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-caps":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"700"}],"headline-md":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-numeric-sm":["13px",{"lineHeight":"16px","fontWeight":"500"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col justify-between"><header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-margin flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><img alt="SikaPOS Akoma Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt6nlDIa8RR54PT_rQz_DItFTwkowRusIuLlSNwmdryUlgjtmfO-clF5RKQxLBD1S8y4FsAF_YyCNaBsiQGNx7qlgIu0kOGj7k6ASpCfUN7DuPHaFJlL-dkkxA8cLP3vrO-e6HEvdqeXWpphSuSYvMYvY_Tp3MeLN9oykkiAt533oI46iymF6MzL93JF83oOy1F3eD6ZJd55gIMlArGz-UpuE73KWJf-JMXjH2SMbCBRbv72ezJXuO3w"><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary leading-tight tracking-tight">SikaPOS</span><span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">Akoma Commerce Cloud</span></div><nav class="hidden lg:flex items-center gap-space-sm ml-space-lg" data-active-classes="bg-primary-container text-on-primary font-headline-sm"><a class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="merchant-registration" href="#">Register</a><a aria-current="page" class="px-space-md py-space-xs rounded-lg transition-colors bg-primary-container text-on-primary font-headline-sm" data-path="store-setup-wizard" href="#">Setup Wizard</a><a class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="settlement-momo-config" href="#">Settlement Payouts</a><a class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors font-body-md text-body-md" data-path="terminal-pairing" href="#">Hardware Pairing</a></nav></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-primary-container text-on-primary shadow-sm"><span class="w-2 h-2 rounded-full bg-primary-fixed animate-pulse"></span><span class="font-label-caps text-label-caps tracking-wide font-bold">Online • Cloud Synced</span></div><div class="hidden xl:flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant bg-surface-container-low px-space-md py-space-xs rounded-lg"><span class="font-body-sm text-body-sm text-on-surface-variant">Need help? Call +233 24 000 0000 / WhatsApp</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface flex-1 flex flex-col justify-center"><div class="flex flex-col w-full">
+<div class="w-full max-w-7xl mx-auto px-margin py-space-xl flex flex-col gap-space-xl">
+<!-- Top Progress Indicator Banner -->
+<div class="w-full bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="px-space-sm py-space-xs rounded-full bg-primary/10 text-primary font-label-caps text-label-caps uppercase">Step 2 of 4</span>
+<h1 class="font-headline-md text-headline-md text-on-surface">Store Setup &amp; Regional Workspace</h1>
+</div>
+<div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-primary">verified_user</span>
+<span class="">Akoma Cloud Provisioning Engine • 256-bit AES</span>
+</div>
+</div>
+<!-- Segmented Multi-step Visualizer -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm pt-space-xs">
+<!-- Step 1: Complete -->
+<div class="flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low transition-all">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-caps text-label-caps text-primary uppercase">Stage 01 • Done</span>
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Owner Profile</span>
+</div>
+</div>
+<!-- Step 2: Active -->
+<div class="flex items-center gap-space-sm p-space-sm rounded-lg bg-primary text-on-primary shadow-md">
+<div class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-label-numeric-sm text-label-numeric-sm font-bold shrink-0">
+            02
+          </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-caps text-label-caps text-primary-fixed uppercase tracking-wider">Current Active</span>
+<span class="font-headline-sm text-headline-sm text-on-primary truncate">Business &amp; Outlet</span>
+</div>
+</div>
+<!-- Step 3: Upcoming -->
+<div class="flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low opacity-75">
+<div class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center font-label-numeric-sm text-label-numeric-sm font-bold shrink-0">
+            03
+          </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Next Up</span>
+<span class="font-headline-sm text-headline-sm text-on-surface-variant truncate">Security &amp; PIN</span>
+</div>
+</div>
+<!-- Step 4: Upcoming -->
+<div class="flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-low opacity-75">
+<div class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center font-label-numeric-sm text-label-numeric-sm font-bold shrink-0">
+            04
+          </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Final Step</span>
+<span class="font-headline-sm text-headline-sm text-on-surface-variant truncate">Settlement MoMo</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Dynamic Form Panel (Grid Desktop Asymmetry) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+<!-- Primary Wizard Form (8 cols) -->
+<div class="lg:col-span-8 flex flex-col gap-space-xl">
+<!-- Card Section 1: Tenant Information -->
+<section class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col gap-space-lg">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="w-3 h-3 rounded-full bg-secondary-container"></span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Tell us about your business</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Set up your registered retail entity, corporate tenant identifier, and operational focus.</p>
+</div>
+<!-- Legal / Tenant Org Input -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-headline-sm text-headline-sm text-on-surface flex items-center justify-between" for="tenant-org-name">
+<span class="">Business / Organization Legal Name</span>
+<span class="font-label-caps text-label-caps uppercase text-primary font-bold">Verified via GRA TIN</span>
+</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-space-md text-on-surface-variant text-[20px]">storefront</span>
+<input class="w-full h-12 pl-12 pr-space-md bg-surface-container-low rounded-lg font-body-lg text-body-lg text-on-surface focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary shadow-inner" id="tenant-org-name" placeholder="e.g. Osu Golden Mart Ltd" type="text" value="Mensah Provision Store &amp; Supermarket">
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">This will appear on electronic till receipts, MoMo payment prompts, and VAT reports.</span>
+</div>
+<!-- Retail Business Category Card Selector -->
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<label class="font-headline-sm text-headline-sm text-on-surface">Select Primary Retail Category</label>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md" id="category-selector">
+<!-- Category 1: Selected Provision / Grocery -->
+<div class="category-card relative p-space-md rounded-xl bg-primary/5 cursor-pointer shadow-sm transition-all flex flex-col gap-space-sm" data-category="grocery">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-lg bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">local_convenience_store</span>
+</div>
+<span class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-primary">Provision &amp; Supermarket</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Fast barcode scan, weighted bulk items, chilled goods, FMCG.</span>
+</div>
+</div>
+<!-- Category 2: Pharmacy -->
+<div class="category-card relative p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-all flex flex-col gap-space-sm" data-category="pharmacy">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">medication</span>
+</div>
+<span class="w-6 h-6 rounded-full bg-surface-container-highest text-transparent flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Pharmacy &amp; Health Store</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Batch expiration monitoring, prescription logs, FDA compliance.</span>
+</div>
+</div>
+<!-- Category 3: Fashion & Cosmetics -->
+<div class="category-card relative p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-all flex flex-col gap-space-sm" data-category="fashion">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">checkroom</span>
+</div>
+<span class="w-6 h-6 rounded-full bg-surface-container-highest text-transparent flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Fashion, Boutique &amp; Cosmetics</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sizes, color variants, custom tags, seasonal catalog sales.</span>
+</div>
+</div>
+<!-- Category 4: Electronics & Hardware -->
+<div class="category-card relative p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container cursor-pointer transition-all flex flex-col gap-space-sm" data-category="electronics">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">devices</span>
+</div>
+<span class="w-6 h-6 rounded-full bg-surface-container-highest text-transparent flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Electronics &amp; General Retail</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">IMEI/Serial tracking, manufacturer warranties, accessories.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Outlet Scale Selector -->
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<label class="font-headline-sm text-headline-sm text-on-surface">Planned Store Footprint</label>
+<div class="grid grid-cols-3 gap-space-sm p-space-xs bg-surface-container-low rounded-xl">
+<button class="outlet-toggle py-space-sm px-space-md rounded-lg bg-primary text-on-primary font-headline-sm text-headline-sm shadow-sm transition-all text-center" type="button">
+                1 Single Store
+              </button>
+<button class="outlet-toggle py-space-sm px-space-md rounded-lg text-on-surface-variant hover:text-on-surface font-headline-sm text-headline-sm transition-all text-center" type="button">
+                2 – 5 Branches
+              </button>
+<button class="outlet-toggle py-space-sm px-space-md rounded-lg text-on-surface-variant hover:text-on-surface font-headline-sm text-headline-sm transition-all text-center" type="button">
+                6+ Enterprise
+              </button>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">You can seamlessly add branch registers and warehouse nodes anytime from the SikaPOS portal.</span>
+</div>
+</section>
+<!-- Card Section 2: First Branch Location -->
+<section class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col gap-space-lg">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="w-3 h-3 rounded-full bg-primary-container"></span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Primary Store / Branch Setup</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Configure your first physical or flag checkout counter to generate localized till terminals.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Branch Label -->
+<div class="flex flex-col gap-space-xs md:col-span-2">
+<label class="font-headline-sm text-headline-sm text-on-surface" for="branch-name">Outlet / Branch Name</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-space-md text-on-surface-variant text-[20px]">pin_drop</span>
+<input class="w-full h-12 pl-12 pr-space-md bg-surface-container-low rounded-lg font-body-lg text-body-lg text-on-surface focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary shadow-inner" id="branch-name" placeholder="e.g. Accra Central Main Branch" type="text" value="Osu Oxford Street Branch">
+</div>
+</div>
+<!-- Region Dropdown -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-headline-sm text-headline-sm text-on-surface" for="store-region">City &amp; Region</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-space-md text-on-surface-variant text-[20px]">location_city</span>
+<select class="w-full h-12 pl-12 pr-space-md bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer" id="store-region">
+<option selected="">Greater Accra (Accra, Osu, Spintex, East Legon)</option>
+<option>Ashanti (Kumasi Central, Adum, Bantama, Kejetia)</option>
+<option>Western (Takoradi Harbour, Sekondi, Tarkwa)</option>
+<option>Central (Cape Coast, Kasoa, Winneba)</option>
+<option>Eastern (Koforidua, Nsawam, Akuapem)</option>
+<option>Northern (Tamale Metropolitan, Sagnarigu)</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-md text-on-surface-variant pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+<!-- GhanaPost GPS Address -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-headline-sm text-headline-sm text-on-surface flex items-center justify-between" for="gps-address">
+<span class="">GPS Digital Address</span>
+<span class="font-label-caps text-label-caps text-primary">GhanaPost GPS</span>
+</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-space-md text-on-surface-variant text-[20px]">my_location</span>
+<input class="w-full h-12 pl-12 pr-space-md bg-surface-container-low rounded-lg font-label-numeric-md text-label-numeric-md text-on-surface focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary shadow-inner" id="gps-address" placeholder="e.g. GA-000-0000" type="text" value="GA-183-4921">
+</div>
+</div>
+<!-- Street Address -->
+<div class="flex flex-col gap-space-xs md:col-span-2">
+<label class="font-headline-sm text-headline-sm text-on-surface" for="street-address">Physical Street / Landmark</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-space-md text-on-surface-variant text-[20px]">signpost</span>
+<input class="w-full h-12 pl-12 pr-space-md bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary shadow-inner" id="street-address" placeholder="Describe landmark and street" type="text" value="Plot 44, Oxford Street, Opposite Papaye, Osu, Accra">
+</div>
+</div>
+</div>
+</section>
+<!-- Card Section 3: Currency & Ghana Tax Compliance -->
+<section class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col gap-space-lg">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Regional Currency &amp; GRA Tax Presets</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Default financial settlement rails and Ghana Revenue Authority compliance schedules.</p>
+</div>
+<!-- Currency Card -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-md"><div class="flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface">Ghana GRA Tax Registration &amp; Calculation Rules</span><span class="font-label-caps text-label-caps uppercase text-primary font-bold">GRA Compliant</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">Select your tax status under the Ghana Revenue Authority (GRA) guidelines or define custom rules.</span></div><div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm"><div class="p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high border-outline-variant cursor-pointer transition-all flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface">Not VAT Registered</span><span class="w-3 h-3 rounded-full bg-surface-container-highest"></span></div><span class="font-body-sm text-body-sm text-on-surface-variant">Small retailers below statutory turnover threshold (0% tax calculated).</span></div><div class="p-space-sm rounded-lg bg-primary/10 border-outline-variant shadow-sm cursor-pointer transition-all flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-primary font-bold">VAT Registered</span><span class="material-symbols-outlined text-primary text-[18px]">check_circle</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">Standard Ghana Schedule: VAT 15%, NHIL 2.5%, GETFund 2.5%.</span></div><div class="p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high border-outline-variant cursor-pointer transition-all flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-headline-sm text-headline-sm text-on-surface">Custom / Exemption</span><span class="w-3 h-3 rounded-full bg-surface-container-highest"></span></div><span class="font-body-sm text-body-sm text-on-surface-variant">Zero-rated, exempt commodities, or tailored custom levies.</span></div></div><div class="p-space-md rounded-lg bg-surface-container-lowest flex flex-col gap-space-sm shadow-sm" id="tax-preview-box"><div class="flex items-center justify-between border-t border-dashed border-outline-variant pt-space-xs"><span class="font-body-sm text-body-sm text-on-surface-variant">Active Schedule: Standard Ghana Tax Rates</span><span class="font-label-caps text-label-caps text-primary uppercase font-bold">Live Rates</span></div><div class="grid grid-cols-3 gap-space-sm text-center"><div class="p-space-xs rounded bg-surface-container-low flex flex-col"><span class="font-label-caps text-label-caps text-on-surface-variant">GETFund Levy</span><span class="font-label-numeric-sm text-label-numeric-sm text-primary font-bold">2.5%</span></div><div class="p-space-xs rounded bg-surface-container-low flex flex-col"><span class="font-label-caps text-label-caps text-on-surface-variant">NHIL</span><span class="font-label-numeric-sm text-label-numeric-sm text-primary font-bold">2.5%</span></div><div class="p-space-xs rounded bg-surface-container-low flex flex-col"><span class="font-label-caps text-label-caps text-on-surface-variant">Standard VAT</span><span class="font-label-numeric-sm text-label-numeric-sm text-primary font-bold">15.0%</span></div></div><div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm pt-space-xs text-on-surface-variant font-body-sm text-body-sm"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary text-[18px]">info</span><span class="">Configurable tax rules — adapt rates anytime in store tax settings.</span></div><div class="font-label-numeric-sm text-label-numeric-sm text-on-surface">Preview on GH₵ 100 item: <strong class="text-primary">GH₵ 120.00 total</strong></div></div></div></div>
+<!-- Ghana Revenue Authority VAT Toggle -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Ghana GRA Flat VAT / NHIL / GETFund Preset</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Automatically compute 3% Flat VAT Rate or 15% Standard + 2.5% NHIL + 2.5% GETFund.</span>
+</div>
+<!-- Switch Component -->
+<label class="relative inline-flex items-center cursor-pointer shrink-0">
+<input checked="" class="sr-only peer" id="tax-toggle" type="checkbox">
+<div class="w-12 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-on-primary peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-on-primary after:rounded-full after:h-5 after:w-5 after:transition-all shadow-sm"></div>
+</label>
+</div>
+<!-- Tax Calculation Dynamic Breakdown Pill -->
+<div class="p-space-md rounded-lg bg-surface-container-lowest flex flex-col sm:flex-row items-center justify-between gap-space-sm" id="tax-preview-box">
+<div class="flex items-center gap-space-sm text-on-surface">
+<span class="material-symbols-outlined text-primary text-[20px]">calculate</span>
+<span class="font-body-sm text-body-sm">Preview on <strong class="font-label-numeric-sm text-label-numeric-sm">GH₵ 100.00</strong> checkout item:</span>
+</div>
+<div class="flex items-center gap-space-md font-label-numeric-sm text-label-numeric-sm">
+<span class="text-on-surface-variant">Tax: <strong class="text-secondary">GH₵ 3.00</strong></span>
+<span class="w-1 h-3 rounded bg-surface-container-highest"></span>
+<span class="text-primary font-bold">Total Customer Charge: GH₵ 103.00</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Navigation & Workflow Actions -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-md flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<button class="w-full sm:w-auto px-space-md py-space-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-headline-sm text-headline-sm transition-all flex items-center justify-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[18px]">bookmark_border</span>
+<span class="">Save as draft &amp; exit</span>
+</button>
+<div class="w-full sm:w-auto flex items-center gap-space-sm">
+<button class="w-full sm:w-auto px-space-lg h-12 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-headline-sm text-headline-sm transition-all flex items-center justify-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+<span class="">Back</span>
+</button>
+<button class="w-full sm:w-auto px-space-xl h-[52px] rounded-xl bg-primary-container text-on-primary hover:bg-primary font-headline-sm text-headline-sm shadow-md transition-all flex items-center justify-center gap-space-xs active:scale-[0.98]" id="btn-continue" type="button">
+<span class="">Continue to Security &amp; PIN</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Guidance & Live Hardware Sandbox Column (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-space-lg">
+<!-- Live Terminal Preview Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md"><div class="flex items-center justify-between"><span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Live Receipt Blueprint</span><span class="px-space-xs py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-caps text-label-caps font-bold">Realtime</span></div><div class="bg-surface-container-low rounded-lg p-space-md font-label-numeric-sm text-label-numeric-sm text-on-surface flex flex-col gap-space-xs shadow-inner"><div class="text-center font-bold font-headline-sm text-headline-sm text-on-surface" id="mock-store-name">Mensah Provision Store</div><div class="text-center text-on-surface-variant font-body-sm text-body-sm" id="mock-branch-line">Osu Oxford St Branch • Accra</div><div class="text-center text-on-surface-variant text-[11px] pb-space-xs">GPS: <span id="mock-gps" class="">GA-183-4921</span> | VAT REG: GR-092-2025</div><div class="border-t border-dashed border-outline-variant my-space-xs"></div><div class="flex justify-between text-on-surface"><span class="">1x Cerelac Wheat 400g</span><span class="">GH₵ 45.00</span></div><div class="flex justify-between text-on-surface"><span class="">2x Ideal Evaporated Milk</span><span class="">GH₵ 22.00</span></div><div class="flex justify-between text-on-surface"><span class="">1x Key Soap Bar Jumbo</span><span class="">GH₵ 18.50</span></div><div class="border-t border-dashed border-outline-variant my-space-xs"></div><div class="flex justify-between text-on-surface-variant"><span class="">Subtotal</span><span class="">GH₵ 85.50</span></div><div class="flex justify-between text-on-surface-variant" id="mock-getfund-line"><span class="">GETFund Levy (2.5%)</span><span class="">GH₵ 2.14</span></div><div class="flex justify-between text-on-surface-variant" id="mock-nhil-line"><span class="">NHIL (2.5%)</span><span class="">GH₵ 2.14</span></div><div class="flex justify-between text-on-surface-variant" id="mock-vat-line"><span class="">Standard VAT (15%)</span><span class="">GH₵ 13.47</span></div><div class="flex justify-between font-bold text-on-surface text-[15px] pt-space-xs border-t border-dashed border-outline-variant"><span class="">TOTAL DUE</span><span class="text-primary" id="mock-total">GH₵ 103.25</span></div><div class="mt-space-sm p-space-xs rounded bg-surface-container text-center text-[10px] text-on-surface-variant uppercase tracking-wider">Scan QR to verify on GRA E-VAT Portal</div></div><div class="flex items-start gap-space-xs font-body-sm text-body-sm text-on-surface-variant"><span class="material-symbols-outlined text-[18px] text-secondary shrink-0">help_outline</span><span class="">Showing standard Ghana tax breakdown (VAT 15% + NHIL 2.5% + GETFund 2.5%). Displays zero tax when set to Not VAT Registered.</span></div></div>
+<!-- Ghana Retail Best Practices Card -->
+<div class="bg-surface-container rounded-xl p-space-lg flex flex-col gap-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Onboarding Checklist</h3>
+</div>
+<ul class="flex flex-col gap-space-sm font-body-sm text-body-sm text-on-surface-variant">
+<li class="flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0">check_circle</span>
+<span class=""><strong>Bank of Ghana Sandbox:</strong> MoMo merchant wallet linking occurs in step 4 with instant QR setup.</span>
+</li>
+<li class="flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0">check_circle</span>
+<span class=""><strong>Offline-First Resilience:</strong> All catalog SKUs will sync locally to operate seamlessly during connectivity drops.</span>
+</li>
+<li class="flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0">check_circle</span>
+<span class=""><strong>Hardware Handshake:</strong> Bluetooth till printers and handheld Sunmi terminals pair immediately after step 4.</span>
+</li>
+</ul>
+</div>
+<!-- Need Help Support Card -->
+<div class="p-space-lg rounded-xl bg-surface-container-low flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">support_agent</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Dedicated Support Desk</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Free merchant hotline: <strong>+233 24 000 0000</strong> available 7am-9pm GMT.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+    (function() {
+      // Dynamic live mirror on receipt
+      const nameInput = document.getElementById('tenant-org-name');
+      const branchInput = document.getElementById('branch-name');
+      const gpsInput = document.getElementById('gps-address');
+      const taxToggle = document.getElementById('tax-toggle');
+
+      const mockName = document.getElementById('mock-store-name');
+      const mockBranch = document.getElementById('mock-branch-line');
+      const mockGps = document.getElementById('mock-gps');
+      const mockTax = document.getElementById('mock-tax-line');
+      const mockTotal = document.getElementById('mock-total');
+      const taxPreviewBox = document.getElementById('tax-preview-box');
+
+      if (nameInput && mockName) {
+        nameInput.addEventListener('input', (e) => {
+          mockName.textContent = e.target.value.trim() || 'Your Store Name';
+        });
+      }
+
+      if (branchInput && mockBranch) {
+        branchInput.addEventListener('input', (e) => {
+          mockBranch.textContent = (e.target.value.trim() || 'Branch Name') + ' • Accra';
+        });
+      }
+
+      if (gpsInput && mockGps) {
+        gpsInput.addEventListener('input', (e) => {
+          mockGps.textContent = e.target.value.trim() || 'GA-000-0000';
+        });
+      }
+
+      if (taxToggle && mockTax && mockTotal && taxPreviewBox) {
+        taxToggle.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            mockTax.style.display = 'flex';
+            mockTotal.textContent = 'GH₵ 88.07';
+            taxPreviewBox.innerHTML = `
+              <div class="flex items-center gap-space-sm text-on-surface">
+                <span class="material-symbols-outlined text-primary text-[20px]">calculate</span>
+                <span class="font-body-sm text-body-sm">Preview on <strong class="font-label-numeric-sm text-label-numeric-sm">GH₵ 100.00</strong> checkout item:</span>
+              </div>
+              <div class="flex items-center gap-space-md font-label-numeric-sm text-label-numeric-sm">
+                <span class="text-on-surface-variant">Tax: <strong class="text-secondary">GH₵ 3.00</strong></span>
+                <span class="w-1 h-3 rounded bg-surface-container-highest"></span>
+                <span class="text-primary font-bold">Total Customer Charge: GH₵ 103.00</span>
+              </div>
+            `;
+          } else {
+            mockTax.style.display = 'none';
+            mockTotal.textContent = 'GH₵ 85.50';
+            taxPreviewBox.innerHTML = `
+              <div class="flex items-center gap-space-sm text-on-surface">
+                <span class="material-symbols-outlined text-secondary text-[20px]">info</span>
+                <span class="font-body-sm text-body-sm">VAT Exempt or direct inclusive pricing mode active.</span>
+              </div>
+              <div class="font-label-numeric-sm text-label-numeric-sm text-on-surface-variant">
+                Total Charge: GH₵ 100.00
+              </div>
+            `;
+          }
+        });
+      }
+
+      // Category Card Selection
+      const categoryCards = document.querySelectorAll('.category-card');
+      categoryCards.forEach(card => {
+        card.addEventListener('click', () => {
+          categoryCards.forEach(c => {
+            c.classList.remove('bg-primary/5', 'shadow-sm');
+            c.classList.add('bg-surface-container-low');
+            const checkBadge = c.querySelector('span.w-6');
+            if (checkBadge) {
+              checkBadge.className = 'w-6 h-6 rounded-full bg-surface-container-highest text-transparent flex items-center justify-center';
+            }
+            const title = c.querySelector('.font-headline-sm');
+            if (title) {
+              title.classList.remove('text-primary');
+              title.classList.add('text-on-surface');
+            }
+          });
+
+          card.classList.remove('bg-surface-container-low');
+          card.classList.add('bg-primary/5', 'shadow-sm');
+          const activeBadge = card.querySelector('span.w-6');
+          if (activeBadge) {
+            activeBadge.className = 'w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center';
+          }
+          const activeTitle = card.querySelector('.font-headline-sm');
+          if (activeTitle) {
+            activeTitle.classList.remove('text-on-surface');
+            activeTitle.classList.add('text-primary');
+          }
+        });
+      });
+
+      // Outlet scale toggles
+      const outletButtons = document.querySelectorAll('.outlet-toggle');
+      outletButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          outletButtons.forEach(b => {
+            b.className = 'outlet-toggle py-space-sm px-space-md rounded-lg text-on-surface-variant hover:text-on-surface font-headline-sm text-headline-sm transition-all text-center';
+          });
+          btn.className = 'outlet-toggle py-space-sm px-space-md rounded-lg bg-primary text-on-primary font-headline-sm text-headline-sm shadow-sm transition-all text-center';
+        });
+      });
+
+      // Button interaction feedback
+      const continueBtn = document.getElementById('btn-continue');
+      if (continueBtn) {
+        continueBtn.addEventListener('click', () => {
+          continueBtn.innerHTML = `
+            <span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+            <span>Saving Branch Config...</span>
+          `;
+          setTimeout(() => {
+            continueBtn.innerHTML = `
+              <span>Continue to Security & PIN</span>
+              <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+            `;
+          }, 1200);
+        });
+      }
+    })();
+  </script>
+</div></main><footer class="w-full bg-surface-container-low py-space-md"><div class="w-full px-margin flex flex-col md:flex-row items-center justify-between gap-space-sm text-on-surface-variant font-body-sm text-body-sm"><div class="flex items-center gap-space-sm"><span class="font-label-caps text-label-caps uppercase text-primary font-bold">Bank of Ghana Regulated Partner Network</span><span class="">•</span><span class="">256-bit Retail Encrypted Vault</span></div><div class="flex items-center gap-space-md font-body-sm text-body-sm"><span class="text-on-surface-variant">Support: +233 24 000 0000 (Mon-Sat 7am-9pm GMT)</span><span class="">© 2025 SikaPOS by Akoma Commerce. All rights reserved.</span></div></div></footer>
+
+</body></html>

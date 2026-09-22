@@ -1,0 +1,307 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_blank" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface":"#faf8ff","on-secondary":"#ffffff","secondary":"#904d00","on-secondary-fixed":"#2f1500","on-tertiary-container":"#8bc9ff","on-primary":"#ffffff","inverse-surface":"#283044","primary-container":"#0d5c3a","surface-container":"#eaedff","on-error-container":"#93000a","primary-fixed-dim":"#8ed6aa","tertiary":"#003d5f","primary":"#004328","surface-container-low":"#f2f3ff","on-surface":"#131b2e","primary-fixed":"#a9f3c5","surface-bright":"#faf8ff","error-container":"#ffdad6","on-surface-variant":"#404942","on-primary-container":"#8ad2a7","inverse-primary":"#8ed6aa","on-tertiary":"#ffffff","on-primary-fixed-variant":"#005232","on-error":"#ffffff","tertiary-fixed":"#cce5ff","surface-container-highest":"#dae2fd","secondary-fixed":"#ffdcc3","outline":"#707971","outline-variant":"#bfc9c0","surface-container-high":"#e2e7ff","surface-dim":"#d2d9f4","secondary-fixed-dim":"#ffb77d","on-tertiary-fixed-variant":"#004b73","on-tertiary-fixed":"#001d31","secondary-container":"#fe932c","error":"#ba1a1a","on-background":"#131b2e","on-secondary-fixed-variant":"#6e3900","on-primary-fixed":"#002111","inverse-on-surface":"#eef0ff","tertiary-fixed-dim":"#93ccff","surface-tint":"#226b47","background":"#faf8ff","tertiary-container":"#005582","surface-container-lowest":"#ffffff","on-secondary-container":"#663500","surface-variant":"#dae2fd"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"gutter":"1rem","space-xs":"0.25rem","gutter-mobile":"0.75rem","space-lg":"1rem","margin-mobile":"1rem","space-sm":"0.5rem","margin":"1.5rem","space-md":"0.75rem","space-xl":"1.5rem"},fontFamily:{"headline-lg":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-numeric-lg":["JetBrains Mono"],"body-md":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"label-numeric-md":["JetBrains Mono"],"display-mobile":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"label-caps":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"label-numeric-sm":["JetBrains Mono"]},fontSize:{"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"700"}],"headline-lg-mobile":["20px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"headline-sm":["16px",{"lineHeight":"22px","fontWeight":"600"}],"label-numeric-lg":["22px",{"lineHeight":"28px","letterSpacing":"-0.02em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"body-sm":["12px",{"lineHeight":"16px","fontWeight":"500"}],"label-numeric-md":["16px",{"lineHeight":"20px","fontWeight":"600"}],"display-mobile":["26px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"700"}],"display":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-caps":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"700"}],"headline-md":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-numeric-sm":["13px",{"lineHeight":"16px","fontWeight":"500"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex items-center justify-center"><main class="w-full min-h-screen flex flex-col justify-center items-center p-gutter"><div class="flex flex-col w-full">
+<div class="w-full max-w-7xl mx-auto px-space-md md:px-margin py-space-lg flex flex-col gap-space-xl">
+<!-- Top Offline/Cloud Status & Hub Header -->
+<div class="w-full flex flex-wrap items-center justify-between gap-space-md bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-headline-lg">point_of_sale</span>
+</div>
+<div>
+<span class="font-label-caps text-on-surface-variant block uppercase tracking-wider text-label-caps">Merchant Terminal OS</span>
+<h2 class="font-headline-sm text-on-surface">Terminal #ACC-04 • SikaPOS Core</h2>
+</div>
+</div>
+<div class="flex items-center gap-space-sm">
+<!-- Live Sync Pill -->
+<div class="inline-flex items-center gap-space-xs bg-primary-fixed text-on-primary-fixed-variant px-space-sm py-1 rounded-full shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-label-caps text-label-caps uppercase">Cloud Synced • Local Cache Ready</span>
+</div>
+<!-- Device Info Pill -->
+<div class="hidden sm:inline-flex items-center gap-space-xs bg-surface-container text-on-surface-variant px-space-sm py-1 rounded-full">
+<span class="material-symbols-outlined text-body-sm">wifi</span>
+<span class="font-label-numeric-sm text-label-numeric-sm">4G Telecel FastLink</span>
+</div>
+</div>
+</div>
+<!-- Main Workspace Grid: Dual Card Workflow -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+<!-- ================= CARD 1: Cashier Quick-Switch & PIN Terminal ================= -->
+<section class="lg:col-span-6 bg-surface-container-lowest rounded-xl p-space-lg md:p-space-xl shadow-md flex flex-col gap-space-lg relative overflow-hidden">
+<!-- Header Branding & Branch -->
+<div class="flex items-center justify-between border-b border-surface-container pb-space-md">
+<div class="flex items-center gap-space-md">
+<img alt="SikaPOS Akoma Commerce Logo" class="h-10 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt6nlDIa8RR54PT_rQz_DItFTwkowRusIuLlSNwmdryUlgjtmfO-clF5RKQxLBD1S8y4FsAF_YyCNaBsiQGNx7qlgIu0kOGj7k6ASpCfUN7DuPHaFJlL-dkkxA8cLP3vrO-e6HEvdqeXWpphSuSYvMYvY_Tp3MeLN9oykkiAt533oI46iymF6MzL93JF83oOy1F3eD6ZJd55gIMlArGz-UpuE73KWJf-JMXjH2SMbCBRbv72ezJXuO3w">
+</div>
+<!-- Branch Selector Pill -->
+<div class="inline-flex items-center gap-space-xs bg-surface-container-high px-space-sm py-space-xs rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined text-body-md text-secondary">location_on</span>
+<span class="font-body-sm text-body-sm font-semibold">Osu Oxford St. Branch</span>
+</div>
+</div>
+<!-- Cashier Switcher Bar -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-caps text-on-surface-variant uppercase text-label-caps tracking-wider">Select Cashier Shift</label>
+<div class="grid grid-cols-3 gap-space-xs" id="cashier-chips">
+<!-- Cashier Chip 1 (Active) -->
+<button class="cashier-chip active group flex items-center gap-space-xs p-space-xs rounded-lg bg-surface-container-highest transition-all duration-150 text-left cursor-pointer" onclick="selectCashier('Kwabena', 'Store Admin', 'admin')" type="button">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-headline-sm text-body-sm">
+                KW
+              </div>
+<div class="min-w-0 pr-1">
+<p class="font-headline-sm text-body-sm text-on-surface truncate">Kwabena</p>
+<span class="font-label-caps text-label-caps text-secondary block">Admin</span>
+</div>
+</button>
+<!-- Cashier Chip 2 -->
+<button class="cashier-chip group flex items-center gap-space-xs p-space-xs rounded-lg bg-surface-container-low hover:bg-surface-container transition-all duration-150 text-left cursor-pointer" onclick="selectCashier('Abena', 'Cashier Station 1', 'cashier1')" type="button">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-headline-sm text-body-sm">
+                AB
+              </div>
+<div class="min-w-0 pr-1">
+<p class="font-headline-sm text-body-sm text-on-surface truncate">Abena</p>
+<span class="font-label-caps text-label-caps text-on-surface-variant block">Cashier 1</span>
+</div>
+</button>
+<!-- Cashier Chip 3 -->
+<button class="cashier-chip group flex items-center gap-space-xs p-space-xs rounded-lg bg-surface-container-low hover:bg-surface-container transition-all duration-150 text-left cursor-pointer" onclick="selectCashier('Kofi', 'Cashier Station 2', 'cashier2')" type="button">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-headline-sm text-body-sm">
+                KO
+              </div>
+<div class="min-w-0 pr-1">
+<p class="font-headline-sm text-body-sm text-on-surface truncate">Kofi</p>
+<span class="font-label-caps text-label-caps text-on-surface-variant block">Cashier 2</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Cashier Display & Input Status -->
+<div class="flex flex-col items-center justify-center text-center pt-space-xs pb-space-xs">
+<div class="relative mb-space-xs">
+<div class="w-16 h-16 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-headline-lg text-headline-lg shadow-sm" id="avatar-display">
+              KW
+            </div>
+<div class="absolute -bottom-1 -right-1 bg-secondary-container text-on-secondary-container w-6 h-6 rounded-full flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-body-sm">shield_person</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface" id="cashier-name-text">Kwabena Mensah</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant" id="cashier-role-text">Store Administrator (ID: #4019)</p>
+<!-- 4-Digit PIN Indicators -->
+<div class="flex items-center gap-space-md mt-space-md" id="pin-indicators">
+<div class="w-4 h-4 rounded-full bg-surface-container-highest pin-dot transition-all duration-150"></div>
+<div class="w-4 h-4 rounded-full bg-surface-container-highest pin-dot transition-all duration-150"></div>
+<div class="w-4 h-4 rounded-full bg-surface-container-highest pin-dot transition-all duration-150"></div>
+<div class="w-4 h-4 rounded-full bg-surface-container-highest pin-dot transition-all duration-150"></div>
+</div>
+<div class="h-5 mt-space-xs flex items-center justify-center" id="pin-feedback">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Enter 4-digit security PIN</span>
+</div>
+</div>
+<!-- High-Velocity Tactile Numeric Keypad -->
+<div class="grid grid-cols-3 gap-space-xs w-full max-w-sm mx-auto">
+<button class="h-14 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low active:bg-surface-container active:scale-95 shadow-sm font-label-numeric-lg text-label-numeric-lg text-on-surface flex items-center justify-center transition duration-100 cursor-pointer" onclick="handlePinPress('1')" type="button">1</button>
+<button class="h-14 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low active:bg-surface-container active:scale-95 shadow-sm font-label-numeric-lg text-label-numeric-lg text-on-surface flex items-center justify-center transition duration-100 cursor-pointer" onclick="handlePinPress('2')" type="button">2</button>
+<button class="h-14 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low active:bg-surface-container active:scale-95 shadow-sm font-label-numeric-lg text-label-numeric-lg text-on-surface flex items-center justify-center transition duration-100 cursor-pointer" onclick="handlePinPress('3')" type="button">3</button>
+<button class="h-14 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low active:bg-surface-container active:scale-95 shadow-sm font-label-numeric-lg text-label-numeric-lg text-on-surface flex items-center justify-center transition duration-100 cursor-pointer" onclick="handlePinPress('4')" type="button">4</button>
+<button class="h-14 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low active:bg-surface-container active:scale-95 shadow-sm font-label-numeric-lg text-label-numeric-lg text-on-surface flex items-center justify-center transition duration-100 cursor-pointer" onclick="handlePinPress('5')" type="button">5</button>
+<button class="h-14 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low active:bg-surface-container active:scale-95 shadow-sm font-label-numeric-lg text-label-numeric-lg text-on-surface flex items-center justify-center transition duration-100 cursor-pointer" onclick="handlePinPress('6')" type="button">6</button>
+<button class="h-14 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low active:bg-surface-container active:scale-95 shadow-sm font-label-numeric-lg text-label-numeric-lg text-on-surface flex items-center justify-center transition duration-100 cursor-pointer" onclick="handlePinPress('7')" type="button">7</button>
+<button class="h-14 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low active:bg-surface-container active:scale-95 shadow-sm font-label-numeric-lg text-label-numeric-lg text-on-surface flex items-center justify-center transition duration-100 cursor-pointer" onclick="handlePinPress('8')" type="button">8</button>
+<button class="h-14 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low active:bg-surface-container active:scale-95 shadow-sm font-label-numeric-lg text-label-numeric-lg text-on-surface flex items-center justify-center transition duration-100 cursor-pointer" onclick="handlePinPress('9')" type="button">9</button>
+<button class="h-14 rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-container-high active:scale-95 shadow-sm font-headline-sm text-body-sm flex items-center justify-center transition duration-100 uppercase tracking-wider cursor-pointer" onclick="clearPin()" type="button">
+            CLR
+          </button>
+<button class="h-14 rounded-lg bg-surface-container-lowest hover:bg-surface-container-low active:bg-surface-container active:scale-95 shadow-sm font-label-numeric-lg text-label-numeric-lg text-on-surface flex items-center justify-center transition duration-100 cursor-pointer" onclick="handlePinPress('0')" type="button">0</button>
+<button aria-label="Delete digit" class="h-14 rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-container-high active:scale-95 shadow-sm flex items-center justify-center transition duration-100 cursor-pointer" onclick="backspacePin()" type="button">
+<span class="material-symbols-outlined text-headline-sm">backspace</span>
+</button>
+</div>
+<!-- Alternate Gateway Link -->
+<div class="text-center pt-space-xs">
+<button class="inline-flex items-center gap-space-xs text-primary font-body-sm text-body-sm hover:underline cursor-pointer" type="button">
+<span class="material-symbols-outlined text-body-md">lock</span>
+<span class="">Switch to Admin Email &amp; Password login</span>
+</button>
+</div>
+</section>
+<!-- ================= CARD 2: Ghana Phone OTP Verification & Error States ================= -->
+<section class="lg:col-span-6 bg-surface-container-lowest rounded-xl p-space-lg md:p-space-xl shadow-md flex flex-col gap-space-lg relative">
+<!-- Realistic Error State Banner: Offline / Gateway Alert -->
+<div class="w-full bg-error-container text-on-error-container rounded-xl p-space-md shadow-sm flex items-start gap-space-md">
+<div class="p-1 bg-on-error rounded-full text-error flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-headline-sm">signal_cellular_connected_no_internet_4_bar</span>
+</div>
+<div class="flex-1 min-w-0"><div class="flex items-center justify-between gap-space-xs">
+<h4 class="font-headline-sm text-headline-sm text-error">Verification Code Delivery Issue</h4>
+<span class="font-label-caps text-label-caps uppercase bg-on-error text-error px-2 py-0.5 rounded-full font-bold">OFFLINE MODE ACTIVE</span>
+</div>
+<p class="font-body-md text-body-sm text-on-surface-variant mt-1">
+  Unable to deliver verification code. You can choose an alternative verification channel or proceed in local mode (transactions will sync when connection is restored).
+</p>
+<div class="mt-space-sm flex items-center gap-space-md">
+<button class="inline-flex items-center gap-space-xs bg-error text-on-error px-space-md py-1.5 rounded-lg font-headline-sm text-body-sm hover:opacity-90 active:scale-95 transition shadow-sm cursor-pointer" type="button">
+<span class="material-symbols-outlined text-body-sm">refresh</span>
+  Retry Sending Code
+</button>
+<button class="text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm underline cursor-pointer" type="button">
+  Work in Local Queue Mode
+</button>
+</div></div>
+</div>
+<!-- Section Title & Telco Subtitle -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Verify Ghanaian Phone Number</h3>
+<span class="inline-flex items-center gap-1 text-label-caps font-label-caps text-secondary font-bold uppercase bg-secondary-fixed px-2.5 py-1 rounded-full">
+<span class="material-symbols-outlined text-body-sm">cell_tower</span> MTN MoMo
+            </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Enter the 6-digit verification code sent to:
+<span class="font-label-numeric-md text-label-numeric-md font-bold text-on-surface block sm:inline mt-1 sm:mt-0">+233 24 412 3456</span></p>
+</div>
+<!-- 6-Box Segmented OTP Input Grid -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-on-surface-variant uppercase text-label-caps tracking-wider">SECURITY VERIFICATION CODE</span>
+<span class="font-label-numeric-sm text-label-numeric-sm text-error font-semibold">Validation Required</span>
+</div>
+<!-- 6 Inputs -->
+<div class="grid grid-cols-6 gap-space-xs sm:gap-space-sm">
+<input aria-label="OTP digit 1" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="7">
+<input aria-label="OTP digit 2" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="2">
+<input aria-label="OTP digit 3" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="9">
+<input aria-label="OTP digit 4" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="4">
+<input aria-label="OTP digit 5" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-error-container text-error rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="1">
+<input aria-label="OTP digit 6" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" placeholder="-" type="text" value="">
+</div>
+<!-- Validation Error Message Under Input -->
+<div class="flex items-center gap-space-xs mt-space-xs text-error">
+<span class="material-symbols-outlined text-body-md">error</span>
+<p class="font-body-sm text-body-sm font-semibold">Incorrect PIN code. 2 attempts remaining before security lockout.</p>
+</div>
+</div>
+<!-- Resend Countdown & WhatsApp Fallback -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-headline-sm text-on-surface-variant">timer</span>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Didn't receive SMS code?</p>
+<p class="font-label-numeric-sm text-label-numeric-sm text-on-surface font-semibold">
+                Resend code in <span class="text-primary font-bold">0:42</span>
+</p>
+</div>
+</div>
+<button class="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs bg-surface-container-highest hover:bg-surface-container text-on-surface px-space-md py-2.5 rounded-lg font-headline-sm text-body-sm transition active:scale-95 shadow-sm cursor-pointer" type="button"><span class="material-symbols-outlined text-primary text-body-md">sync_alt</span>
+<span class="">Alternate Delivery Channel</span></button>
+</div>
+<!-- Primary Action Target (52px thumb target) -->
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<button class="w-full h-[52px] bg-primary-container text-on-primary rounded-xl font-headline-sm text-headline-sm shadow-md flex items-center justify-center gap-space-sm hover:opacity-95 active:scale-98 transition duration-150 cursor-pointer" type="button">
+<span class="material-symbols-outlined text-headline-sm">verified_user</span>
+<span class="">Authorize Terminal Login</span>
+</button>
+<!-- Backup offline fallback trigger -->
+<button class="w-full h-11 bg-surface-container text-on-surface-variant rounded-lg font-headline-sm text-body-sm hover:bg-surface-container-high transition flex items-center justify-center gap-space-xs cursor-pointer" type="button">
+<span class="material-symbols-outlined text-body-md">offline_pin</span>
+<span class="">Enter Offline Supervisor Override</span>
+</button>
+</div>
+</section>
+</div>
+<!-- Bottom Regional Commerce Badge & Hardware Footnote -->
+<div class="w-full text-center py-space-sm">
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center justify-center gap-space-xs">
+<span class="material-symbols-outlined text-body-sm text-primary">security</span>
+<span class="">Secured with SikaPOS Merchant Rails • Bank of Ghana Compliant • Offline Transaction Store Active</span>
+</p>
+</div>
+</div>
+</div>
+<script>
+  let enteredPin = "";
+
+  function selectCashier(name, role, key) {
+    const nameEl = document.getElementById("cashier-name-text");
+    const roleEl = document.getElementById("cashier-role-text");
+    const avatarEl = document.getElementById("avatar-display");
+    const chips = document.querySelectorAll(".cashier-chip");
+
+    chips.forEach(chip => {
+      chip.classList.remove("bg-surface-container-highest", "active");
+      chip.classList.add("bg-surface-container-low");
+    });
+
+    event.currentTarget.classList.add("bg-surface-container-highest", "active");
+    event.currentTarget.classList.remove("bg-surface-container-low");
+
+    if (key === 'admin') {
+      nameEl.textContent = "Kwabena Mensah";
+      roleEl.textContent = "Store Administrator (ID: #4019)";
+      avatarEl.textContent = "KW";
+    } else if (key === 'cashier1') {
+      nameEl.textContent = "Abena Osei";
+      roleEl.textContent = "Senior Cashier - Lane 01 (ID: #2104)";
+      avatarEl.textContent = "AB";
+    } else {
+      nameEl.textContent = "Kofi Boateng";
+      roleEl.textContent = "Counter Sales - Lane 02 (ID: #3158)";
+      avatarEl.textContent = "KO";
+    }
+    clearPin();
+  }
+
+  function updatePinDisplay() {
+    const dots = document.querySelectorAll(".pin-dot");
+    const feedback = document.getElementById("pin-feedback");
+
+    dots.forEach((dot, index) => {
+      if (index < enteredPin.length) {
+        dot.classList.remove("bg-surface-container-highest");
+        dot.classList.add("bg-primary-container", "scale-110");
+      } else {
+        dot.classList.remove("bg-primary-container", "scale-110");
+        dot.classList.add("bg-surface-container-highest");
+      }
+    });
+
+    if (enteredPin.length === 4) {
+      feedback.innerHTML = '<span class="font-headline-sm text-body-sm text-primary flex items-center gap-1"><span class="material-symbols-outlined text-body-sm">check_circle</span> PIN Verified. Unlocking register...</span>';
+    } else {
+      feedback.innerHTML = '<span class="font-body-sm text-body-sm text-on-surface-variant">' + enteredPin.length + ' of 4 digits entered</span>';
+    }
+  }
+
+  function handlePinPress(digit) {
+    if (enteredPin.length < 4) {
+      enteredPin += digit;
+      updatePinDisplay();
+    }
+  }
+
+  function clearPin() {
+    enteredPin = "";
+    updatePinDisplay();
+  }
+
+  function backspacePin() {
+    if (enteredPin.length > 0) {
+      enteredPin = enteredPin.slice(0, -1);
+      updatePinDisplay();
+    }
+  }
+
+  // Segmented input auto-tabbing micro-interaction
+  document.querySelectorAll('.otp-field').forEach((input, index, inputs) => {
+    input.addEventListener('keyup', (e) => {
+      if (e.key >= '0' && e.key <= '9' && index < inputs.length - 1) {
+        inputs[index + 1].focus();
+      } else if (e.key === 'Backspace' && index > 0 && !input.value) {
+        inputs[index - 1].focus();
+      }
+    });
+  });
+</script></main>
+
+</body></html>
