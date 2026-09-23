@@ -26,15 +26,15 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none select-none active-depress cursor-pointer rounded-lg';
+      'inline-flex items-center justify-center font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none select-none active-depress cursor-pointer rounded-full';
 
     const variants = {
       primary:
-        'bg-[#0D5C3A] text-white hover:bg-[#09432A] active:bg-[#062F1D] focus-visible:ring-[#0D5C3A] shadow-sm',
+        'bg-[#00A859] text-white hover:bg-[#00924C] active:bg-[#007D40] focus-visible:ring-[#00A859] shadow-sm hover:shadow-md',
       secondary:
         'bg-slate-100 text-slate-800 hover:bg-slate-200 active:bg-slate-300 focus-visible:ring-slate-400',
       outline:
-        'bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 active:bg-slate-100 focus-visible:ring-[#0D5C3A] shadow-xs',
+        'bg-white border-2 border-slate-200 text-slate-800 hover:border-slate-300 hover:bg-slate-50 active:bg-slate-100 focus-visible:ring-[#00A859]',
       ghost:
         'bg-transparent text-slate-700 hover:bg-slate-100 active:bg-slate-200 focus-visible:ring-slate-400',
       danger:
@@ -42,9 +42,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes = {
-      sm: 'h-9 px-3 text-xs gap-1.5',
-      md: 'h-12 px-5 text-sm gap-2 min-h-[48px]',
-      lg: 'h-13 px-6 text-base font-semibold gap-2.5 min-h-[52px]',
+      sm: 'h-9 px-4 text-xs gap-1.5',
+      md: 'h-12 px-6 text-sm gap-2 min-h-[48px]',
+      lg: 'h-13 px-8 text-base font-bold gap-2.5 min-h-[52px]',
     };
 
     return (

@@ -13,23 +13,23 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   showSubtitle = true,
 }) => {
   const iconSizes = {
-    sm: 'w-7 h-7',
-    md: 'w-9 h-9',
-    lg: 'w-11 h-11',
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12',
   };
 
   const titleSizes = {
-    sm: 'text-base',
-    md: 'text-lg',
-    lg: 'text-xl',
+    sm: 'text-lg',
+    md: 'text-xl',
+    lg: 'text-2xl',
   };
 
   return (
-    <div className={cn('flex items-center gap-2.5 select-none', className)}>
-      {/* SikaPOS Geometric Akoma Emblem */}
+    <div className={cn('flex items-center gap-3 select-none', className)}>
+      {/* SikaPOS Geometric Akoma / Modern Retail Terminal Emblem */}
       <div
         className={cn(
-          'rounded-xl bg-[#0D5C3A] flex items-center justify-center text-white shadow-xs shrink-0',
+          'rounded-xl bg-[#00A859] flex items-center justify-center text-white shadow-sm shrink-0 transition-transform hover:scale-105',
           iconSizes[size]
         )}
       >
@@ -40,24 +40,25 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           strokeWidth="2.2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="w-5 h-5 text-emerald-200"
+          className="w-5 h-5 text-white"
         >
-          <path d="M12 2L3 7v9l9 6 9-6V7l-9-5z" fill="#0D5C3A" />
-          <path d="M12 6v12M7 9l5 3 5-3" stroke="#D97706" strokeWidth="2" />
+          <rect x="3" y="4" width="18" height="16" rx="3" fill="#00A859" stroke="white" strokeWidth="2" />
+          <path d="M7 8h10M7 12h6M7 16h4" stroke="white" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="17" cy="15" r="1.5" fill="#FDE047" stroke="#FDE047" />
         </svg>
       </div>
 
       <div className="flex flex-col text-left">
         <span
           className={cn(
-            'font-bold tracking-tight text-slate-900 leading-none',
+            'font-extrabold tracking-tight text-slate-900 leading-none font-sans',
             titleSizes[size]
           )}
         >
-          SikaPOS
+          Sika<span className="text-[#00A859]">POS</span>
         </span>
         {showSubtitle && (
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5">
+          <span className="text-[10px] font-bold tracking-wider text-slate-500 mt-1 uppercase">
             Akoma Commerce Cloud
           </span>
         )}

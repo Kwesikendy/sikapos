@@ -17,14 +17,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <div className="w-full space-y-1.5 text-left">
         {label && (
           <div className="flex items-center justify-between">
-            <label htmlFor={inputId} className="block text-sm font-semibold text-slate-800">
+            <label htmlFor={inputId} className="block text-xs font-bold uppercase tracking-wider text-slate-700">
               {label}
             </label>
           </div>
         )}
         <div className="relative flex items-center">
           {startIcon && (
-            <div className="absolute left-3.5 flex items-center pointer-events-none text-slate-500">
+            <div className="absolute left-4 flex items-center pointer-events-none text-slate-400">
               {startIcon}
             </div>
           )}
@@ -32,25 +32,25 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             ref={ref}
             className={cn(
-              'w-full h-12 rounded-lg bg-slate-50 border text-slate-900 placeholder:text-slate-400',
-              'text-base sm:text-sm transition-colors duration-150',
-              'focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0D5C3A] focus:border-transparent',
+              'w-full h-12 rounded-xl bg-slate-50/70 border text-slate-900 placeholder:text-slate-400',
+              'text-sm transition-all duration-150',
+              'focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00A859] focus:border-[#00A859]',
               'disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed',
-              startIcon ? 'pl-11' : 'pl-3.5',
-              endIcon ? 'pr-11' : 'pr-3.5',
-              errorText ? 'border-rose-500 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300',
+              startIcon ? 'pl-11' : 'pl-4',
+              endIcon ? 'pr-11' : 'pr-4',
+              errorText ? 'border-rose-400 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-200 hover:border-slate-300',
               className
             )}
             {...props}
           />
           {endIcon && (
-            <div className="absolute right-3.5 flex items-center text-slate-500">
+            <div className="absolute right-4 flex items-center text-slate-400">
               {endIcon}
             </div>
           )}
         </div>
         {errorText ? (
-          <p className="text-xs font-medium text-rose-600 mt-1">{errorText}</p>
+          <p className="text-xs font-semibold text-rose-600 mt-1">{errorText}</p>
         ) : helperText ? (
           <p className="text-xs text-slate-500 mt-1">{helperText}</p>
         ) : null}

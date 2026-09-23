@@ -3,26 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { PinKeypad } from '../components/ui/PinKeypad';
-import { Badge } from '../components/ui/Badge';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
 import {
   CheckCircle2,
   Store,
-  Wifi,
   Receipt,
   Smartphone,
   ShieldCheck,
   ArrowRight,
   Terminal,
 } from 'lucide-react';
-import { cn } from '../lib/utils';
 
 export const LaunchReadinessPage: React.FC = () => {
   const navigate = useNavigate();
   const [offlineMode, setOfflineMode] = useState(true);
-  const [pin, setPin] = useState('1234');
-  const [pinSaved, setPinSaved] = useState(false);
+  const [, setPin] = useState('1234');
+  const [, setPinSaved] = useState(false);
 
   const checklistItems = [
     { title: 'Merchant Account Verified', desc: 'Kwabena Mensah • Registered Owner', status: 'ready', icon: ShieldCheck },
@@ -42,39 +39,40 @@ export const LaunchReadinessPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+    <div className="min-h-screen flex flex-col bg-[#FAFCFB] text-slate-900 font-sans selection:bg-emerald-100 selection:text-emerald-900">
       <Header />
 
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Top Status Header */}
-        <div className="w-full bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#0D5C3A] text-white flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-5 h-5" />
+        <div className="w-full bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-[#00A859] text-white flex items-center justify-center shrink-0 shadow-xs">
+              <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#00A859]">
                 Setup Complete
               </span>
-              <h1 className="text-lg sm:text-xl font-bold text-slate-900">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">
                 Ready for Business • Launchpad Activation
               </h1>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge variant="online" pulse>
-              Terminal Stand #01 Online
-            </Badge>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-[#00A859] border border-emerald-200">
+              <span className="w-2 h-2 rounded-full bg-[#00A859] animate-pulse" />
+              <span>Terminal Stand #01 Online</span>
+            </div>
           </div>
         </div>
 
-        {/* Dual Bento Grid */}
+        {/* Dual Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left: Terminal Fast-Switch Security (5 cols) */}
-          <Card elevated className="lg:col-span-5 p-6 sm:p-8 space-y-6 text-left">
+          <Card elevated className="lg:col-span-5 p-6 sm:p-8 space-y-6 text-left bg-white">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#0D5C3A]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#00A859]">
                 Countertop Security
               </span>
               <h2 className="text-lg font-bold text-slate-900 mt-1">
@@ -86,9 +84,9 @@ export const LaunchReadinessPage: React.FC = () => {
             </div>
 
             {/* Active Cashier Identity */}
-            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-[#0D5C3A] text-white flex items-center justify-center text-xs font-bold">
+                <div className="w-10 h-10 rounded-xl bg-[#00A859] text-white flex items-center justify-center text-xs font-bold shadow-xs">
                   KM
                 </div>
                 <div>
@@ -96,26 +94,28 @@ export const LaunchReadinessPage: React.FC = () => {
                   <p className="text-[11px] text-slate-500">Primary Till • Store Manager</p>
                 </div>
               </div>
-              <Badge variant="primary">Active</Badge>
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-[#00A859]">
+                Active
+              </span>
             </div>
 
             {/* Keypad */}
             <PinKeypad onComplete={handlePinComplete} />
 
             {/* Offline Mode Switch */}
-            <div className="pt-4 border-t border-slate-200">
-              <label className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors select-none">
+            <div className="pt-4 border-t border-slate-100">
+              <label className="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100/80 transition-colors select-none">
                 <input
                   type="checkbox"
                   checked={offlineMode}
                   onChange={(e) => setOfflineMode(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded text-[#0D5C3A] focus:ring-0 accent-[#0D5C3A] cursor-pointer"
+                  className="mt-0.5 w-4 h-4 rounded text-[#00A859] focus:ring-0 accent-[#00A859] cursor-pointer"
                 />
                 <div className="flex-1 text-xs">
                   <p className="font-bold text-slate-900">
                     Enable offline transaction mode on this device
                   </p>
-                  <p className="text-slate-500 mt-0.5">
+                  <p className="text-slate-500 mt-0.5 leading-relaxed">
                     Offline mode will queue transactions locally when connection drops. Automatically syncs once internet is restored.
                   </p>
                 </div>
@@ -125,15 +125,15 @@ export const LaunchReadinessPage: React.FC = () => {
 
           {/* Right: Launchpad Readiness Checklist & Action (7 cols) */}
           <div className="lg:col-span-7 space-y-6 text-left">
-            <Card elevated className="p-6 sm:p-8 space-y-6">
+            <Card elevated className="p-6 sm:p-8 space-y-6 bg-white">
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-[#E8F5EE] px-2.5 py-0.5 rounded-full border border-emerald-200 inline-block mb-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#00A859] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 inline-block mb-2">
                   Readiness Score: 100%
                 </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                   Ready for Business
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                <p className="text-sm text-slate-600 mt-1">
                   Your store workspace and till configuration are validated and ready to take customer transactions.
                 </p>
               </div>
@@ -145,11 +145,11 @@ export const LaunchReadinessPage: React.FC = () => {
                   return (
                     <div
                       key={idx}
-                      className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all flex items-center justify-between gap-3 shadow-2xs"
+                      className="p-4 rounded-2xl border border-slate-200/80 bg-white hover:border-slate-300 transition-all flex items-center justify-between gap-3 shadow-2xs"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#0D5C3A] flex items-center justify-center shrink-0">
-                          <Icon className="w-4 h-4" />
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#00A859] flex items-center justify-center shrink-0">
+                          <Icon className="w-4.5 h-4.5" />
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
@@ -158,7 +158,7 @@ export const LaunchReadinessPage: React.FC = () => {
                           <p className="text-[11px] text-slate-500 truncate">{item.desc}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0D5C3A] shrink-0">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#00A859] shrink-0">
                         <CheckCircle2 className="w-4 h-4" />
                         <span className="hidden sm:inline">Ready</span>
                       </div>
@@ -168,17 +168,17 @@ export const LaunchReadinessPage: React.FC = () => {
               </div>
 
               {/* Big Launch Trigger */}
-              <div className="pt-4 border-t border-slate-200">
+              <div className="pt-6 border-t border-slate-100">
                 <Button
                   type="button"
                   size="lg"
                   onClick={handleLaunch}
-                  className="w-full h-14 text-base font-bold"
+                  className="w-full h-14 text-base font-bold shadow-md hover:shadow-lg"
                   rightIcon={<ArrowRight className="w-5 h-5" />}
                 >
                   Open Cashier Terminal
                 </Button>
-                <p className="text-center text-xs text-slate-500 mt-2">
+                <p className="text-center text-xs text-slate-500 mt-2.5">
                   Launches high-cadence checkout mode with local cache and instant MoMo push.
                 </p>
               </div>
