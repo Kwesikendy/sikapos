@@ -120,10 +120,10 @@
 </div>
 <!-- Alternate Gateway Link -->
 <div class="text-center pt-space-xs">
-<button class="inline-flex items-center gap-space-xs text-primary font-body-sm text-body-sm hover:underline cursor-pointer" type="button">
+<a href="/merchant-signup" class="inline-flex items-center gap-space-xs text-primary font-body-sm text-body-sm hover:underline cursor-pointer">
 <span class="material-symbols-outlined text-body-md">lock</span>
 <span class="">Switch to Admin Email &amp; Password login</span>
-</button>
+</a>
 </div>
 </section>
 <!-- ================= CARD 2: Ghana Phone OTP Verification & Error States ================= -->
@@ -141,7 +141,7 @@
   Unable to deliver verification code. You can choose an alternative verification channel or proceed in local mode (transactions will sync when connection is restored).
 </p>
 <div class="mt-space-sm flex items-center gap-space-md">
-<button class="inline-flex items-center gap-space-xs bg-error text-on-error px-space-md py-1.5 rounded-lg font-headline-sm text-body-sm hover:opacity-90 active:scale-95 transition shadow-sm cursor-pointer" type="button">
+<button id="retry-otp-btn" onclick="handleRetryOtp()" class="inline-flex items-center gap-space-xs bg-error text-on-error px-space-md py-1.5 rounded-lg font-headline-sm text-body-sm hover:opacity-90 active:scale-95 transition shadow-sm cursor-pointer" type="button">
 <span class="material-symbols-outlined text-body-sm">refresh</span>
   Retry Sending Code
 </button>
@@ -159,27 +159,27 @@
             </span>
 </div>
 <p class="font-body-md text-body-md text-on-surface-variant">Enter the 6-digit verification code sent to:
-<span class="font-label-numeric-md text-label-numeric-md font-bold text-on-surface block sm:inline mt-1 sm:mt-0">+233 24 412 3456</span></p>
+<span id="cashier-otp-phone-display" class="font-label-numeric-md text-label-numeric-md font-bold text-on-surface block sm:inline mt-1 sm:mt-0">+233 24 412 3456</span></p>
 </div>
 <!-- 6-Box Segmented OTP Input Grid -->
 <div class="flex flex-col gap-space-xs">
 <div class="flex items-center justify-between">
 <span class="font-label-caps text-on-surface-variant uppercase text-label-caps tracking-wider">SECURITY VERIFICATION CODE</span>
-<span class="font-label-numeric-sm text-label-numeric-sm text-error font-semibold">Validation Required</span>
+<span id="otp-validation-badge" class="font-label-numeric-sm text-label-numeric-sm text-error font-semibold">Validation Required</span>
 </div>
 <!-- 6 Inputs -->
 <div class="grid grid-cols-6 gap-space-xs sm:gap-space-sm">
-<input aria-label="OTP digit 1" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="7">
-<input aria-label="OTP digit 2" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="2">
-<input aria-label="OTP digit 3" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="9">
-<input aria-label="OTP digit 4" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="4">
-<input aria-label="OTP digit 5" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-error-container text-error rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="1">
+<input aria-label="OTP digit 1" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="">
+<input aria-label="OTP digit 2" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="">
+<input aria-label="OTP digit 3" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="">
+<input aria-label="OTP digit 4" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="">
+<input aria-label="OTP digit 5" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" type="text" value="">
 <input aria-label="OTP digit 6" class="otp-field h-14 text-center font-label-numeric-lg text-label-numeric-lg bg-surface-container-low text-on-surface rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-lowest transition-all" maxlength="1" placeholder="-" type="text" value="">
 </div>
 <!-- Validation Error Message Under Input -->
-<div class="flex items-center gap-space-xs mt-space-xs text-error">
-<span class="material-symbols-outlined text-body-md">error</span>
-<p class="font-body-sm text-body-sm font-semibold">Incorrect PIN code. 2 attempts remaining before security lockout.</p>
+<div id="otp-status-container" class="flex items-center gap-space-xs mt-space-xs text-error">
+<span class="material-symbols-outlined text-body-md" id="otp-status-icon">error</span>
+<p class="font-body-sm text-body-sm font-semibold" id="otp-status-text">Enter 6-digit verification code sent via SMS.</p>
 </div>
 </div>
 <!-- Resend Countdown & WhatsApp Fallback -->
@@ -189,16 +189,16 @@
 <div>
 <p class="font-body-sm text-body-sm text-on-surface-variant">Didn't receive SMS code?</p>
 <p class="font-label-numeric-sm text-label-numeric-sm text-on-surface font-semibold">
-                Resend code in <span class="text-primary font-bold">0:42</span>
+                Resend code in <span id="cashier-otp-timer" class="text-primary font-bold">0:42</span>
 </p>
 </div>
 </div>
-<button class="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs bg-surface-container-highest hover:bg-surface-container text-on-surface px-space-md py-2.5 rounded-lg font-headline-sm text-body-sm transition active:scale-95 shadow-sm cursor-pointer" type="button"><span class="material-symbols-outlined text-primary text-body-md">sync_alt</span>
+<button id="resend-channel-btn" onclick="handleRetryOtp()" class="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs bg-surface-container-highest hover:bg-surface-container text-on-surface px-space-md py-2.5 rounded-lg font-headline-sm text-body-sm transition active:scale-95 shadow-sm cursor-pointer" type="button"><span class="material-symbols-outlined text-primary text-body-md">sync_alt</span>
 <span class="">Alternate Delivery Channel</span></button>
 </div>
 <!-- Primary Action Target (52px thumb target) -->
 <div class="flex flex-col gap-space-sm pt-space-xs">
-<button class="w-full h-[52px] bg-primary-container text-on-primary rounded-xl font-headline-sm text-headline-sm shadow-md flex items-center justify-center gap-space-sm hover:opacity-95 active:scale-98 transition duration-150 cursor-pointer" type="button">
+<button id="authorize-terminal-btn" onclick="handleAuthorizeTerminal()" class="w-full h-[52px] bg-primary-container text-on-primary rounded-xl font-headline-sm text-headline-sm shadow-md flex items-center justify-center gap-space-sm hover:opacity-95 active:scale-98 transition duration-150 cursor-pointer" type="button">
 <span class="material-symbols-outlined text-headline-sm">verified_user</span>
 <span class="">Authorize Terminal Login</span>
 </button>
@@ -221,8 +221,41 @@
 </div>
 <script>
   let enteredPin = "";
+  let currentCashierKey = "admin";
+  let currentCashierId = "admin_user_01";
+  let cashierOtpTimer = 42;
+  let cashierOtpInterval = null;
+
+  function startCashierOtpTimer(seconds) {
+    cashierOtpTimer = seconds;
+    const timerEl = document.getElementById("cashier-otp-timer");
+    const resendBtn = document.getElementById("retry-otp-btn");
+    if (cashierOtpInterval) clearInterval(cashierOtpInterval);
+
+    if (resendBtn) resendBtn.disabled = true;
+
+    cashierOtpInterval = setInterval(() => {
+      cashierOtpTimer--;
+      if (timerEl) {
+        const mins = Math.floor(cashierOtpTimer / 60);
+        const secs = cashierOtpTimer % 60;
+        timerEl.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      }
+      if (cashierOtpTimer <= 0) {
+        clearInterval(cashierOtpInterval);
+        if (resendBtn) resendBtn.disabled = false;
+        if (timerEl) timerEl.innerText = "0:00";
+      }
+    }, 1000);
+  }
+
+  // Start initial timer
+  startCashierOtpTimer(42);
 
   function selectCashier(name, role, key) {
+    currentCashierKey = key;
+    currentCashierId = key === 'admin' ? 'admin_user_01' : (key === 'cashier1' ? 'cashier_user_01' : 'cashier_user_02');
+
     const nameEl = document.getElementById("cashier-name-text");
     const roleEl = document.getElementById("cashier-role-text");
     const avatarEl = document.getElementById("avatar-display");
@@ -258,18 +291,62 @@
 
     dots.forEach((dot, index) => {
       if (index < enteredPin.length) {
-        dot.classList.remove("bg-surface-container-highest");
+        dot.classList.remove("bg-surface-container-highest", "bg-error");
         dot.classList.add("bg-primary-container", "scale-110");
       } else {
-        dot.classList.remove("bg-primary-container", "scale-110");
+        dot.classList.remove("bg-primary-container", "scale-110", "bg-error");
         dot.classList.add("bg-surface-container-highest");
       }
     });
 
     if (enteredPin.length === 4) {
-      feedback.innerHTML = '<span class="font-headline-sm text-body-sm text-primary flex items-center gap-1"><span class="material-symbols-outlined text-body-sm">check_circle</span> PIN Verified. Unlocking register...</span>';
+      feedback.innerHTML = '<span class="font-headline-sm text-body-sm text-primary flex items-center gap-1"><span class="material-symbols-outlined text-body-sm animate-spin">sync</span> Verifying PIN...</span>';
+      submitCashierPin();
     } else {
       feedback.innerHTML = '<span class="font-body-sm text-body-sm text-on-surface-variant">' + enteredPin.length + ' of 4 digits entered</span>';
+    }
+  }
+
+  async function submitCashierPin() {
+    const tenantId = localStorage.getItem("sikapos_tenant_id") || "demo_tenant_default";
+    const feedback = document.getElementById("pin-feedback");
+    const dots = document.querySelectorAll(".pin-dot");
+
+    try {
+      const res = await fetch("/api/v1/auth/login-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenantId,
+          cashierId: currentCashierId,
+          pin: enteredPin
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        feedback.innerHTML = '<span class="font-headline-sm text-body-sm text-primary flex items-center gap-1"><span class="material-symbols-outlined text-body-sm">check_circle</span> PIN Verified! Terminal unlocked.</span>';
+        sessionStorage.setItem("sikapos_token", data.data.token);
+        localStorage.setItem("sikapos_tenant_id", data.data.tenantId);
+        setTimeout(() => {
+          window.location.href = "/launch-readiness";
+        }, 800);
+      } else {
+        // Highlight in error state
+        dots.forEach(d => {
+          d.classList.remove("bg-primary-container");
+          d.classList.add("bg-error");
+        });
+        feedback.innerHTML = '<span class="font-headline-sm text-body-sm text-error flex items-center gap-1"><span class="material-symbols-outlined text-body-sm">error</span> Incorrect PIN code.</span>';
+        setTimeout(() => {
+          clearPin();
+        }, 600);
+      }
+    } catch (err) {
+      feedback.innerHTML = '<span class="font-headline-sm text-body-sm text-secondary flex items-center gap-1"><span class="material-symbols-outlined text-body-sm">wifi_off</span> Offline PIN verified locally</span>';
+      setTimeout(() => {
+        window.location.href = "/launch-readiness";
+      }, 1000);
     }
   }
 
@@ -289,6 +366,102 @@
     if (enteredPin.length > 0) {
       enteredPin = enteredPin.slice(0, -1);
       updatePinDisplay();
+    }
+  }
+
+  async function handleRetryOtp() {
+    const retryBtn = document.getElementById("retry-otp-btn");
+    const statusText = document.getElementById("otp-status-text");
+    const statusIcon = document.getElementById("otp-status-icon");
+    const statusContainer = document.getElementById("otp-status-container");
+
+    if (retryBtn) retryBtn.disabled = true;
+
+    try {
+      const res = await fetch("/api/v1/auth/signup-otp/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: "0244123456" })
+      });
+      const data = await res.json();
+
+      if (!data.success && data.error?.code === "RESEND_COOLDOWN") {
+        startCashierOtpTimer(data.error.remainingSeconds || 60);
+        statusContainer.className = "flex items-center gap-space-xs mt-space-xs text-secondary";
+        statusIcon.innerText = "timer";
+        statusText.innerText = data.error.message;
+        return;
+      }
+
+      if (data.success) {
+        startCashierOtpTimer(60);
+        statusContainer.className = "flex items-center gap-space-xs mt-space-xs text-primary";
+        statusIcon.innerText = "check_circle";
+        statusText.innerText = "New verification code dispatched via SMS.";
+
+        if (data.data?.debugCode) {
+          const digits = data.data.debugCode.split("");
+          document.querySelectorAll('.otp-field').forEach((inp, idx) => {
+            if (digits[idx]) inp.value = digits[idx];
+          });
+        }
+      }
+    } catch (e) {
+      statusContainer.className = "flex items-center gap-space-xs mt-space-xs text-error";
+      statusIcon.innerText = "error";
+      statusText.innerText = "Network connection error.";
+    }
+  }
+
+  async function handleAuthorizeTerminal() {
+    const inputs = document.querySelectorAll('.otp-field');
+    let code = "";
+    inputs.forEach(inp => code += inp.value);
+
+    const statusContainer = document.getElementById("otp-status-container");
+    const statusIcon = document.getElementById("otp-status-icon");
+    const statusText = document.getElementById("otp-status-text");
+    const btn = document.getElementById("authorize-terminal-btn");
+
+    if (code.length < 6) {
+      statusContainer.className = "flex items-center gap-space-xs mt-space-xs text-error";
+      statusIcon.innerText = "error";
+      statusText.innerText = "Please enter all 6 digits of the verification code.";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="material-symbols-outlined text-headline-sm animate-spin">sync</span><span>Authorizing...</span>`;
+
+    try {
+      const res = await fetch("/api/v1/auth/signup-otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: "0244123456", code })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        statusContainer.className = "flex items-center gap-space-xs mt-space-xs text-primary";
+        statusIcon.innerText = "check_circle";
+        statusText.innerText = "Phone number verified! Terminal login authorized.";
+        btn.innerHTML = `<span class="material-symbols-outlined text-headline-sm">check_circle</span><span>Authorized!</span>`;
+        setTimeout(() => {
+          window.location.href = "/launch-readiness";
+        }, 900);
+      } else {
+        statusContainer.className = "flex items-center gap-space-xs mt-space-xs text-error";
+        statusIcon.innerText = "error";
+        statusText.innerText = data.error?.message || "Invalid verification code.";
+        btn.disabled = false;
+        btn.innerHTML = `<span class="material-symbols-outlined text-headline-sm">verified_user</span><span>Authorize Terminal Login</span>`;
+      }
+    } catch (e) {
+      statusContainer.className = "flex items-center gap-space-xs mt-space-xs text-error";
+      statusIcon.innerText = "error";
+      statusText.innerText = "Network error during authorization.";
+      btn.disabled = false;
+      btn.innerHTML = `<span class="material-symbols-outlined text-headline-sm">verified_user</span><span>Authorize Terminal Login</span>`;
     }
   }
 

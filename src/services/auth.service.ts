@@ -23,6 +23,17 @@ export interface RegisterCashierParams {
   email?: string;
 }
 
+export class MultipleTenantsError extends Error {
+  public code = 'MULTIPLE_TENANTS_FOUND';
+  public tenants: Array<{ id: string; businessName: string; legalName: string }>;
+
+  constructor(tenants: Array<{ id: string; businessName: string; legalName: string }>) {
+    super('Account belongs to multiple organizations. Please specify tenantId.');
+    this.name = 'MultipleTenantsError';
+    this.tenants = tenants;
+  }
+}
+
 export class AuthService {
   private db: Database.Database;
   private tenantService: TenantService;
@@ -54,7 +65,7 @@ export class AuthService {
 
     const insertStmt = this.db.prepare(`
       INSERT INTO users (id, tenant_id, full_name, email, phone_number, password_hash, salt, is_active, email_verified, phone_verified, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0, 1, ?, ?)
     `);
 
     insertStmt.run(
@@ -134,34 +145,114 @@ export class AuthService {
     return this.getUserSummary(userId)!;
   }
 
-  public loginWithPassword(email: string, password: string, clientIp?: string, userAgent?: string): { token: string; user: UserSummary } {
+  /**
+   * Password Authentication with Multi-Tenant Disambiguation.
+   * If an email exists across multiple tenants:
+   *   - If tenantId is not provided: Throws MultipleTenantsError with tenant options.
+   *   - If tenantId is provided: Authenticates strictly against that tenant.
+   * If an email exists in only one tenant: Authenticates against that tenant directly.
+   */
+  public loginWithPassword(
+    email: string,
+    password: string,
+    tenantId?: string,
+    clientIp?: string,
+    userAgent?: string
+  ): { token: string; user: UserSummary; tenantId: string } {
     const normalizedEmail = email.toLowerCase().trim();
-    const user = this.db.prepare(`
-      SELECT * FROM users
-      WHERE email = ? AND is_active = 1
-    `).get(normalizedEmail) as User & { password_hash: string; salt: string } | undefined;
 
-    if (!user || !user.password_hash || !user.salt) {
+    // Query all active accounts matching this email across organizations
+    const matchingUsers = this.db.prepare(`
+      SELECT u.*, t.business_name, t.legal_name
+      FROM users u
+      INNER JOIN tenants t ON t.id = u.tenant_id
+      WHERE u.email = ? AND u.is_active = 1
+    `).all(normalizedEmail) as Array<User & {
+      password_hash: string;
+      salt: string;
+      business_name: string;
+      legal_name: string;
+    }>;
+
+    if (matchingUsers.length === 0) {
+      this.auditService.record({
+        action: 'auth.login_password_failure',
+        entityType: 'session',
+        ipAddress: clientIp,
+        userAgent,
+        details: { email: normalizedEmail, reason: 'user_not_found' }
+      });
       throw new Error('Invalid email or password');
     }
 
-    const computedHash = this.hashPassword(password, user.salt);
+    let targetUser: (User & { password_hash: string; salt: string }) | undefined;
+
+    if (tenantId) {
+      // Strictly resolve to specified tenant
+      targetUser = matchingUsers.find(u => u.tenant_id === tenantId);
+      if (!targetUser) {
+        this.auditService.record({
+          tenantId,
+          action: 'auth.login_password_failure',
+          entityType: 'session',
+          ipAddress: clientIp,
+          userAgent,
+          details: { email: normalizedEmail, tenantId, reason: 'tenant_mismatch' }
+        });
+        throw new Error('Invalid email or password');
+      }
+    } else {
+      if (matchingUsers.length > 1) {
+        // Disambiguation required: same email belongs to multiple tenants
+        const tenantOptions = matchingUsers.map(u => ({
+          id: u.tenant_id,
+          businessName: u.business_name,
+          legalName: u.legal_name
+        }));
+        throw new MultipleTenantsError(tenantOptions);
+      }
+      targetUser = matchingUsers[0];
+    }
+
+    if (!targetUser.password_hash || !targetUser.salt) {
+      this.auditService.record({
+        tenantId: targetUser.tenant_id,
+        userId: targetUser.id,
+        action: 'auth.login_password_failure',
+        entityType: 'session',
+        ipAddress: clientIp,
+        userAgent,
+        details: { email: normalizedEmail, reason: 'missing_credentials' }
+      });
+      throw new Error('Invalid email or password');
+    }
+
+    const computedHash = this.hashPassword(password, targetUser.salt);
     const hashA = Buffer.from(computedHash, 'hex');
-    const hashB = Buffer.from(user.password_hash, 'hex');
+    const hashB = Buffer.from(targetUser.password_hash, 'hex');
 
     const isMatch = hashA.length === hashB.length && crypto.timingSafeEqual(hashA, hashB);
     if (!isMatch) {
+      this.auditService.record({
+        tenantId: targetUser.tenant_id,
+        userId: targetUser.id,
+        action: 'auth.login_password_failure',
+        entityType: 'session',
+        ipAddress: clientIp,
+        userAgent,
+        details: { email: normalizedEmail, reason: 'invalid_password' }
+      });
       throw new Error('Invalid email or password');
     }
 
     // Update last login
-    this.db.prepare('UPDATE users SET last_login_at = DATETIME("now") WHERE id = ?').run(user.id);
+    this.db.prepare("UPDATE users SET last_login_at = DATETIME('now') WHERE id = ?").run(targetUser.id);
 
-    const token = this.createSession(user.id, user.tenant_id);
+    const token = this.createSession(targetUser.id, targetUser.tenant_id);
 
     this.auditService.record({
-      tenantId: user.tenant_id,
-      userId: user.id,
+      tenantId: targetUser.tenant_id,
+      userId: targetUser.id,
       action: 'auth.login_password_success',
       entityType: 'session',
       ipAddress: clientIp,
@@ -171,11 +262,18 @@ export class AuthService {
 
     return {
       token,
-      user: this.getUserSummary(user.id)!
+      user: this.getUserSummary(targetUser.id)!,
+      tenantId: targetUser.tenant_id
     };
   }
 
-  public loginWithPin(tenantId: string, cashierId: string, pin: string, clientIp?: string, userAgent?: string): { token: string; user: UserSummary } {
+  public loginWithPin(
+    tenantId: string,
+    cashierId: string,
+    pin: string,
+    clientIp?: string,
+    userAgent?: string
+  ): { token: string; user: UserSummary; tenantId: string } {
     if (!/^\d{4}$/.test(pin)) {
       throw new Error('PIN must be exactly 4 digits');
     }
@@ -186,6 +284,14 @@ export class AuthService {
     `).get(cashierId, tenantId) as User & { pin_hash: string; pin_salt: string } | undefined;
 
     if (!user || !user.pin_hash || !user.pin_salt) {
+      this.auditService.record({
+        tenantId,
+        action: 'auth.login_pin_failure',
+        entityType: 'session',
+        ipAddress: clientIp,
+        userAgent,
+        details: { cashierId, reason: 'cashier_not_found' }
+      });
       throw new Error('Invalid cashier PIN or inactive account');
     }
 
@@ -195,11 +301,20 @@ export class AuthService {
 
     const isMatch = hashA.length === hashB.length && crypto.timingSafeEqual(hashA, hashB);
     if (!isMatch) {
+      this.auditService.record({
+        tenantId: user.tenant_id,
+        userId: user.id,
+        action: 'auth.login_pin_failure',
+        entityType: 'session',
+        ipAddress: clientIp,
+        userAgent,
+        details: { cashierId, reason: 'incorrect_pin' }
+      });
       throw new Error('Invalid cashier PIN');
     }
 
     // Update last login
-    this.db.prepare('UPDATE users SET last_login_at = DATETIME("now") WHERE id = ?').run(user.id);
+    this.db.prepare("UPDATE users SET last_login_at = DATETIME('now') WHERE id = ?").run(user.id);
 
     const token = this.createSession(user.id, user.tenant_id);
 
@@ -215,7 +330,8 @@ export class AuthService {
 
     return {
       token,
-      user: this.getUserSummary(user.id)!
+      user: this.getUserSummary(user.id)!,
+      tenantId: user.tenant_id
     };
   }
 
@@ -239,11 +355,12 @@ export class AuthService {
     if (!token) return null;
 
     const tokenHash = this.hashToken(token);
+    const nowIso = new Date().toISOString();
     const session = this.db.prepare(`
       SELECT s.*, u.is_active FROM auth_sessions s
       INNER JOIN users u ON u.id = s.user_id
-      WHERE s.token_hash = ? AND s.expires_at > DATETIME('now') AND u.is_active = 1
-    `).get(tokenHash) as { user_id: string; tenant_id: string; is_active: number } | undefined;
+      WHERE s.token_hash = ? AND s.expires_at > ? AND u.is_active = 1
+    `).get(tokenHash, nowIso) as { user_id: string; tenant_id: string; is_active: number } | undefined;
 
     if (!session) return null;
 
@@ -256,9 +373,103 @@ export class AuthService {
     };
   }
 
+  /**
+   * Revoke a single active session (standard logout).
+   */
   public logout(token: string): void {
     const tokenHash = this.hashToken(token);
+    const session = this.db.prepare('SELECT user_id, tenant_id FROM auth_sessions WHERE token_hash = ?').get(tokenHash) as {
+      user_id: string;
+      tenant_id: string;
+    } | undefined;
+
     this.db.prepare('DELETE FROM auth_sessions WHERE token_hash = ?').run(tokenHash);
+
+    if (session) {
+      this.auditService.record({
+        tenantId: session.tenant_id,
+        userId: session.user_id,
+        action: 'auth.logout',
+        entityType: 'session'
+      });
+    }
+  }
+
+  /**
+   * Revoke all active sessions for a user (triggered upon password or PIN change/reset).
+   */
+  public revokeUserSessions(userId: string): number {
+    const user = this.db.prepare('SELECT tenant_id FROM users WHERE id = ?').get(userId) as { tenant_id: string } | undefined;
+    const result = this.db.prepare('DELETE FROM auth_sessions WHERE user_id = ?').run(userId);
+
+    this.auditService.record({
+      tenantId: user ? user.tenant_id : null,
+      userId,
+      action: 'auth.user_sessions_revoked',
+      entityType: 'user',
+      entityId: userId,
+      details: { revokedCount: result.changes }
+    });
+
+    return result.changes;
+  }
+
+  /**
+   * Securely update password and revoke all existing sessions.
+   */
+  public updatePassword(userId: string, newPassword: string): void {
+    const salt = crypto.randomBytes(16).toString('hex');
+    const passwordHash = this.hashPassword(newPassword, salt);
+    const now = new Date().toISOString();
+
+    this.db.prepare(`
+      UPDATE users
+      SET password_hash = ?, salt = ?, updated_at = ?
+      WHERE id = ?
+    `).run(passwordHash, salt, now, userId);
+
+    // Revoke all existing sessions for security
+    this.revokeUserSessions(userId);
+
+    const user = this.db.prepare('SELECT tenant_id FROM users WHERE id = ?').get(userId) as { tenant_id: string } | undefined;
+    this.auditService.record({
+      tenantId: user?.tenant_id,
+      userId,
+      action: 'auth.password_updated',
+      entityType: 'user',
+      entityId: userId
+    });
+  }
+
+  /**
+   * Securely update cashier PIN and revoke all existing sessions.
+   */
+  public updateCashierPin(userId: string, newPin: string): void {
+    if (!/^\d{4}$/.test(newPin)) {
+      throw new Error('Cashier PIN must be exactly 4 digits');
+    }
+
+    const pinSalt = crypto.randomBytes(16).toString('hex');
+    const pinHash = this.hashPin(newPin, pinSalt);
+    const now = new Date().toISOString();
+
+    this.db.prepare(`
+      UPDATE users
+      SET pin_hash = ?, pin_salt = ?, updated_at = ?
+      WHERE id = ?
+    `).run(pinHash, pinSalt, now, userId);
+
+    // Revoke all existing sessions for security
+    this.revokeUserSessions(userId);
+
+    const user = this.db.prepare('SELECT tenant_id FROM users WHERE id = ?').get(userId) as { tenant_id: string } | undefined;
+    this.auditService.record({
+      tenantId: user?.tenant_id,
+      userId,
+      action: 'auth.pin_updated',
+      entityType: 'user',
+      entityId: userId
+    });
   }
 
   public getUserSummary(userId: string): UserSummary | null {

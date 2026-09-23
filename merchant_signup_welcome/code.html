@@ -198,11 +198,11 @@
 <div class="mt-space-lg pt-space-md rounded-xl bg-surface-container-low p-space-md flex flex-col sm:flex-row items-center justify-between gap-space-sm">
 <div class="font-body-sm text-body-sm text-on-surface-variant text-center sm:text-left">
 <span class="">Already have a registered SikaPOS store?</span>
-<a class="text-primary font-bold hover:underline ml-1" href="#">Log in here</a>
+<a class="text-primary font-bold hover:underline ml-1 cursor-pointer" onclick="openLoginModal()" href="javascript:void(0)">Log in here</a>
 </div>
 <div class="flex items-center gap-space-xs">
 <span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
-<a class="font-headline-sm text-headline-sm text-secondary hover:text-on-secondary-container flex items-center gap-1 transition-colors" href="#">
+<a class="font-headline-sm text-headline-sm text-secondary hover:text-on-secondary-container flex items-center gap-1 transition-colors" href="/cashier-login">
 <span class="material-symbols-outlined text-[18px]">pin</span>
 <span class="">Cashier Quick PIN Login</span>
 </a>
@@ -307,23 +307,392 @@
       }
     }
 
-    function handleRegistrationSubmit() {
+    let activePhoneNumber = '';
+    let cooldownInterval = null;
+    let remainingCooldown = 0;
+
+    function startCooldownTimer(seconds) {
+      remainingCooldown = seconds;
+      const resendBtn = document.getElementById('modal-resend-btn');
+      const timerDisplay = document.getElementById('modal-timer-display');
+      if (cooldownInterval) clearInterval(cooldownInterval);
+
+      if (resendBtn) resendBtn.disabled = true;
+
+      cooldownInterval = setInterval(() => {
+        remainingCooldown--;
+        if (timerDisplay) {
+          const mins = Math.floor(remainingCooldown / 60);
+          const secs = remainingCooldown % 60;
+          timerDisplay.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+        if (remainingCooldown <= 0) {
+          clearInterval(cooldownInterval);
+          if (resendBtn) resendBtn.disabled = false;
+          if (timerDisplay) timerDisplay.innerText = '0:00';
+        }
+      }, 1000);
+    }
+
+    async function handleRegistrationSubmit() {
       const btn = document.getElementById('submit-btn');
+      const rawPhone = document.getElementById('phone-input').value.trim();
+      const phoneDigits = rawPhone.replace(/\D/g, '');
+      const formattedPhone = phoneDigits.startsWith('0') ? phoneDigits : '0' + phoneDigits;
+      activePhoneNumber = formattedPhone;
+
       btn.disabled = true;
       btn.innerHTML = `
         <span class="material-symbols-outlined animate-spin text-[20px]">sync</span>
-        <span>Sending Ghana SMS OTP via USSD...</span>
+        <span>Sending Ghana SMS OTP...</span>
       `;
-      setTimeout(() => {
-        btn.innerHTML = `
-          <span class="material-symbols-outlined text-[20px]">check_circle</span>
-          <span>OTP Sent! Redirecting to Store Wizard...</span>
-        `;
-        btn.classList.remove('bg-primary');
+
+      try {
+        const res = await fetch('/api/v1/auth/signup-otp/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: formattedPhone })
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+          if (data.error && data.error.code === 'RESEND_COOLDOWN') {
+            alert(data.error.message);
+            openOtpModal(data.error.remainingSeconds || 60);
+          } else {
+            alert(data.error?.message || 'Failed to dispatch verification code');
+          }
+          btn.disabled = false;
+          btn.innerHTML = `<span>Create Account & Send Verification Code</span><span class="material-symbols-outlined text-[20px]">arrow_forward</span>`;
+          return;
+        }
+
+        // Open OTP Verification Modal
+        openOtpModal(60, data.data?.debugCode);
+      } catch (err) {
+        alert('Network connection error. Please ensure the SikaPOS server is running.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Create Account & Send Verification Code</span><span class="material-symbols-outlined text-[20px]">arrow_forward</span>`;
+      }
+    }
+
+    function openOtpModal(cooldownSec = 60, debugCode) {
+      const modal = document.getElementById('otp-modal');
+      const recipientText = document.getElementById('modal-recipient-text');
+      const debugHint = document.getElementById('modal-debug-hint');
+      const alertBox = document.getElementById('modal-otp-alert');
+
+      if (recipientText) recipientText.innerText = `+233 ${activePhoneNumber}`;
+      if (alertBox) alertBox.classList.add('hidden');
+
+      if (debugCode && debugHint) {
+        debugHint.innerText = `[Sandbox Demo Code: ${debugCode}]`;
+        debugHint.classList.remove('hidden');
+        const codeInput = document.getElementById('modal-otp-code');
+        if (codeInput) codeInput.value = debugCode;
+      }
+
+      startCooldownTimer(cooldownSec);
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeOtpModal() {
+      const modal = document.getElementById('otp-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function handleResendOtp() {
+      const resendBtn = document.getElementById('modal-resend-btn');
+      resendBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/v1/auth/signup-otp/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: activePhoneNumber })
+        });
+        const data = await res.json();
+        if (data.success) {
+          startCooldownTimer(60);
+          if (data.data?.debugCode) {
+            const debugHint = document.getElementById('modal-debug-hint');
+            debugHint.innerText = `[Sandbox Demo Code: ${data.data.debugCode}]`;
+            debugHint.classList.remove('hidden');
+            const codeInput = document.getElementById('modal-otp-code');
+            if (codeInput) codeInput.value = data.data.debugCode;
+          }
+        } else {
+          alert(data.error?.message || 'Could not resend OTP');
+        }
+      } catch (e) {
+        alert('Network error while resending verification code');
+      }
+    }
+
+    async function handleVerifyAndRegister() {
+      const codeInput = document.getElementById('modal-otp-code');
+      const verifyBtn = document.getElementById('modal-verify-btn');
+      const alertBox = document.getElementById('modal-otp-alert');
+      const alertText = document.getElementById('modal-otp-alert-text');
+      const code = (codeInput?.value || '').trim();
+
+      if (!code || code.length < 6) {
+        alertBox.classList.remove('hidden');
+        alertText.innerText = 'Please enter the complete 6-digit verification code.';
+        return;
+      }
+
+      verifyBtn.disabled = true;
+      verifyBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[18px]">sync</span><span>Verifying Code...</span>`;
+
+      try {
+        // Step 1: Verify OTP
+        const otpRes = await fetch('/api/v1/auth/signup-otp/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: activePhoneNumber, code })
+        });
+        const otpData = await otpRes.json();
+
+        if (!otpData.success) {
+          alertBox.classList.remove('hidden');
+          alertText.innerText = otpData.error?.message || 'Invalid verification code';
+          verifyBtn.disabled = false;
+          verifyBtn.innerHTML = `<span>Verify & Launch Store</span><span class="material-symbols-outlined text-[18px]">check_circle</span>`;
+          return;
+        }
+
+        // Step 2: Complete Registration
+        const fullname = document.getElementById('fullname').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        verifyBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[18px]">sync</span><span>Creating Merchant Store...</span>`;
+
+        const regRes = await fetch('/api/v1/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessLegalName: fullname + ' Retail Ltd',
+            businessTradeName: fullname + ' Enterprise',
+            tradeCategory: 'general_retail',
+            ownerFullName: fullname,
+            ownerEmail: email,
+            ownerPhone: activePhoneNumber,
+            password: password,
+            primaryBranchName: 'Main Store',
+            primaryBranchRegion: 'Greater Accra',
+            primaryBranchGps: 'GA-183-9024',
+            primaryBranchAddress: 'Oxford Street, Osu, Accra'
+          })
+        });
+
+        const regData = await regRes.json();
+
+        if (!regData.success) {
+          alertBox.classList.remove('hidden');
+          alertText.innerText = regData.error?.message || 'Registration failed';
+          verifyBtn.disabled = false;
+          verifyBtn.innerHTML = `<span>Verify & Launch Store</span><span class="material-symbols-outlined text-[18px]">check_circle</span>`;
+          return;
+        }
+
+        // Save session token in sessionStorage & localStorage
+        sessionStorage.setItem('sikapos_token', regData.data.token);
+        localStorage.setItem('sikapos_tenant_id', regData.data.tenant.id);
+        localStorage.setItem('sikapos_user', JSON.stringify(regData.data.user));
+
+        verifyBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">check_circle</span><span>Account Verified! Redirecting...</span>`;
+        verifyBtn.classList.remove('bg-primary');
+        verifyBtn.classList.add('bg-primary-container');
+
+        setTimeout(() => {
+          window.location.href = '/store-setup';
+        }, 1200);
+
+      } catch (err) {
+        alertBox.classList.remove('hidden');
+        alertText.innerText = 'Network error during account registration. Please retry.';
+        verifyBtn.disabled = false;
+        verifyBtn.innerHTML = `<span>Verify & Launch Store</span><span class="material-symbols-outlined text-[18px]">check_circle</span>`;
+      }
+    }
+
+    function openLoginModal() {
+      const modal = document.getElementById('login-modal');
+      const alertBox = document.getElementById('login-modal-alert');
+      const tenantGroup = document.getElementById('login-tenant-select-group');
+      if (alertBox) alertBox.classList.add('hidden');
+      if (tenantGroup) tenantGroup.classList.add('hidden');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeLoginModal() {
+      const modal = document.getElementById('login-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function handleOwnerLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const tenantSelect = document.getElementById('login-tenant-select');
+      const tenantGroup = document.getElementById('login-tenant-select-group');
+      const alertBox = document.getElementById('login-modal-alert');
+      const alertText = document.getElementById('login-modal-alert-text');
+      const btn = document.getElementById('login-submit-btn');
+
+      alertBox.classList.add('hidden');
+      btn.disabled = true;
+      btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[18px]">sync</span><span>Authenticating...</span>`;
+
+      const payload = { email, password };
+      if (!tenantGroup.classList.contains('hidden') && tenantSelect.value) {
+        payload.tenantId = tenantSelect.value;
+      }
+
+      try {
+        const res = await fetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.status === 409 && data.error?.code === 'MULTIPLE_TENANTS_FOUND') {
+          // Multi-tenant disambiguation: prompt user to select organization
+          tenantGroup.classList.remove('hidden');
+          tenantSelect.innerHTML = '';
+          data.error.tenants.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id;
+            opt.textContent = `${t.businessName} (${t.legalName})`;
+            tenantSelect.appendChild(opt);
+          });
+          alertBox.classList.remove('hidden');
+          alertText.innerText = 'This email belongs to multiple stores. Please select your organization below.';
+          btn.disabled = false;
+          btn.innerHTML = `<span>Select Store & Continue</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span>`;
+          return;
+        }
+
+        if (!data.success) {
+          alertBox.classList.remove('hidden');
+          alertText.innerText = data.error?.message || 'Invalid credentials';
+          btn.disabled = false;
+          btn.innerHTML = `<span>Log In</span><span class="material-symbols-outlined text-[18px]">login</span>`;
+          return;
+        }
+
+        sessionStorage.setItem('sikapos_token', data.data.token);
+        localStorage.setItem('sikapos_tenant_id', data.data.tenantId);
+        localStorage.setItem('sikapos_user', JSON.stringify(data.data.user));
+
+        btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">check_circle</span><span>Authenticated! Loading...</span>`;
         btn.classList.add('bg-primary-container');
-      }, 1400);
+
+        setTimeout(() => {
+          window.location.href = '/store-setup';
+        }, 1000);
+
+      } catch (e) {
+        alertBox.classList.remove('hidden');
+        alertText.innerText = 'Network error while attempting login';
+        btn.disabled = false;
+        btn.innerHTML = `<span>Log In</span><span class="material-symbols-outlined text-[18px]">login</span>`;
+      }
     }
   </script>
+
+  <!-- Modal 1: Ghana Phone OTP Verification Modal -->
+  <div id="otp-modal" class="hidden fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-sm items-center justify-center p-space-md">
+    <div class="bg-surface-container-lowest rounded-xl max-w-md w-full p-space-lg shadow-xl relative border border-surface-container">
+      <div class="flex items-center justify-between mb-space-md pb-space-sm border-b border-surface-container">
+        <div class="flex items-center gap-space-xs">
+          <span class="material-symbols-outlined text-primary text-[22px]">sms</span>
+          <h3 class="font-headline-sm text-headline-sm text-on-surface">Enter Verification Code</h3>
+        </div>
+        <button onclick="closeOtpModal()" type="button" class="text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <p class="font-body-md text-body-md text-on-surface-variant mb-space-sm">
+        We sent a 6-digit SMS code to <span id="modal-recipient-text" class="font-bold text-on-surface font-label-numeric-md">+233 --</span>
+      </p>
+
+      <span id="modal-debug-hint" class="hidden font-label-caps text-label-caps text-secondary font-bold block mb-space-sm bg-secondary-fixed px-2 py-0.5 rounded w-max"></span>
+
+      <div id="modal-otp-alert" class="hidden p-space-sm rounded-lg bg-error-container text-error text-body-sm mb-space-md flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px] shrink-0">error</span>
+        <span id="modal-otp-alert-text">Verification error</span>
+      </div>
+
+      <div class="space-y-space-md">
+        <div>
+          <label class="font-label-caps uppercase text-label-caps text-on-surface-variant block mb-1">6-Digit Code</label>
+          <input id="modal-otp-code" type="text" maxlength="6" placeholder="000000" class="w-full h-12 text-center text-label-numeric-lg font-label-numeric-lg tracking-widest bg-surface-container-low rounded-lg focus:outline-none focus:shadow-[0_0_0_2px_#004328]">
+        </div>
+
+        <div class="flex items-center justify-between font-body-sm text-body-sm">
+          <span class="text-on-surface-variant">Resend in <span id="modal-timer-display" class="font-bold text-primary font-label-numeric-sm">1:00</span></span>
+          <button id="modal-resend-btn" onclick="handleResendOtp()" disabled type="button" class="text-primary font-bold hover:underline disabled:opacity-40 disabled:no-underline">Resend Code</button>
+        </div>
+
+        <button id="modal-verify-btn" onclick="handleVerifyAndRegister()" type="button" class="w-full h-12 rounded-xl bg-primary text-on-primary font-headline-sm flex items-center justify-center gap-2 hover:bg-primary-container transition shadow-md">
+          <span>Verify & Launch Store</span>
+          <span class="material-symbols-outlined text-[18px]">check_circle</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Existing Merchant Login Modal -->
+  <div id="login-modal" class="hidden fixed inset-0 z-50 bg-inverse-surface/60 backdrop-blur-sm items-center justify-center p-space-md">
+    <div class="bg-surface-container-lowest rounded-xl max-w-md w-full p-space-lg shadow-xl relative border border-surface-container">
+      <div class="flex items-center justify-between mb-space-md pb-space-sm border-b border-surface-container">
+        <div class="flex items-center gap-space-xs">
+          <span class="material-symbols-outlined text-primary text-[22px]">login</span>
+          <h3 class="font-headline-sm text-headline-sm text-on-surface">Store Owner Login</h3>
+        </div>
+        <button onclick="closeLoginModal()" type="button" class="text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <div id="login-modal-alert" class="hidden p-space-sm rounded-lg bg-error-container text-error text-body-sm mb-space-md flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px] shrink-0">error</span>
+        <span id="login-modal-alert-text">Invalid email or password</span>
+      </div>
+
+      <form onsubmit="handleOwnerLogin(event)" class="space-y-space-md">
+        <div>
+          <label class="font-headline-sm text-body-sm text-on-surface block mb-1">Email Address</label>
+          <input id="login-email" type="email" required placeholder="owner@store.com" class="w-full h-11 px-3 rounded-lg bg-surface-container-low text-on-surface font-body-md focus:outline-none focus:shadow-[0_0_0_2px_#004328]">
+        </div>
+
+        <div>
+          <label class="font-headline-sm text-body-sm text-on-surface block mb-1">Password</label>
+          <input id="login-password" type="password" required placeholder="Master passphrase" class="w-full h-11 px-3 rounded-lg bg-surface-container-low text-on-surface font-body-md focus:outline-none focus:shadow-[0_0_0_2px_#004328]">
+        </div>
+
+        <div id="login-tenant-select-group" class="hidden">
+          <label class="font-headline-sm text-body-sm text-primary block mb-1">Select Store / Organization</label>
+          <select id="login-tenant-select" class="w-full h-11 px-3 rounded-lg bg-surface-container text-on-surface font-body-md focus:outline-none border border-primary"></select>
+        </div>
+
+        <button id="login-submit-btn" type="submit" class="w-full h-12 rounded-xl bg-primary text-on-primary font-headline-sm flex items-center justify-center gap-2 hover:bg-primary-container transition shadow-md">
+          <span>Log In</span>
+          <span class="material-symbols-outlined text-[18px]">login</span>
+        </button>
+      </form>
+    </div>
+  </div>
 </div></main><footer class="w-full bg-surface-container-low py-space-md"><div class="w-full px-margin flex flex-col md:flex-row items-center justify-between gap-space-sm text-on-surface-variant font-body-sm text-body-sm"><div class="flex items-center gap-space-sm"><span class="font-label-caps text-label-caps uppercase text-primary font-bold">Bank of Ghana Regulated Partner Network</span><span class="">•</span><span class="">256-bit Retail Encrypted Vault</span></div><div class="flex items-center gap-space-md font-body-sm text-body-sm"><span class="text-on-surface-variant">Support: +233 24 000 0000 (Mon-Sat 7am-9pm GMT)</span><span class="">© 2025 SikaPOS by Akoma Commerce. All rights reserved.</span></div></div></footer>
 
 </body></html>

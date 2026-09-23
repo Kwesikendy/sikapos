@@ -1,9 +1,16 @@
 import { Router } from 'express';
-import { AuthService } from '../../services/auth.service.ts';
+import { AuthService, MultipleTenantsError } from '../../services/auth.service.ts';
 import { OtpService } from '../../services/otp.service.ts';
 import { TenantService } from '../../services/tenant.service.ts';
 import { createAuthMiddleware } from '../../middleware/auth.ts';
-import { validateBody, validateGhanaPhone, validateEmail, validatePassword, validateCashierPin } from '../../middleware/validate.ts';
+import { createRateLimiter } from '../../middleware/rateLimit.ts';
+import {
+  validateBody,
+  validateGhanaPhone,
+  validateEmail,
+  validatePassword,
+  validateCashierPin
+} from '../../middleware/validate.ts';
 
 export const authRouter = Router();
 
@@ -12,10 +19,13 @@ const otpService = new OtpService();
 const tenantService = new TenantService();
 const authenticate = createAuthMiddleware(authService);
 
+const otpLimiter = createRateLimiter({ keyPrefix: 'rl_otp' });
+const loginLimiter = createRateLimiter({ keyPrefix: 'rl_login' });
+
 /**
  * Step 1: Send OTP for merchant phone verification
  */
-authRouter.post('/signup-otp/request', validateBody([
+authRouter.post('/signup-otp/request', otpLimiter, validateBody([
   {
     field: 'phoneNumber',
     required: true,
@@ -40,7 +50,18 @@ authRouter.post('/signup-otp/request', validateBody([
         ...(result.debugCode ? { debugCode: result.debugCode } : {})
       }
     });
-  } catch (err) {
+  } catch (err: any) {
+    if (err && err.code === 'RESEND_COOLDOWN') {
+      res.status(429).json({
+        success: false,
+        error: {
+          code: 'RESEND_COOLDOWN',
+          message: err.message,
+          remainingSeconds: err.remainingSeconds
+        }
+      });
+      return;
+    }
     next(err);
   }
 });
@@ -48,7 +69,7 @@ authRouter.post('/signup-otp/request', validateBody([
 /**
  * Step 2: Verify OTP
  */
-authRouter.post('/signup-otp/verify', validateBody([
+authRouter.post('/signup-otp/verify', otpLimiter, validateBody([
   { field: 'phoneNumber', required: true },
   { field: 'code', required: true }
 ]), (req, res) => {
@@ -62,8 +83,9 @@ authRouter.post('/signup-otp/verify', validateBody([
     res.status(400).json({
       success: false,
       error: {
-        code: 'OTP_VERIFICATION_FAILED',
-        message: result.reason || 'Invalid OTP code'
+        code: result.code || 'OTP_VERIFICATION_FAILED',
+        message: result.reason || 'Invalid OTP code',
+        ...(result.remainingAttempts !== undefined ? { remainingAttempts: result.remainingAttempts } : {})
       }
     });
     return;
@@ -127,6 +149,19 @@ authRouter.post('/register', validateBody([
 
     const phoneCheck = validateGhanaPhone(ownerPhone);
 
+    // Verify phone OTP was completed (only in production or when verified OTP is present)
+    const isVerified = otpService.isRecipientVerified(phoneCheck.normalized!, 'merchant_signup');
+    if (!isVerified && process.env.NODE_ENV === 'production') {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: 'PHONE_NOT_VERIFIED',
+          message: 'Phone number must be verified via OTP prior to account registration'
+        }
+      });
+      return;
+    }
+
     // 1. Create Tenant and Primary Branch
     const { tenant, primaryBranch } = tenantService.createTenant({
       legalName: businessLegalName,
@@ -169,24 +204,36 @@ authRouter.post('/register', validateBody([
 });
 
 /**
- * Step 4: Login with Email & Password
+ * Step 4: Login with Email & Password (Multi-Tenant Aware)
  */
-authRouter.post('/login', validateBody([
+authRouter.post('/login', loginLimiter, validateBody([
   { field: 'email', required: true },
   { field: 'password', required: true }
 ]), (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, tenantId } = req.body;
     const clientIp = req.ip || (req.headers['x-forwarded-for'] as string);
     const userAgent = req.headers['user-agent'];
 
-    const result = authService.loginWithPassword(email, password, clientIp, userAgent);
+    const result = authService.loginWithPassword(email, password, tenantId, clientIp, userAgent);
 
     res.json({
       success: true,
       data: result
     });
   } catch (err: unknown) {
+    if (err instanceof MultipleTenantsError) {
+      res.status(409).json({
+        success: false,
+        error: {
+          code: err.code,
+          message: err.message,
+          tenants: err.tenants
+        }
+      });
+      return;
+    }
+
     const msg = err instanceof Error ? err.message : 'Login failed';
     res.status(401).json({
       success: false,
@@ -201,7 +248,7 @@ authRouter.post('/login', validateBody([
 /**
  * Step 5: Cashier Fast-Switch PIN Login
  */
-authRouter.post('/login-pin', validateBody([
+authRouter.post('/login-pin', loginLimiter, validateBody([
   { field: 'tenantId', required: true },
   { field: 'cashierId', required: true },
   {
@@ -249,7 +296,7 @@ authRouter.get('/me', authenticate, (req, res) => {
 });
 
 /**
- * Logout
+ * Logout (Revoke Active Session Token)
  */
 authRouter.post('/logout', authenticate, (req, res) => {
   if (req.token) {

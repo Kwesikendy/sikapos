@@ -14,7 +14,8 @@ export interface AppConfig {
 }
 
 export function loadConfig(): AppConfig {
-  const nodeEnv = (process.env.NODE_ENV || 'development') as 'development' | 'test' | 'production';
+  const isTestMode = process.env.NODE_ENV === 'test' || process.argv.includes('--test') || process.execArgv.includes('--test');
+  const nodeEnv = (process.env.NODE_ENV || (isTestMode ? 'test' : 'development')) as 'development' | 'test' | 'production';
 
   return {
     nodeEnv,

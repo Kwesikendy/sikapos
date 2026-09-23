@@ -208,6 +208,7 @@ CREATE TABLE IF NOT EXISTS otp_verifications (
 );
 
 CREATE INDEX IF NOT EXISTS idx_otp_recipient ON otp_verifications(recipient, purpose);
+CREATE INDEX IF NOT EXISTS idx_otp_recipient_cooldown ON otp_verifications(recipient, purpose, created_at);
 
 -- 14. Offline Sync Events (Architectural Foundation for Future Phase 11 Sync Queue)
 CREATE TABLE IF NOT EXISTS offline_sync_events (

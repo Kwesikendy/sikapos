@@ -136,7 +136,7 @@ test('Verification 11: Secrets and password hashes are never exposed', async () 
 });
 
 test('Decoupled OTP lifecycle: Request, Sandbox delivery, and Verification', async () => {
-  const phone = '+233247008000';
+  const phone = `+23324700${Math.floor(1000 + Math.random() * 9000)}`;
   const requestResult = await otpService.requestOtp(phone, 'merchant_signup');
 
   assert.strictEqual(requestResult.success, true);
