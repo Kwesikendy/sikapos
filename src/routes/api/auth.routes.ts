@@ -126,10 +126,7 @@ authRouter.post('/register', validateBody([
     required: true,
     validator: (val) => validatePassword(String(val))
   },
-  { field: 'primaryBranchName', required: true },
-  { field: 'primaryBranchRegion', required: true },
-  { field: 'primaryBranchGps', required: true },
-  { field: 'primaryBranchAddress', required: true }
+  { field: 'primaryBranchName', required: true }
 ]), (req, res, next) => {
   try {
     const {
@@ -141,13 +138,24 @@ authRouter.post('/register', validateBody([
       ownerPhone,
       password,
       primaryBranchName,
-      primaryBranchRegion,
-      primaryBranchGps,
-      primaryBranchAddress,
+      primaryBranchRegion = 'Greater Accra',
+      primaryBranchGps = 'GA-183-9024',
+      primaryBranchAddress = 'Oxford Street, Osu, Accra',
       taxConfiguration
     } = req.body;
 
     const phoneCheck = validateGhanaPhone(ownerPhone);
+
+    const VALID_CATEGORIES = [
+      'provision_supermarket',
+      'pharmacy',
+      'fashion',
+      'electronics',
+      'general_retail',
+    ];
+    const categoryToUse = VALID_CATEGORIES.includes(tradeCategory)
+      ? tradeCategory
+      : 'provision_supermarket';
 
     // Verify phone OTP was completed (only in production or when verified OTP is present)
     const isVerified = otpService.isRecipientVerified(phoneCheck.normalized!, 'merchant_signup');
@@ -166,12 +174,12 @@ authRouter.post('/register', validateBody([
     const { tenant, primaryBranch } = tenantService.createTenant({
       legalName: businessLegalName,
       businessName: businessTradeName,
-      tradeCategory,
+      tradeCategory: categoryToUse,
       primaryBranch: {
         name: primaryBranchName,
-        region: primaryBranchRegion,
-        gpsDigitalAddress: primaryBranchGps,
-        physicalAddress: primaryBranchAddress,
+        region: primaryBranchRegion || 'Greater Accra',
+        gpsDigitalAddress: primaryBranchGps || 'GA-183-9024',
+        physicalAddress: primaryBranchAddress || 'Oxford Street, Osu, Accra',
         phone: phoneCheck.normalized!
       },
       taxConfiguration

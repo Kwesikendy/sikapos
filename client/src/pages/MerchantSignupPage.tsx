@@ -9,6 +9,7 @@ import { PhoneInput } from '../components/ui/PhoneInput';
 import { Button } from '../components/ui/Button';
 import { Alert } from '../components/ui/Alert';
 import { Modal } from '../components/ui/Modal';
+import { LoadingOverlay } from '../components/ui/LoadingOverlay';
 import { authApi } from '../api/auth.api';
 import { ApiError } from '../types/auth.types';
 import {
@@ -24,10 +25,17 @@ import {
   CheckCircle,
   Play
 } from 'lucide-react';
+import {
+  merchantSignupSchema,
+  otpVerificationSchema,
+  type MerchantSignupFormData,
+} from '../schemas/form.schemas';
+import { useToast } from '../components/ui/Toast';
 
 export const MerchantSignupPage: React.FC = () => {
   const navigate = useNavigate();
   const formRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   // Form State
   const [fullName, setFullName] = useState('Kwabena Mensah');
@@ -38,7 +46,8 @@ export const MerchantSignupPage: React.FC = () => {
   const [password, setPassword] = useState('OsuPass2025#');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Status & Error
+  // Validation & Error States
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof MerchantSignupFormData, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +57,7 @@ export const MerchantSignupPage: React.FC = () => {
   const [otpCarrier, setOtpCarrier] = useState('');
   const [debugOtp, setDebugOtp] = useState<string | null>(null);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState<number>(0);
 
@@ -60,20 +70,46 @@ export const MerchantSignupPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [cooldown]);
 
+  // Check URL hash on mount or change to scroll to form
+  useEffect(() => {
+    if (window.location.hash === '#signup-form') {
+      setTimeout(() => {
+        scrollToForm();
+      }, 150);
+    }
+  }, []);
+
   const scrollToForm = () => {
     formRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleInitialSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setError(null);
+    setFieldErrors({});
 
-    if (!phoneNumber || phoneNumber.length < 9) {
-      setError('Please enter a valid Ghanaian mobile phone number.');
-      return;
-    }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long.');
+    // Validate form inputs against Zod schema
+    const validationResult = merchantSignupSchema.safeParse({
+      fullName,
+      phoneNumber,
+      email,
+      businessName,
+      branchName,
+      password,
+    });
+
+    if (!validationResult.success) {
+      const errors: Partial<Record<keyof MerchantSignupFormData, string>> = {};
+      for (const issue of validationResult.error.issues) {
+        const field = issue.path[0] as keyof MerchantSignupFormData;
+        if (field && !errors[field]) {
+          errors[field] = issue.message;
+        }
+      }
+      setFieldErrors(errors);
+      setError('Please resolve the highlighted validation errors before continuing.');
+      toast.warning('Validation Required', 'Please check highlighted fields before continuing.');
       return;
     }
 
@@ -84,39 +120,56 @@ export const MerchantSignupPage: React.FC = () => {
       setOtpCarrier(res.carrier);
       if (res.debugCode) {
         setDebugOtp(res.debugCode);
+        setOtpCode(res.debugCode);
       }
       setCooldown(60);
       setShowOtpModal(true);
+      toast.success('Verification Code Sent', `SMS code dispatched to ${phoneNumber}.`);
     } catch (err: unknown) {
       const apiErr = err as ApiError;
       if (apiErr.remainingCooldownSeconds) {
         setCooldown(apiErr.remainingCooldownSeconds);
         setShowOtpModal(true);
       }
-      setError(apiErr.message || 'Could not send verification code. Please try again.');
+      const msg = apiErr.message || 'Could not send verification code. Please try again.';
+      setError(msg);
+      toast.error('Verification Request Failed', msg);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResendOtp = async () => {
-    if (cooldown > 0) return;
+    if (cooldown > 0 || isResendingOtp || isVerifyingOtp) return;
+    setIsResendingOtp(true);
     setOtpError(null);
     try {
       const res = await authApi.requestSignupOtp(phoneNumber);
       if (res.debugCode) {
         setDebugOtp(res.debugCode);
+        setOtpCode(res.debugCode);
       }
       setCooldown(60);
+      toast.success('Code Resent', 'A fresh verification code has been dispatched.');
     } catch (err: unknown) {
       const apiErr = err as ApiError;
-      setOtpError(apiErr.message || 'Failed to resend code.');
+      const msg = apiErr.message || 'Failed to resend code.';
+      setOtpError(msg);
+      toast.error('Resend Failed', msg);
+    } finally {
+      setIsResendingOtp(false);
     }
   };
 
   const handleVerifyAndRegister = async () => {
-    if (!otpCode || otpCode.length < 6) {
-      setOtpError('Please enter the full 6-digit verification code.');
+    if (isVerifyingOtp) return;
+
+    // Validate OTP against Zod schema
+    const otpValidation = otpVerificationSchema.safeParse({ otpCode });
+    if (!otpValidation.success) {
+      const msg = otpValidation.error.issues[0]?.message || 'Please enter the full 6-digit verification code.';
+      setOtpError(msg);
+      toast.warning('Invalid Code', msg);
       return;
     }
 
@@ -131,19 +184,25 @@ export const MerchantSignupPage: React.FC = () => {
       await authApi.registerMerchant({
         businessLegalName: `${businessName} Ltd`,
         businessTradeName: businessName,
-        tradeCategory: 'grocery_minimart',
+        tradeCategory: 'provision_supermarket',
         ownerFullName: fullName,
         ownerEmail: email,
         ownerPhone: phoneNumber,
         password,
         primaryBranchName: branchName,
+        primaryBranchRegion: 'Greater Accra',
+        primaryBranchGps: 'GA-183-9024',
+        primaryBranchAddress: 'Oxford Street, Osu, Accra',
       });
 
+      toast.success('Registration Successful', 'Welcome to SikaPOS! Initializing store setup.');
       setShowOtpModal(false);
       navigate('/store-setup');
     } catch (err: unknown) {
       const apiErr = err as ApiError;
-      setOtpError(apiErr.message || 'Verification failed. Please check the code.');
+      const msg = apiErr.message || 'Verification failed. Please check the code.';
+      setOtpError(msg);
+      toast.error('Registration Failed', msg);
     } finally {
       setIsVerifyingOtp(false);
     }
@@ -161,9 +220,10 @@ export const MerchantSignupPage: React.FC = () => {
               
               {/* Left Column: Spacious Confident Copy */}
               <div className="lg:col-span-6 space-y-6 text-left">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 text-[#00A859] border border-emerald-200 text-xs font-bold tracking-wide">
-                  <span className="w-2 h-2 rounded-full bg-[#00A859]" />
-                  <span>The Future of Retail Business in Ghana</span>
+                <div className="text-xs font-bold uppercase tracking-wider text-[#00A859] flex items-center gap-2">
+                  <span>Retail Commerce Platform</span>
+                  <span aria-hidden="true" className="text-slate-300">·</span>
+                  <span>Ghana Operating Standard</span>
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.12]">
@@ -171,15 +231,16 @@ export const MerchantSignupPage: React.FC = () => {
                 </h1>
 
                 <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl">
-                  Transform your Ghana retail business with SikaPOS Akoma Commerce Cloud. Increase the efficiency of your store, accept instant MoMo payments, automate GRA tax calculations, and boost revenue. Built for modern Ghanaian traders, pharmacies, and supermarkets.
+                  Built for modern Ghanaian traders, supermarkets, and pharmacies. Increase checkout speed, process instant MTN MoMo and Telecel Cash payments, automate GRA statutory tax calculations, and boost store revenue.
                 </p>
+
 
                 {/* CTAs matching reference button style */}
                 <div className="pt-2 flex flex-wrap items-center gap-4">
                   <button
                     type="button"
                     onClick={scrollToForm}
-                    className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-base font-bold text-white bg-[#00A859] hover:bg-[#00924C] shadow-md hover:shadow-lg transition-all active-depress cursor-pointer"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl text-base font-bold text-white bg-[#00A859] hover:bg-[#00924C] shadow-md hover:shadow-lg transition-all active-depress cursor-pointer"
                   >
                     <span>Enjoy 30 Days Free Trial</span>
                     <ArrowRight className="w-4 h-4" />
@@ -187,9 +248,9 @@ export const MerchantSignupPage: React.FC = () => {
 
                   <Link
                     to="/cashier-login"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full text-base font-semibold text-slate-800 bg-white border border-slate-200 hover:bg-slate-50 transition-all shadow-xs cursor-pointer"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-base font-semibold text-slate-800 bg-white border border-slate-200 hover:bg-slate-50 transition-all shadow-xs cursor-pointer"
                   >
-                    <div className="w-6 h-6 rounded-full bg-emerald-100 text-[#00A859] flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-100 text-[#00A859] flex items-center justify-center">
                       <Play className="w-3 h-3 fill-current ml-0.5" />
                     </div>
                     <span>Cashier Quick-PIN Demo</span>
@@ -237,7 +298,7 @@ export const MerchantSignupPage: React.FC = () => {
             <button
               type="button"
               onClick={scrollToForm}
-              className="px-8 py-3 rounded-full text-sm font-bold text-white bg-[#00A859] hover:bg-[#00924C] shadow-md transition-all active-depress shrink-0 cursor-pointer"
+              className="px-8 py-3 rounded-xl text-sm font-bold text-white bg-[#00A859] hover:bg-[#00924C] shadow-md transition-all active-depress shrink-0 cursor-pointer"
             >
               Register Your Store
             </button>
@@ -316,7 +377,7 @@ export const MerchantSignupPage: React.FC = () => {
         </section>
 
         {/* REGISTRATION FORM SECTION - Spacious, Clean, Uncrowded */}
-        <section ref={formRef} className="py-20 bg-[#F4F9F6] border-t border-slate-200">
+        <section ref={formRef} id="signup-form" className="py-20 bg-[#F4F9F6] border-t border-slate-200">
           <div className="max-w-2xl mx-auto px-4 sm:px-6">
             
             <div className="text-center space-y-2 mb-8">
@@ -336,7 +397,7 @@ export const MerchantSignupPage: React.FC = () => {
               {/* Header Guidance */}
               <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-emerald-50 text-[#00A859] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#00A859] flex items-center justify-center">
                     <UserCheck className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
@@ -368,7 +429,11 @@ export const MerchantSignupPage: React.FC = () => {
                   helperText="As printed on your Ghana Card"
                   placeholder="e.g. Kwabena Mensah"
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  errorText={fieldErrors.fullName}
+                  onChange={(e) => {
+                    setFullName(e.target.value);
+                    if (fieldErrors.fullName) setFieldErrors((prev) => ({ ...prev, fullName: undefined }));
+                  }}
                   required
                 />
 
@@ -376,7 +441,11 @@ export const MerchantSignupPage: React.FC = () => {
                   label="Mobile Phone Number"
                   helperText="Used for instant OTP verification and MoMo settlements"
                   value={phoneNumber}
-                  onChange={setPhoneNumber}
+                  errorText={fieldErrors.phoneNumber}
+                  onChange={(val) => {
+                    setPhoneNumber(val);
+                    if (fieldErrors.phoneNumber) setFieldErrors((prev) => ({ ...prev, phoneNumber: undefined }));
+                  }}
                   required
                 />
 
@@ -385,7 +454,11 @@ export const MerchantSignupPage: React.FC = () => {
                   type="email"
                   placeholder="e.g. kwabena@mensahstores.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  errorText={fieldErrors.email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                  }}
                   required
                 />
 
@@ -394,7 +467,11 @@ export const MerchantSignupPage: React.FC = () => {
                     label="Business Trade Name"
                     placeholder="e.g. Mensah Provision Store"
                     value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
+                    errorText={fieldErrors.businessName}
+                    onChange={(e) => {
+                      setBusinessName(e.target.value);
+                      if (fieldErrors.businessName) setFieldErrors((prev) => ({ ...prev, businessName: undefined }));
+                    }}
                     required
                   />
 
@@ -402,7 +479,11 @@ export const MerchantSignupPage: React.FC = () => {
                     label="Primary Outlet / Branch"
                     placeholder="e.g. Osu Oxford St. Branch"
                     value={branchName}
-                    onChange={(e) => setBranchName(e.target.value)}
+                    errorText={fieldErrors.branchName}
+                    onChange={(e) => {
+                      setBranchName(e.target.value);
+                      if (fieldErrors.branchName) setFieldErrors((prev) => ({ ...prev, branchName: undefined }));
+                    }}
                     required
                   />
                 </div>
@@ -413,7 +494,11 @@ export const MerchantSignupPage: React.FC = () => {
                   helperText="Minimum 8 characters with at least one number and special character"
                   placeholder="Enter secure password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  errorText={fieldErrors.password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                  }}
                   required
                   startIcon={<Lock className="w-4 h-4 text-slate-400" />}
                   endIcon={
@@ -428,16 +513,20 @@ export const MerchantSignupPage: React.FC = () => {
                   }
                 />
 
-                <div className="pt-4">
+                <div className="pt-4 space-y-2">
                   <Button
+                    id="create-account-button"
                     type="submit"
                     size="lg"
                     className="w-full text-base py-4 font-bold"
                     isLoading={isLoading}
                     rightIcon={<ArrowRight className="w-4 h-4" />}
                   >
-                    Verify Phone and Continue
+                    Create Account
                   </Button>
+                  <p className="text-center text-xs text-slate-500">
+                    Dispatches a 6-digit SMS verification code to verify your phone number.
+                  </p>
                 </div>
               </form>
 
@@ -491,11 +580,12 @@ export const MerchantSignupPage: React.FC = () => {
               type="text"
               maxLength={6}
               autoFocus
+              disabled={isVerifyingOtp}
               inputMode="numeric"
               placeholder="000000"
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-              className="w-full h-14 text-center font-mono text-2xl font-bold tracking-[0.5em] rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00A859]"
+              className="w-full h-14 text-center font-mono text-2xl font-bold tracking-[0.5em] rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00A859] disabled:opacity-60"
             />
           </div>
 
@@ -506,27 +596,36 @@ export const MerchantSignupPage: React.FC = () => {
             ) : (
               <button
                 type="button"
+                disabled={isResendingOtp || isVerifyingOtp}
                 onClick={handleResendOtp}
-                className="font-bold text-[#00A859] hover:underline cursor-pointer"
+                className="font-bold text-[#00A859] hover:underline cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Resend Code
+                {isResendingOtp ? 'Resending Code...' : 'Resend Code'}
               </button>
             )}
           </div>
 
           <div className="pt-2">
             <Button
+              id="verify-register-button"
               type="button"
               className="w-full"
               size="lg"
+              disabled={isVerifyingOtp || isResendingOtp}
               isLoading={isVerifyingOtp}
               onClick={handleVerifyAndRegister}
             >
-              Verify and Complete Registration
+              Verify and Create Account
             </Button>
           </div>
         </div>
       </Modal>
+
+      <LoadingOverlay
+        isOpen={isVerifyingOtp}
+        message="Creating Merchant Account"
+        submessage="Verifying credentials and setting up your store tenant..."
+      />
 
       <Footer />
     </div>

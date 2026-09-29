@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -8,8 +8,10 @@ import { PinKeypad } from '../components/ui/PinKeypad';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
 import { authApi } from '../api/auth.api';
+import { posApi } from '../api/pos.api';
+import { useAuth } from '../context/AuthContext';
 import { ApiError, TenantOption } from '../types/auth.types';
-import { Store, ArrowRight, Lock, Building, Wifi, ShieldCheck } from 'lucide-react';
+import { Store, ArrowRight, Lock, Building, CircleDot } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface CashierProfile {
@@ -20,7 +22,7 @@ interface CashierProfile {
   tenantId: string;
 }
 
-const CASHIER_PROFILES: CashierProfile[] = [
+const DEFAULT_CASHIERS: CashierProfile[] = [
   { id: 'usr_owner_001', name: 'Kwabena Mensah', role: 'Store Admin', initials: 'KM', tenantId: 'ten_default_osu' },
   { id: 'usr_cashier_001', name: 'Abena Osei', role: 'Cashier Station 1', initials: 'AO', tenantId: 'ten_default_osu' },
   { id: 'usr_cashier_002', name: 'Kofi Boateng', role: 'Cashier Station 2', initials: 'KB', tenantId: 'ten_default_osu' },
@@ -29,10 +31,13 @@ const CASHIER_PROFILES: CashierProfile[] = [
 export const CashierLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { loginWithPin, loginWithPassword } = useAuth();
   const initialMode = searchParams.get('tab') === 'admin' ? 'admin' : 'pin';
+  const redirectTarget = searchParams.get('redirect') || '/terminal';
 
   const [mode, setMode] = useState<'pin' | 'admin'>(initialMode);
-  const [selectedCashier, setSelectedCashier] = useState<CashierProfile>(CASHIER_PROFILES[0]);
+  const [cashierProfiles, setCashierProfiles] = useState<CashierProfile[]>(DEFAULT_CASHIERS);
+  const [selectedCashier, setSelectedCashier] = useState<CashierProfile>(DEFAULT_CASHIERS[0]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,13 +47,36 @@ export const CashierLoginPage: React.FC = () => {
   const [tenantOptions, setTenantOptions] = useState<TenantOption[] | null>(null);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
 
+  // Fetch real staff from database
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const staff = await posApi.getPublicStaff();
+        if (staff && staff.length > 0) {
+          const profiles: CashierProfile[] = staff.map((s) => ({
+            id: s.id,
+            name: s.name,
+            role: s.role,
+            initials: s.initials,
+            tenantId: s.tenantId,
+          }));
+          setCashierProfiles(profiles);
+          setSelectedCashier(profiles[0]);
+        }
+      } catch (err) {
+        // Fallback to defaults
+      }
+    };
+    fetchStaff();
+  }, []);
+
   const handlePinComplete = async (pin: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      // Connect to real backend PIN login
-      await authApi.loginWithPin(selectedCashier.tenantId, selectedCashier.id, pin);
-      navigate('/store-setup');
+      // Connect to real backend PIN login via AuthContext
+      await loginWithPin(selectedCashier.tenantId, selectedCashier.id, pin);
+      navigate(redirectTarget);
     } catch (err: unknown) {
       const apiErr = err as ApiError;
       setError(apiErr.message || 'That PIN is incorrect.');
@@ -65,8 +93,8 @@ export const CashierLoginPage: React.FC = () => {
     const targetTenant = overrideTenantId || selectedTenantId || undefined;
 
     try {
-      await authApi.loginWithPassword(adminEmail, adminPassword, targetTenant);
-      navigate('/store-setup');
+      await loginWithPassword(adminEmail, adminPassword, targetTenant);
+      navigate(redirectTarget);
     } catch (err: unknown) {
       const apiErr = err as ApiError;
       if (apiErr.code === 'MULTIPLE_TENANTS_FOUND' && apiErr.tenants) {
@@ -95,19 +123,18 @@ export const CashierLoginPage: React.FC = () => {
                 Merchant Terminal OS
               </span>
               <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                Terminal #ACC-04 • SikaPOS Core
+                Terminal #ACC-04 · SikaPOS Core
               </h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-[#00A859] border border-emerald-200">
-              <span className="w-2 h-2 rounded-full bg-[#00A859] animate-pulse" />
+          <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
+            <div className="flex items-center gap-1.5 text-emerald-800 font-semibold">
+              <CircleDot className="w-3.5 h-3.5 text-[#00A859] animate-pulse" />
               <span>Cloud Synced</span>
             </div>
-            <div className="hidden sm:inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-              <span>Osu Oxford St. Branch</span>
-            </div>
+            <span aria-hidden="true" className="text-slate-300">·</span>
+            <span className="text-slate-600">Osu Oxford St. Branch</span>
           </div>
         </div>
 
@@ -161,7 +188,7 @@ export const CashierLoginPage: React.FC = () => {
                   Select Shift Attendant
                 </label>
                 <div className="grid grid-cols-3 gap-2.5">
-                  {CASHIER_PROFILES.map((profile) => {
+                  {cashierProfiles.map((profile) => {
                     const isSelected = selectedCashier.id === profile.id;
                     return (
                       <button
@@ -211,7 +238,7 @@ export const CashierLoginPage: React.FC = () => {
                   {selectedCashier.name}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  {selectedCashier.role} • Ready for till entry
+                  {selectedCashier.role} · Ready for till entry
                 </p>
               </div>
 

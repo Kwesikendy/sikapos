@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Stepper, StepItem } from '../components/ui/Stepper';
 import { Input } from '../components/ui/Input';
 import { PhoneInput } from '../components/ui/PhoneInput';
 import { Button } from '../components/ui/Button';
+import { Alert } from '../components/ui/Alert';
+import { LoadingOverlay } from '../components/ui/LoadingOverlay';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
 import {
@@ -20,6 +22,16 @@ import {
   FileCheck
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { posApi } from '../api/pos.api';
+import { authApi } from '../api/auth.api';
+import {
+  storeSetupOwnerSchema,
+  storeSetupStoreSchema,
+  storeSetupTaxSchema,
+  storeSetupCashierSchema,
+  storeSetupCompleteSchema,
+} from '../schemas/form.schemas';
+import { useToast } from '../components/ui/Toast';
 
 const STEPS: StepItem[] = [
   { id: 1, label: 'Owner Profile' },
@@ -29,14 +41,15 @@ const STEPS: StepItem[] = [
 ];
 
 const CATEGORIES = [
-  { id: 'provision', label: 'Provision & Supermarket', desc: 'Fast-moving consumer goods, snacks, beverages' },
+  { id: 'provision_supermarket', label: 'Provision & Supermarket', desc: 'Fast-moving consumer goods, snacks, beverages' },
   { id: 'pharmacy', label: 'Pharmacy & Wellness', desc: 'Prescription medicines, OTC drugs, toiletries' },
-  { id: 'boutique', label: 'Boutique & Apparel', desc: 'Clothing, footwear, fabrics, accessories' },
+  { id: 'fashion', label: 'Boutique & Apparel', desc: 'Clothing, footwear, fabrics, accessories' },
   { id: 'electronics', label: 'Electronics & Repairs', desc: 'Phones, hardware gadgets, accessories' },
 ];
 
 export const StoreSetupPage: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(2); // Starts on Step 2 (Store Setup)
 
   // Step 1: Owner Profile
@@ -45,8 +58,8 @@ export const StoreSetupPage: React.FC = () => {
   const [ownerEmail, setOwnerEmail] = useState('kwabena@mensahstores.com');
 
   // Step 2: Store Details
-  const [businessName, setBusinessName] = useState('Mensah Provision Store & Supermarket');
-  const [selectedCategory, setSelectedCategory] = useState('provision');
+  const [businessName, setBusinessName] = useState('Mensah Provision Store');
+  const [selectedCategory, setSelectedCategory] = useState('provision_supermarket');
   const [branchName, setBranchName] = useState('Osu Oxford St. Branch');
   const [ghanaPostGps, setGhanaPostGps] = useState('GA-183-9024');
 
@@ -58,16 +71,194 @@ export const StoreSetupPage: React.FC = () => {
   const [cashierPin, setCashierPin] = useState('1234');
   const [payoutMomoNumber, setPayoutMomoNumber] = useState('0244123456');
 
-  const handleNext = () => {
+  // Loading & validation feedback
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [stepError, setStepError] = useState<string | null>(null);
+
+  // Load existing tenant and user details from backend
+  useEffect(() => {
+    const fetchExistingData = async () => {
+      try {
+        setIsLoadingData(true);
+        const userRes = await authApi.getCurrentUser();
+        const u = userRes?.user as any;
+        const t = userRes?.tenant as any;
+        if (u) {
+          setOwnerName(u.fullName || u.full_name || 'Kwabena Mensah');
+          setOwnerEmail(u.email || 'kwabena@mensahstores.com');
+          setOwnerPhone(u.phone || u.phone_number || '0244123456');
+        }
+        if (t) {
+          setBusinessName(t.businessName || t.business_name || 'Mensah Provision Store');
+          setSelectedCategory(t.tradeCategory || t.trade_category || 'provision_supermarket');
+        }
+
+        const tenantRes = await posApi.getCurrentTenant().catch(() => null);
+
+        if (tenantRes?.branches && tenantRes.branches.length > 0) {
+          const primary = tenantRes.branches.find((b) => b.is_primary) || tenantRes.branches[0];
+          setBranchName(primary.name);
+          setGhanaPostGps(primary.gps_digital_address);
+          setPayoutMomoNumber(primary.phone);
+        }
+      } catch (err) {
+        // Fallbacks remain in state
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchExistingData();
+  }, []);
+
+  const validateStep = (step: number): boolean => {
+    setStepError(null);
+
+    if (step === 1) {
+      const res = storeSetupOwnerSchema.safeParse({ ownerName, ownerPhone, ownerEmail });
+      if (!res.success) {
+        const errMap: Record<string, string> = {};
+        for (const issue of res.error.issues) {
+          const field = issue.path[0] as string;
+          if (field && !errMap[field]) errMap[field] = issue.message;
+        }
+        setErrors((prev) => ({ ...prev, ...errMap }));
+        const msg = 'Please resolve the highlighted errors in your owner profile.';
+        setStepError(msg);
+        toast.warning('Validation Required', msg);
+        return false;
+      }
+    } else if (step === 2) {
+      const res = storeSetupStoreSchema.safeParse({
+        businessName,
+        selectedCategory,
+        branchName,
+        ghanaPostGps,
+      });
+      if (!res.success) {
+        const errMap: Record<string, string> = {};
+        for (const issue of res.error.issues) {
+          const field = issue.path[0] as string;
+          if (field && !errMap[field]) errMap[field] = issue.message;
+        }
+        setErrors((prev) => ({ ...prev, ...errMap }));
+        const msg = 'Please resolve the highlighted store details and GPS address.';
+        setStepError(msg);
+        toast.warning('Validation Required', msg);
+        return false;
+      }
+    } else if (step === 3) {
+      const res = storeSetupTaxSchema.safeParse({
+        taxMode,
+        tinNumber: tinNumber || undefined,
+      });
+      if (!res.success) {
+        const errMap: Record<string, string> = {};
+        for (const issue of res.error.issues) {
+          const field = issue.path[0] as string;
+          if (field && !errMap[field]) errMap[field] = issue.message;
+        }
+        setErrors((prev) => ({ ...prev, ...errMap }));
+        const msg = 'Please resolve the highlighted tax configuration errors.';
+        setStepError(msg);
+        toast.warning('Validation Required', msg);
+        return false;
+      }
+    } else if (step === 4) {
+      const res = storeSetupCashierSchema.safeParse({ cashierPin, payoutMomoNumber });
+      if (!res.success) {
+        const errMap: Record<string, string> = {};
+        for (const issue of res.error.issues) {
+          const field = issue.path[0] as string;
+          if (field && !errMap[field]) errMap[field] = issue.message;
+        }
+        setErrors((prev) => ({ ...prev, ...errMap }));
+        const msg = 'Please resolve the cashier till PIN and settlement account errors.';
+        setStepError(msg);
+        toast.warning('Validation Required', msg);
+        return false;
+      }
+
+      // Complete validation of all combined steps before final API persistence
+      const completeRes = storeSetupCompleteSchema.safeParse({
+        ownerName,
+        ownerPhone,
+        ownerEmail,
+        businessName,
+        selectedCategory,
+        branchName,
+        ghanaPostGps,
+        taxMode,
+        tinNumber: tinNumber || undefined,
+        cashierPin,
+        payoutMomoNumber,
+      });
+
+      if (!completeRes.success) {
+        const errMap: Record<string, string> = {};
+        for (const issue of completeRes.error.issues) {
+          const field = issue.path[0] as string;
+          if (field && !errMap[field]) errMap[field] = issue.message;
+        }
+        setErrors((prev) => ({ ...prev, ...errMap }));
+        const msg = 'Please ensure all required setup steps are completely and accurately filled.';
+        setStepError(msg);
+        toast.warning('Validation Required', msg);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleNext = async () => {
+    if (isSaving || isLoadingData) return;
+
+    if (!validateStep(currentStep)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
+      setStepError(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      navigate('/launch-readiness');
+      // Step 4: Persist configuration live to the database
+      setIsSaving(true);
+      try {
+        await posApi.updateStoreSetup({
+          businessName,
+          tradeCategory: selectedCategory,
+          primaryBranch: {
+            name: branchName,
+            region: 'Greater Accra',
+            gpsDigitalAddress: ghanaPostGps,
+            physicalAddress: 'Oxford Street, Osu, Accra',
+            phone: payoutMomoNumber,
+          },
+        });
+
+        await posApi.configureTax(taxMode === 'standard' ? 'standard_gra' : 'not_registered');
+
+        toast.success('Store Setup Saved', 'Store configuration and GRA tax profile saved successfully.');
+        navigate('/launch-readiness');
+      } catch (err: unknown) {
+        const errorMsg = (err as Error)?.message || 'Failed to save store setup.';
+        console.error('Failed to save store setup:', err);
+        toast.error('Setup Save Failed', errorMsg);
+        setStepError(errorMsg);
+        navigate('/launch-readiness');
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
   const handleBack = () => {
+    if (isSaving || isLoadingData) return;
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -86,6 +277,12 @@ export const StoreSetupPage: React.FC = () => {
 
         {/* Step Content Shell */}
         <Card elevated className="p-8 sm:p-10 bg-white">
+          {stepError && (
+            <div className="mb-6">
+              <Alert variant="error">{stepError}</Alert>
+            </div>
+          )}
+
           {/* STEP 1: OWNER PROFILE */}
           {currentStep === 1 && (
             <div className="space-y-6 text-left">
@@ -105,20 +302,32 @@ export const StoreSetupPage: React.FC = () => {
                 <Input
                   label="Full Name"
                   value={ownerName}
-                  onChange={(e) => setOwnerName(e.target.value)}
+                  errorText={errors.ownerName}
+                  onChange={(e) => {
+                    setOwnerName(e.target.value);
+                    if (errors.ownerName) setErrors((prev) => ({ ...prev, ownerName: '' }));
+                  }}
                   required
                 />
                 <PhoneInput
                   label="Primary Mobile Phone"
                   value={ownerPhone}
-                  onChange={setOwnerPhone}
+                  errorText={errors.ownerPhone}
+                  onChange={(val) => {
+                    setOwnerPhone(val);
+                    if (errors.ownerPhone) setErrors((prev) => ({ ...prev, ownerPhone: '' }));
+                  }}
                   required
                 />
                 <Input
                   label="Email Address"
                   type="email"
                   value={ownerEmail}
-                  onChange={(e) => setOwnerEmail(e.target.value)}
+                  errorText={errors.ownerEmail}
+                  onChange={(e) => {
+                    setOwnerEmail(e.target.value);
+                    if (errors.ownerEmail) setErrors((prev) => ({ ...prev, ownerEmail: '' }));
+                  }}
                   required
                 />
               </div>
@@ -146,7 +355,11 @@ export const StoreSetupPage: React.FC = () => {
                   helperText="Appears on electronic customer till receipts and settlement invoices"
                   placeholder="e.g. Osu Golden Mart Ltd"
                   value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
+                  errorText={errors.businessName}
+                  onChange={(e) => {
+                    setBusinessName(e.target.value);
+                    if (errors.businessName) setErrors((prev) => ({ ...prev, businessName: '' }));
+                  }}
                   required
                   startIcon={<Building2 className="w-4 h-4 text-slate-400" />}
                 />
@@ -156,13 +369,19 @@ export const StoreSetupPage: React.FC = () => {
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                     Primary Retail Category
                   </label>
+                  {errors.selectedCategory && (
+                    <p className="text-xs font-semibold text-rose-600 mb-2">{errors.selectedCategory}</p>
+                  )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {CATEGORIES.map((cat) => {
                       const isSelected = selectedCategory === cat.id;
                       return (
                         <div
                           key={cat.id}
-                          onClick={() => setSelectedCategory(cat.id)}
+                          onClick={() => {
+                            setSelectedCategory(cat.id);
+                            if (errors.selectedCategory) setErrors((prev) => ({ ...prev, selectedCategory: '' }));
+                          }}
                           className={cn(
                             'p-4 rounded-2xl border transition-all cursor-pointer select-none text-left flex flex-col justify-between',
                             isSelected
@@ -188,17 +407,25 @@ export const StoreSetupPage: React.FC = () => {
                     label="Primary Branch Name"
                     placeholder="e.g. Osu Oxford St. Branch"
                     value={branchName}
-                    onChange={(e) => setBranchName(e.target.value)}
+                    errorText={errors.branchName}
+                    onChange={(e) => {
+                      setBranchName(e.target.value);
+                      if (errors.branchName) setErrors((prev) => ({ ...prev, branchName: '' }));
+                    }}
                     required
                     startIcon={<Store className="w-4 h-4 text-slate-400" />}
                   />
 
                   <Input
                     label="GhanaPost GPS Digital Address"
-                    helperText="Ghana's national address system (e.g. GA-183-9024)"
+                    helperText="Ghana national address code (e.g. GA-183-9024)"
                     placeholder="e.g. GA-183-9024"
                     value={ghanaPostGps}
-                    onChange={(e) => setGhanaPostGps(e.target.value)}
+                    errorText={errors.ghanaPostGps}
+                    onChange={(e) => {
+                      setGhanaPostGps(e.target.value);
+                      if (errors.ghanaPostGps) setErrors((prev) => ({ ...prev, ghanaPostGps: '' }));
+                    }}
                     required
                     startIcon={<MapPin className="w-4 h-4 text-slate-400" />}
                   />
@@ -248,16 +475,13 @@ export const StoreSetupPage: React.FC = () => {
                     <p className="text-xs text-slate-600">
                       Prices include standard Ghana levies: 15% VAT, 2.5% NHIL, and 2.5% GETFund.
                     </p>
-                    <div className="pt-2 flex flex-wrap gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full bg-white text-[11px] font-mono font-semibold text-slate-700 border border-slate-200">
-                        15.0% VAT
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-white text-[11px] font-mono font-semibold text-slate-700 border border-slate-200">
-                        2.5% NHIL
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-white text-[11px] font-mono font-semibold text-slate-700 border border-slate-200">
-                        2.5% GETFund
-                      </span>
+                    {/* Clean unboxed text metadata (No pill boxes) */}
+                    <div className="pt-2 flex items-center gap-3 text-xs font-mono text-slate-600">
+                      <span>15.0% VAT</span>
+                      <span aria-hidden="true" className="text-slate-300">·</span>
+                      <span>2.5% NHIL</span>
+                      <span aria-hidden="true" className="text-slate-300">·</span>
+                      <span>2.5% GETFund</span>
                     </div>
                   </div>
                 </div>
@@ -297,7 +521,11 @@ export const StoreSetupPage: React.FC = () => {
                       helperText="Optional for onboarding. Can be updated later in Settings."
                       placeholder="e.g. P0012345678"
                       value={tinNumber}
-                      onChange={(e) => setTinNumber(e.target.value)}
+                      errorText={errors.tinNumber}
+                      onChange={(e) => {
+                        setTinNumber(e.target.value);
+                        if (errors.tinNumber) setErrors((prev) => ({ ...prev, tinNumber: '' }));
+                      }}
                       startIcon={<FileCheck className="w-4 h-4 text-slate-400" />}
                     />
                   </div>
@@ -329,7 +557,11 @@ export const StoreSetupPage: React.FC = () => {
                   helperText="Cashiers use this quick 4-digit code to log into countertops and tablets"
                   placeholder="e.g. 1234"
                   value={cashierPin}
-                  onChange={(e) => setCashierPin(e.target.value.replace(/\D/g, ''))}
+                  errorText={errors.cashierPin}
+                  onChange={(e) => {
+                    setCashierPin(e.target.value.replace(/\D/g, ''));
+                    if (errors.cashierPin) setErrors((prev) => ({ ...prev, cashierPin: '' }));
+                  }}
                   required
                   startIcon={<Lock className="w-4 h-4 text-slate-400" />}
                 />
@@ -338,7 +570,11 @@ export const StoreSetupPage: React.FC = () => {
                   label="Settlement Mobile Money Account"
                   helperText="Instant payouts from customer MTN MoMo and Telecel Cash drop here"
                   value={payoutMomoNumber}
-                  onChange={setPayoutMomoNumber}
+                  errorText={errors.payoutMomoNumber}
+                  onChange={(val) => {
+                    setPayoutMomoNumber(val);
+                    if (errors.payoutMomoNumber) setErrors((prev) => ({ ...prev, payoutMomoNumber: '' }));
+                  }}
                   required
                 />
               </div>
@@ -352,6 +588,7 @@ export const StoreSetupPage: React.FC = () => {
                 type="button"
                 variant="outline"
                 size="md"
+                disabled={isSaving || isLoadingData}
                 onClick={handleBack}
                 leftIcon={<ArrowLeft className="w-4 h-4" />}
               >
@@ -364,6 +601,8 @@ export const StoreSetupPage: React.FC = () => {
             <Button
               type="button"
               size="md"
+              disabled={isSaving || isLoadingData}
+              isLoading={isSaving}
               onClick={handleNext}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
@@ -372,6 +611,12 @@ export const StoreSetupPage: React.FC = () => {
           </div>
         </Card>
       </main>
+
+      <LoadingOverlay
+        isOpen={isSaving}
+        message="Saving Store Setup"
+        submessage="Applying branch location, tax profile, and payout details..."
+      />
 
       <Footer />
     </div>

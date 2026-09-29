@@ -258,4 +258,52 @@ export class TenantService {
 
     return rows.map(r => r.code);
   }
+
+  public updateTenantProfile(tenantId: string, params: {
+    legalName?: string;
+    businessName?: string;
+    tradeCategory?: string;
+    primaryBranch?: {
+      name?: string;
+      region?: string;
+      gpsDigitalAddress?: string;
+      physicalAddress?: string;
+      phone?: string;
+    };
+  }): { tenant: Tenant; primaryBranch: Branch | null } {
+    const now = new Date().toISOString();
+    if (params.legalName || params.businessName || params.tradeCategory) {
+      const updates: string[] = [];
+      const values: (string | number)[] = [];
+      if (params.legalName) { updates.push('legal_name = ?'); values.push(params.legalName); }
+      if (params.businessName) { updates.push('business_name = ?'); values.push(params.businessName); }
+      if (params.tradeCategory) { updates.push('trade_category = ?'); values.push(params.tradeCategory); }
+      updates.push('updated_at = ?'); values.push(now);
+      values.push(tenantId);
+      this.db.prepare(`UPDATE tenants SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    }
+
+    if (params.primaryBranch) {
+      const branch = this.db.prepare('SELECT id FROM branches WHERE tenant_id = ? AND is_primary = 1').get(tenantId) as { id: string } | undefined;
+      if (branch) {
+        const bUpdates: string[] = [];
+        const bValues: (string | number)[] = [];
+        if (params.primaryBranch.name) { bUpdates.push('name = ?'); bValues.push(params.primaryBranch.name); }
+        if (params.primaryBranch.region) { bUpdates.push('region = ?'); bValues.push(params.primaryBranch.region); }
+        if (params.primaryBranch.gpsDigitalAddress) { bUpdates.push('gps_digital_address = ?'); bValues.push(params.primaryBranch.gpsDigitalAddress); }
+        if (params.primaryBranch.physicalAddress) { bUpdates.push('physical_address = ?'); bValues.push(params.primaryBranch.physicalAddress); }
+        if (params.primaryBranch.phone) { bUpdates.push('phone = ?'); bValues.push(params.primaryBranch.phone); }
+        bUpdates.push('updated_at = ?'); bValues.push(now);
+        bValues.push(branch.id, tenantId);
+        this.db.prepare(`UPDATE branches SET ${bUpdates.join(', ')} WHERE id = ? AND tenant_id = ?`).run(...bValues);
+      }
+    }
+
+    const tenant = this.getTenantById(tenantId)!;
+    const branches = this.getBranches(tenantId);
+    const primaryBranch = branches.find(b => b.is_primary) || branches[0] || null;
+
+    return { tenant, primaryBranch };
+  }
 }
+

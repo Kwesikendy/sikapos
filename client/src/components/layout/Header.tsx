@@ -1,19 +1,41 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../visuals/BrandLogo';
 import { Menu, X, ArrowRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export const Header: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
     { path: '/merchant-signup', label: 'Overview' },
     { path: '/store-setup', label: 'Setup Wizard' },
     { path: '/launch-readiness', label: 'Readiness' },
-    { path: '/cashier-login', label: 'Cashier POS' },
+    { path: '/cashier-login', label: 'Cashier Login' },
+    { path: '/terminal', label: 'Live POS Till' },
   ];
+
+  const handleCreateAccountClick = (e: React.MouseEvent) => {
+    setMobileMenuOpen(false);
+    if (location.pathname === '/merchant-signup') {
+      e.preventDefault();
+      const el = document.getElementById('signup-form');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }
+    } else {
+      navigate('/merchant-signup#signup-form');
+      setTimeout(() => {
+        const el = document.getElementById('signup-form');
+        el?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  };
+
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-slate-100 transition-all">
@@ -55,23 +77,26 @@ export const Header: React.FC = () => {
           >
             Cashier Sign In
           </Link>
-          <Link
-            to="/merchant-signup"
-            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-[#00A859] hover:bg-[#00924C] shadow-sm hover:shadow transition-all active-depress"
+          <button
+            type="button"
+            onClick={handleCreateAccountClick}
+            id="header-create-account"
+            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#00A859] hover:bg-[#00924C] shadow-sm hover:shadow transition-all active-depress cursor-pointer"
           >
             <span>Create Account</span>
             <ArrowRight className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
 
         {/* Mobile menu trigger */}
         <div className="flex md:hidden items-center gap-2">
-          <Link
-            to="/merchant-signup"
-            className="px-4 py-2 rounded-full text-xs font-semibold text-white bg-[#00A859]"
+          <button
+            type="button"
+            onClick={handleCreateAccountClick}
+            className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#00A859] cursor-pointer"
           >
             Sign Up
-          </Link>
+          </button>
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -111,13 +136,14 @@ export const Header: React.FC = () => {
             >
               Cashier PIN Sign In
             </Link>
-            <Link
-              to="/merchant-signup"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 rounded-full text-sm font-semibold text-white bg-[#00A859]"
+            <button
+              type="button"
+              onClick={handleCreateAccountClick}
+              id="mobile-create-account"
+              className="w-full text-center py-2.5 rounded-full text-sm font-semibold text-white bg-[#00A859] cursor-pointer"
             >
               Create Account
-            </Link>
+            </button>
           </div>
         </div>
       )}

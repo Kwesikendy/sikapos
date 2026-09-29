@@ -20,8 +20,176 @@ export function initializeDatabase(db?: Database.Database): Database.Database {
   // Seed core roles and permissions
   seedRolesAndPermissions(database);
 
+  // Seed default demo merchant & staff profiles for Cashier/Admin interfaces
+  seedDemoMerchant(database);
+
   return database;
 }
+
+function seedDemoMerchant(db: Database.Database): void {
+  const tenantId = 'ten_default_osu';
+  const branchId = 'br_default_osu';
+
+  // Seed tenant
+  db.prepare(`
+    INSERT INTO tenants (id, legal_name, business_name, trade_category, currency_code, status)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO NOTHING
+  `).run(
+    tenantId,
+    'Mensah Stores Ghana Ltd',
+    'Mensah Stores Osu',
+    'general_retail',
+    'GHS',
+    'active'
+  );
+
+  // Seed branch
+  db.prepare(`
+    INSERT INTO branches (id, tenant_id, name, is_primary, region, gps_digital_address, physical_address, phone, status)
+    VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO NOTHING
+  `).run(
+    branchId,
+    tenantId,
+    'Osu Oxford St. Branch',
+    'Greater Accra',
+    'GA-183-9024',
+    'Oxford Street, Osu, Accra',
+    '0244123456',
+    'active'
+  );
+
+  // Helper for password & PIN hashing
+  const hashPassword = (password: string, salt: string) => crypto.scryptSync(password, salt, 64).toString('hex');
+  const hashPin = (pin: string, salt: string) => crypto.scryptSync(pin, salt, 32).toString('hex');
+
+  const ownerSalt = crypto.randomBytes(16).toString('hex');
+  const ownerPinSalt = crypto.randomBytes(16).toString('hex');
+  const cashier1PinSalt = crypto.randomBytes(16).toString('hex');
+  const cashier2PinSalt = crypto.randomBytes(16).toString('hex');
+
+  const insertUserStmt = db.prepare(`
+    INSERT INTO users (id, tenant_id, full_name, email, phone_number, password_hash, salt, pin_hash, pin_salt, is_active, email_verified, phone_verified)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, 1)
+    ON CONFLICT(id) DO NOTHING
+  `);
+
+  // Insert Admin / Store Owner (Kwabena Mensah)
+  insertUserStmt.run(
+    'usr_owner_001',
+    tenantId,
+    'Kwabena Mensah',
+    'kwabena@mensahstores.com',
+    '0244123456',
+    hashPassword('OsuPass2025#', ownerSalt),
+    ownerSalt,
+    hashPin('1234', ownerPinSalt),
+    ownerPinSalt
+  );
+
+  // Insert Cashier 1 (Abena Osei)
+  insertUserStmt.run(
+    'usr_cashier_001',
+    tenantId,
+    'Abena Osei',
+    'abena@mensahstores.com',
+    '0244123457',
+    null,
+    null,
+    hashPin('1234', cashier1PinSalt),
+    cashier1PinSalt
+  );
+
+  // Insert Cashier 2 (Kofi Boateng)
+  insertUserStmt.run(
+    'usr_cashier_002',
+    tenantId,
+    'Kofi Boateng',
+    'kofi@mensahstores.com',
+    '0244123458',
+    null,
+    null,
+    hashPin('1234', cashier2PinSalt),
+    cashier2PinSalt
+  );
+
+  // Assign roles
+  const ownerRole = db.prepare("SELECT id FROM roles WHERE name = 'Owner'").get() as { id: string } | undefined;
+  const cashierRole = db.prepare("SELECT id FROM roles WHERE name = 'Cashier'").get() as { id: string } | undefined;
+
+  const insertUserRoleStmt = db.prepare(`
+    INSERT INTO user_roles (user_id, role_id, tenant_id)
+    VALUES (?, ?, ?)
+    ON CONFLICT(user_id, role_id) DO NOTHING
+  `);
+
+  if (ownerRole) {
+    insertUserRoleStmt.run('usr_owner_001', ownerRole.id, tenantId);
+  }
+  if (cashierRole) {
+    insertUserRoleStmt.run('usr_cashier_001', cashierRole.id, tenantId);
+    insertUserRoleStmt.run('usr_cashier_002', cashierRole.id, tenantId);
+  }
+
+  // Assign branch users
+  const insertBranchUserStmt = db.prepare(`
+    INSERT INTO branch_users (branch_id, user_id, tenant_id, is_default)
+    VALUES (?, ?, ?, 1)
+    ON CONFLICT(branch_id, user_id) DO NOTHING
+  `);
+
+  insertBranchUserStmt.run(branchId, 'usr_owner_001', tenantId);
+  insertBranchUserStmt.run(branchId, 'usr_cashier_001', tenantId);
+  insertBranchUserStmt.run(branchId, 'usr_cashier_002', tenantId);
+
+  // Seed standard GRA tax profile
+  db.prepare(`
+    INSERT INTO tax_profiles (id, tenant_id, name, tax_type, vat_rate, nhil_rate, getfund_rate, covid_levy_rate, is_active)
+    VALUES (?, ?, ?, 'standard_gra', 0.15, 0.025, 0.025, 0.01, 1)
+    ON CONFLICT(id) DO NOTHING
+  `).run('tax_default_osu', tenantId, 'Standard GRA');
+
+  // Seed standard retail products for Mensah Stores Osu
+  const insertProductStmt = db.prepare(`
+    INSERT INTO products (id, tenant_id, name, barcode, category, cost_price, selling_price, stock_quantity, low_stock_threshold, is_active)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+    ON CONFLICT(id) DO NOTHING
+  `);
+
+  const demoProducts = [
+    { id: 'prd_01', name: 'Nestle Milo Refill Pack 400g', barcode: '7613035889012', category: 'Provisions', cost: 32.00, price: 38.50, stock: 45 },
+    { id: 'prd_02', name: 'Ideal Evaporated Milk 160g', barcode: '7613032114520', category: 'Provisions', cost: 9.50, price: 12.00, stock: 120 },
+    { id: 'prd_03', name: 'Bel-Aqua Mineral Water 750ml', barcode: '6034000128911', category: 'Beverages', cost: 3.50, price: 5.00, stock: 95 },
+    { id: 'prd_04', name: 'Voltic Natural Mineral Water 500ml', barcode: '6034000234109', category: 'Beverages', cost: 3.00, price: 4.50, stock: 80 },
+    { id: 'prd_05', name: 'Frytol Pure Vegetable Oil 1L', barcode: '6034000554128', category: 'Provisions', cost: 40.00, price: 48.00, stock: 35 },
+    { id: 'prd_06', name: 'Gino Tomato Mix Paste 70g Sachet', barcode: '8901030776512', category: 'Provisions', cost: 4.80, price: 6.50, stock: 150 },
+    { id: 'prd_07', name: 'Geisha Herbal Beauty Soap 200g', barcode: '6034000998231', category: 'Personal Care', cost: 10.50, price: 14.00, stock: 60 },
+    { id: 'prd_08', name: 'Pepsodent Triple Protection 140g', barcode: '8717163612841', category: 'Personal Care', cost: 14.20, price: 18.50, stock: 55 },
+    { id: 'prd_09', name: 'Omo Multi-Active Washing Powder 500g', barcode: '8712561993412', category: 'Household', cost: 12.00, price: 16.00, stock: 40 },
+    { id: 'prd_10', name: 'FanYogo Strawberry Yogurt Pouch 145ml', barcode: '6034000781290', category: 'Beverages', cost: 2.80, price: 4.00, stock: 75 },
+    { id: 'prd_11', name: 'This Way Chocolate Drink 200ml', barcode: '6034000332145', category: 'Beverages', cost: 4.50, price: 6.00, stock: 65 },
+    { id: 'prd_12', name: 'TGI Thai Jasmine Perfumed Rice 5kg', barcode: '8850123984120', category: 'Provisions', cost: 125.00, price: 145.00, stock: 25 },
+    { id: 'prd_13', name: 'Tasty Tom Enriched Tomato Paste 400g', barcode: '6034000445612', category: 'Provisions', cost: 19.50, price: 24.00, stock: 50 },
+    { id: 'prd_14', name: 'Kalyppo Fruit Juice Orange 250ml', barcode: '6034000889123', category: 'Beverages', cost: 4.00, price: 5.50, stock: 85 },
+    { id: 'prd_15', name: 'Kleesoft Detergent Powder 1kg', barcode: '6921345678901', category: 'Household', cost: 17.00, price: 22.00, stock: 38 }
+  ];
+
+  for (const prd of demoProducts) {
+    insertProductStmt.run(
+      prd.id,
+      tenantId,
+      prd.name,
+      prd.barcode,
+      prd.category,
+      prd.cost,
+      prd.price,
+      prd.stock,
+      5
+    );
+  }
+}
+
 
 function seedRolesAndPermissions(db: Database.Database): void {
   const permissionsList = [
