@@ -100,14 +100,14 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
       </div>
 
       {/* Tactile 3x4 Touch Numeric Keypad */}
-      <div className="grid grid-cols-3 gap-2.5 w-full">
+      <div className="grid grid-cols-3 gap-3 w-full max-w-[280px] mx-auto">
         {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
           <button
             key={digit}
             type="button"
             disabled={isLoading}
             onClick={() => handleDigit(digit)}
-            className="h-14 rounded-xl bg-white border border-slate-200 shadow-xs hover:bg-slate-50 active:bg-slate-100 active-depress font-mono text-xl font-bold text-slate-900 flex items-center justify-center transition-colors cursor-pointer select-none disabled:opacity-50"
+            className="h-16 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:bg-white hover:border-slate-300 hover:shadow-md active:bg-slate-50 active-depress font-mono text-2xl font-semibold text-slate-800 flex items-center justify-center transition-all cursor-pointer select-none disabled:opacity-50"
           >
             {digit}
           </button>
@@ -119,7 +119,7 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
           disabled={isLoading || pin.length === 0}
           onClick={handleClear}
           aria-label="Clear PIN"
-          className="h-14 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 active:bg-slate-300 active-depress text-slate-600 font-sans text-xs font-bold uppercase tracking-wider flex items-center justify-center transition-colors cursor-pointer select-none disabled:opacity-40"
+          className="h-16 rounded-2xl bg-slate-50/50 backdrop-blur-sm border border-slate-200/50 hover:bg-slate-100 hover:border-slate-300 active:bg-slate-200 active-depress text-slate-500 font-sans text-sm font-semibold flex items-center justify-center transition-all cursor-pointer select-none disabled:opacity-40"
         >
           Clear
         </button>
@@ -129,7 +129,7 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
           type="button"
           disabled={isLoading}
           onClick={() => handleDigit('0')}
-          className="h-14 rounded-xl bg-white border border-slate-200 shadow-xs hover:bg-slate-50 active:bg-slate-100 active-depress font-mono text-xl font-bold text-slate-900 flex items-center justify-center transition-colors cursor-pointer select-none disabled:opacity-50"
+          className="h-16 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:bg-white hover:border-slate-300 hover:shadow-md active:bg-slate-50 active-depress font-mono text-2xl font-semibold text-slate-800 flex items-center justify-center transition-all cursor-pointer select-none disabled:opacity-50"
         >
           0
         </button>
@@ -140,9 +140,9 @@ export const PinKeypad: React.FC<PinKeypadProps> = ({
           disabled={isLoading || pin.length === 0}
           onClick={handleBackspace}
           aria-label="Backspace"
-          className="h-14 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 active:bg-slate-300 active-depress text-slate-700 flex items-center justify-center transition-colors cursor-pointer select-none disabled:opacity-40"
+          className="h-16 rounded-2xl bg-slate-50/50 backdrop-blur-sm border border-slate-200/50 hover:bg-slate-100 hover:border-slate-300 active:bg-slate-200 active-depress text-slate-600 flex items-center justify-center transition-all cursor-pointer select-none disabled:opacity-40"
         >
-          <Delete className="w-5 h-5" />
+          <Delete className="w-6 h-6" />
         </button>
       </div>
     </div>

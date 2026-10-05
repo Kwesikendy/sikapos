@@ -135,114 +135,128 @@ export const MerchantSignupPage: React.FC = () => {
       title="Run your shop from one place."
       subtitle="Built for modern Ghanaian traders, pharmacies, minimarts, and retail shops."
     >
-      <Card elevated className="w-full">
+      <Card glass className="w-full">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-6 border-b border-slate-200">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-8 mb-6 border-b border-slate-200/60">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#0D5C3A]">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#0D5C3A] text-[11px] font-bold uppercase tracking-widest border border-emerald-100 mb-2">
               Stage 02 • Merchant Registration
             </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mt-1">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
               Create Account
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            <p className="text-sm text-slate-500 mt-1.5">
               Set up your business tenant and store manager access.
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-semibold self-start sm:self-auto border border-slate-200">
-            <UserCheck className="w-3.5 h-3.5 text-[#0D5C3A]" />
-            <span>Store Owner</span>
+          <div className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-inner">
+            <UserCheck className="w-4 h-4 text-[#0D5C3A]" />
+            <span>Store Owner Access</span>
           </div>
         </div>
 
         {/* Informational Guidance */}
-        <div className="my-5">
-          <Alert variant="info">
+        <div className="mb-8">
+          <Alert variant="info" className="bg-sky-50/50 backdrop-blur-sm border-sky-100 text-sky-800 shadow-sm">
             Cashiers do not register here. You will invite staff with fast 4-digit PINs after setting up your store.
           </Alert>
         </div>
 
         {error && (
-          <div className="mb-5">
-            <Alert variant="error">{error}</Alert>
+          <div className="mb-6">
+            <Alert variant="error" className="shadow-sm">{error}</Alert>
           </div>
         )}
 
         {/* Registration Form */}
-        <form onSubmit={handleInitialSubmit} className="space-y-4">
-          <Input
-            label="Full Name"
-            helperText="As printed on your Ghana Card"
-            placeholder="e.g. Kwabena Mensah"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
+        <form onSubmit={handleInitialSubmit} className="space-y-8">
+          
+          {/* Section: Owner Details */}
+          <div className="space-y-5">
+            <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">Owner Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <Input
+                label="Full Name"
+                helperText="As printed on your Ghana Card"
+                placeholder="e.g. Kwabena Mensah"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
 
-          <PhoneInput
-            label="Mobile Phone Number"
-            helperText="Used for instant OTP verification and MoMo settlements"
-            value={phoneNumber}
-            onChange={setPhoneNumber}
-            required
-          />
-
-          <Input
-            label="Email Address"
-            type="email"
-            placeholder="e.g. kwabena@mensahstores.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <PhoneInput
+                label="Mobile Phone Number"
+                helperText="For instant OTP verification & MoMo"
+                value={phoneNumber}
+                onChange={setPhoneNumber}
+                required
+              />
+            </div>
             <Input
-              label="Business Trade Name"
-              placeholder="e.g. Mensah Provision Store"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              required
-            />
-
-            <Input
-              label="Primary Outlet / Branch"
-              placeholder="e.g. Osu Oxford St. Branch"
-              value={branchName}
-              onChange={(e) => setBranchName(e.target.value)}
+              label="Email Address"
+              type="email"
+              placeholder="e.g. kwabena@mensahstores.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
 
-          <Input
-            label="Account Password"
-            type={showPassword ? 'text' : 'password'}
-            helperText="Minimum 8 characters with at least one number and special character"
-            placeholder="Enter secure password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            startIcon={<Lock className="w-4 h-4 text-slate-400" />}
-            endIcon={
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            }
-          />
+          {/* Section: Business Details */}
+          <div className="space-y-5">
+            <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">Business Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <Input
+                label="Business Trade Name"
+                placeholder="e.g. Mensah Provision Store"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                required
+              />
 
-          <div className="pt-3">
+              <Input
+                label="Primary Outlet / Branch"
+                placeholder="e.g. Osu Oxford St. Branch"
+                value={branchName}
+                onChange={(e) => setBranchName(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Section: Security */}
+          <div className="space-y-5">
+            <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">Security</h3>
+            <Input
+              label="Account Password"
+              type={showPassword ? 'text' : 'password'}
+              helperText="Minimum 8 characters with at least one number and special character"
+              placeholder="Enter secure password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              startIcon={<Lock className="w-5 h-5" />}
+              endIcon={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-slate-400 hover:text-[#0D5C3A] transition-colors cursor-pointer"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              }
+            />
+          </div>
+
+          <div className="pt-6">
             <Button
               type="submit"
               size="lg"
-              className="w-full"
+              className="w-full text-[15px]"
               isLoading={isLoading}
-              rightIcon={<ArrowRight className="w-4 h-4" />}
+              rightIcon={<ArrowRight className="w-5 h-5" />}
             >
               Verify Phone and Continue
             </Button>
@@ -250,21 +264,21 @@ export const MerchantSignupPage: React.FC = () => {
         </form>
 
         {/* Existing User Alternatives */}
-        <div className="mt-6 pt-5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <span>Already have an account?</span>
-          <div className="flex items-center gap-4">
+        <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+          <span className="font-medium">Already have an account?</span>
+          <div className="flex items-center gap-3">
             <Link
               to="/cashier-login"
-              className="font-semibold text-[#0D5C3A] hover:underline"
+              className="font-bold text-[#0D5C3A] hover:text-[#09432A] transition-colors flex items-center gap-1 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100"
             >
               Cashier PIN Login
             </Link>
-            <span>•</span>
+            <span className="text-slate-300">•</span>
             <Link
               to="/cashier-login?tab=admin"
-              className="font-semibold text-slate-700 hover:underline"
+              className="font-semibold text-slate-600 hover:text-slate-900 transition-colors"
             >
-              Admin Password Login
+              Admin Login
             </Link>
           </div>
         </div>

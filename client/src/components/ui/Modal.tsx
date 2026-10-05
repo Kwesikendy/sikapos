@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import { modalVariants } from '../../lib/motion';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -35,8 +37,6 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   const maxWidths = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -45,49 +45,60 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-    >
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
-      />
-
-      {/* Modal Dialog Content */}
-      <div
-        className={cn(
-          'relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden transform transition-all z-10 p-6',
-          maxWidths[maxWidth]
-        )}
-      >
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div>
-            {title && (
-              <h3 className="text-lg font-bold text-slate-900 leading-tight">
-                {title}
-              </h3>
-            )}
-            {description && (
-              <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                {description}
-              </p>
-            )}
-          </div>
-          <button
-            type="button"
+    <AnimatePresence>
+      {isOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+        >
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 glass-overlay"
             onClick={onClose}
-            aria-label="Close dialog"
-            className="text-slate-400 hover:text-slate-600 rounded-lg p-1.5 hover:bg-slate-100 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          />
 
-        <div>{children}</div>
-      </div>
-    </div>
+          {/* Modal Dialog Content */}
+          <motion.div
+            variants={modalVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className={cn(
+              'relative w-full bg-white/95 backdrop-blur-xl rounded-3xl shadow-sheet border border-white overflow-hidden z-10 p-6 sm:p-8',
+              maxWidths[maxWidth]
+            )}
+          >
+            <div className="flex items-start justify-between gap-4 mb-6">
+              <div>
+                {title && (
+                  <h3 className="text-xl font-extrabold text-slate-900 leading-tight">
+                    {title}
+                  </h3>
+                )}
+                {description && (
+                  <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">
+                    {description}
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close dialog"
+                className="text-slate-400 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-full p-2 transition-all cursor-pointer shadow-sm active-depress"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>{children}</div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };

@@ -1,26 +1,33 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+import { motion, HTMLMotionProps } from 'framer-motion';
+
+export interface CardProps extends HTMLMotionProps<"div"> {
   elevated?: boolean;
+  glass?: boolean;
 }
 
-export const Card: React.FC<CardProps> = ({
+export const Card = React.forwardRef<HTMLDivElement, CardProps>(({
   className,
   elevated = false,
+  glass = false,
   children,
   ...props
-}) => {
+}, ref) => {
   return (
-    <div
+    <motion.div
+      ref={ref}
       className={cn(
-        'bg-white rounded-xl border border-slate-200 p-6',
-        elevated ? 'shadow-md' : 'shadow-xs',
+        'rounded-card border border-slate-200/80 p-6',
+        glass ? 'glass-panel' : 'bg-white',
+        elevated ? 'shadow-card hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300' : 'shadow-sm',
         className
       )}
       {...props}
     >
       {children}
-    </div>
+    </motion.div>
   );
-};
+});
+Card.displayName = 'Card';
