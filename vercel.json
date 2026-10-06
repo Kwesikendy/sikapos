@@ -1,6 +1,6 @@
 {
   "buildCommand": "vite build --config client/vite.config.ts",
-  "outputDirectory": "client/dist",
+  "outputDirectory": "dist/client",
   "installCommand": "npm install",
   "framework": null,
   "rewrites": [
