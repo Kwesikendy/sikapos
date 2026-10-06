@@ -44,7 +44,10 @@ export function createApp(): express.Application {
   app.get('/store-setup', serveSpaOrFallback(path.join('business_store_setup_wizard', 'code.html')));
   app.get('/launch-readiness', serveSpaOrFallback(path.join('cashier_pin_launch_readiness', 'code.html')));
   app.get('/cashier-login', serveSpaOrFallback(path.join('cashier_pin_login_otp_verification', 'code.html')));
+  app.get('/terminal', serveSpaOrFallback('index.html'));
+  app.get('/pos', serveSpaOrFallback('index.html'));
   app.get('/', serveSpaOrFallback('index.html'));
+
 
   // Legacy reference routes preserving original Stitch screens
   app.get('/legacy/merchant-signup', (req, res) => {

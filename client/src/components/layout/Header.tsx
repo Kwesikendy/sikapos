@@ -1,11 +1,13 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../visuals/BrandLogo';
 import { ProgressSteps } from '../ui/ProgressSteps';
 import { LogIn } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Determine current onboarding step index
   const getOnboardingStep = (path: string): number => {
@@ -18,6 +20,26 @@ export const Header: React.FC = () => {
 
   const currentStep = getOnboardingStep(location.pathname);
   const isOnboarding = currentStep >= 0;
+
+  const handleCreateAccountClick = (e: React.MouseEvent) => {
+    setMobileMenuOpen(false);
+    if (location.pathname === '/merchant-signup') {
+      e.preventDefault();
+      const el = document.getElementById('signup-form');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }
+    } else {
+      navigate('/merchant-signup#signup-form');
+      setTimeout(() => {
+        const el = document.getElementById('signup-form');
+        el?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  };
+
 
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-200/50 shadow-xs transition-all duration-200">
@@ -77,6 +99,46 @@ export const Header: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3">
+          <div className="flex flex-col space-y-2">
+            {navLinks.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  'px-3 py-2 rounded-lg text-sm font-medium',
+                  location.pathname === item.path
+                    ? 'bg-emerald-50 text-[#00A859] font-semibold'
+                    : 'text-slate-700 hover:bg-slate-50'
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <Link
+              to="/cashier-login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full text-center py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg"
+            >
+              Cashier PIN Sign In
+            </Link>
+            <button
+              type="button"
+              onClick={handleCreateAccountClick}
+              id="mobile-create-account"
+              className="w-full text-center py-2.5 rounded-full text-sm font-semibold text-white bg-[#00A859] cursor-pointer"
+            >
+              Create Account
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

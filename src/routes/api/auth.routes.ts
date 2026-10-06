@@ -141,13 +141,24 @@ authRouter.post('/register', validateBody([
       ownerPhone,
       password,
       primaryBranchName,
-      primaryBranchRegion,
-      primaryBranchGps,
-      primaryBranchAddress,
+      primaryBranchRegion = 'Greater Accra',
+      primaryBranchGps = 'GA-183-9024',
+      primaryBranchAddress = 'Oxford Street, Osu, Accra',
       taxConfiguration
     } = req.body;
 
     const phoneCheck = validateGhanaPhone(ownerPhone);
+
+    const VALID_CATEGORIES = [
+      'provision_supermarket',
+      'pharmacy',
+      'fashion',
+      'electronics',
+      'general_retail',
+    ];
+    const categoryToUse = VALID_CATEGORIES.includes(tradeCategory)
+      ? tradeCategory
+      : 'provision_supermarket';
 
     // Verify phone OTP was completed (only in production or when verified OTP is present)
     const isVerified = otpService.isRecipientVerified(phoneCheck.normalized!, 'merchant_signup');

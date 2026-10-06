@@ -225,3 +225,64 @@ CREATE TABLE IF NOT EXISTS offline_sync_events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_sync_tenant_device ON offline_sync_events(tenant_id, device_id);
+
+-- 15. Products & Inventory Catalog
+CREATE TABLE IF NOT EXISTS products (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  barcode TEXT,
+  category TEXT NOT NULL DEFAULT 'general',
+  cost_price REAL NOT NULL DEFAULT 0.0,
+  selling_price REAL NOT NULL,
+  stock_quantity INTEGER NOT NULL DEFAULT 0,
+  low_stock_threshold INTEGER NOT NULL DEFAULT 5,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (DATETIME('now')),
+  updated_at TEXT NOT NULL DEFAULT (DATETIME('now')),
+  FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_products_tenant ON products(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_products_barcode ON products(barcode);
+
+-- 16. Sales & Till Orders
+CREATE TABLE IF NOT EXISTS sales (
+  id TEXT PRIMARY KEY,
+  receipt_number TEXT NOT NULL UNIQUE,
+  tenant_id TEXT NOT NULL,
+  branch_id TEXT NOT NULL,
+  cashier_id TEXT NOT NULL,
+  subtotal REAL NOT NULL,
+  tax_amount REAL NOT NULL DEFAULT 0.0,
+  grand_total REAL NOT NULL,
+  payment_method TEXT NOT NULL CHECK(payment_method IN ('cash', 'mtn_momo', 'telecel_cash', 'at_money', 'card')),
+  amount_tendered REAL,
+  change_due REAL,
+  customer_phone TEXT,
+  tax_breakdown_json TEXT NOT NULL DEFAULT '{}',
+  status TEXT NOT NULL DEFAULT 'completed' CHECK(status IN ('completed', 'refunded', 'cancelled')),
+  created_at TEXT NOT NULL DEFAULT (DATETIME('now')),
+  FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+  FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE,
+  FOREIGN KEY (cashier_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_sales_tenant ON sales(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_sales_created ON sales(created_at);
+
+-- 17. Sale Items
+CREATE TABLE IF NOT EXISTS sale_items (
+  id TEXT PRIMARY KEY,
+  sale_id TEXT NOT NULL,
+  product_id TEXT,
+  product_name TEXT NOT NULL,
+  quantity INTEGER NOT NULL,
+  unit_price REAL NOT NULL,
+  line_total REAL NOT NULL,
+  FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_sale_items_sale ON sale_items(sale_id);
+

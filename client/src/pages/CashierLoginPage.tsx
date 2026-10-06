@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { pageVariants, staggerContainer, staggerItem } from '../lib/motion';
@@ -7,10 +7,11 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Alert } from '../components/ui/Alert';
 import { PinKeypad } from '../components/ui/PinKeypad';
-import { Badge } from '../components/ui/Badge';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
 import { authApi } from '../api/auth.api';
+import { posApi } from '../api/pos.api';
+import { useAuth } from '../context/AuthContext';
 import { ApiError, TenantOption } from '../types/auth.types';
 import { Store, ArrowRight, Lock, Building } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -23,7 +24,7 @@ interface CashierProfile {
   tenantId: string;
 }
 
-const CASHIER_PROFILES: CashierProfile[] = [
+const DEFAULT_CASHIERS: CashierProfile[] = [
   { id: 'usr_owner_001', name: 'Kwabena Mensah', role: 'Store Admin', initials: 'KM', tenantId: 'ten_default_osu' },
   { id: 'usr_cashier_001', name: 'Abena Osei', role: 'Cashier Station 1', initials: 'AO', tenantId: 'ten_default_osu' },
   { id: 'usr_cashier_002', name: 'Kofi Boateng', role: 'Cashier Station 2', initials: 'KB', tenantId: 'ten_default_osu' },
@@ -32,10 +33,13 @@ const CASHIER_PROFILES: CashierProfile[] = [
 export const CashierLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { loginWithPin, loginWithPassword } = useAuth();
   const initialMode = searchParams.get('tab') === 'admin' ? 'admin' : 'pin';
+  const redirectTarget = searchParams.get('redirect') || '/terminal';
 
   const [mode, setMode] = useState<'pin' | 'admin'>(initialMode);
-  const [selectedCashier, setSelectedCashier] = useState<CashierProfile>(CASHIER_PROFILES[0]);
+  const [cashierProfiles, setCashierProfiles] = useState<CashierProfile[]>(DEFAULT_CASHIERS);
+  const [selectedCashier, setSelectedCashier] = useState<CashierProfile>(DEFAULT_CASHIERS[0]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +48,29 @@ export const CashierLoginPage: React.FC = () => {
   const [adminPassword, setAdminPassword] = useState('OsuPass2025#');
   const [tenantOptions, setTenantOptions] = useState<TenantOption[] | null>(null);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+
+  // Fetch real staff from database
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const staff = await posApi.getPublicStaff();
+        if (staff && staff.length > 0) {
+          const profiles: CashierProfile[] = staff.map((s) => ({
+            id: s.id,
+            name: s.name,
+            role: s.role,
+            initials: s.initials,
+            tenantId: s.tenantId,
+          }));
+          setCashierProfiles(profiles);
+          setSelectedCashier(profiles[0]);
+        }
+      } catch (err) {
+        // Fallback to defaults
+      }
+    };
+    fetchStaff();
+  }, []);
 
   const handlePinComplete = async (pin: string) => {
     setIsLoading(true);
@@ -67,8 +94,8 @@ export const CashierLoginPage: React.FC = () => {
     const targetTenant = overrideTenantId || selectedTenantId || undefined;
 
     try {
-      await authApi.loginWithPassword(adminEmail, adminPassword, targetTenant);
-      navigate('/store-setup');
+      await loginWithPassword(adminEmail, adminPassword, targetTenant);
+      navigate(redirectTarget);
     } catch (err: unknown) {
       const apiErr = err as ApiError;
       if (apiErr.code === 'MULTIPLE_TENANTS_FOUND' && apiErr.tenants) {

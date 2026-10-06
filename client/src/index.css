@@ -6,6 +6,12 @@
   --color-brand-emerald-active: #062F1D;
   --color-brand-emerald-subtle: #E8F5EE;
 
+  --color-brand-green: #00A859;
+  --color-brand-green-hover: #00924C;
+  --color-brand-green-subtle: #EBF8F2;
+
+  --color-brand-navy: #0B1B2B;
+
   --color-brand-amber: #D97706;
   --color-brand-amber-hover: #B45309;
   --color-brand-amber-subtle: #FEF3C7;
@@ -38,6 +44,7 @@
   body {
     background-color: var(--color-surface-canvas);
     color: #0F172A;
+    font-family: var(--font-sans);
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     -webkit-font-smoothing: antialiased;
     /* Subtle radial gradient background for depth */
@@ -110,6 +117,11 @@
       transparent 10px
     );
   }
+}
+
+/* Organic curve background blob from reference design */
+.bg-mint-curve {
+  background: radial-gradient(circle at 80% 30%, #E8F8F0 0%, rgba(232, 248, 240, 0.4) 50%, transparent 75%);
 }
 
 /* Tactile button depress feedback */

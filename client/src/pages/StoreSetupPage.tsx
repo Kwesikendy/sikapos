@@ -37,9 +37,9 @@ const STEPS: StepItem[] = [
 ];
 
 const CATEGORIES = [
-  { id: 'provision', label: 'Provision & Supermarket', desc: 'Fast-moving consumer goods, snacks, beverages' },
+  { id: 'provision_supermarket', label: 'Provision & Supermarket', desc: 'Fast-moving consumer goods, snacks, beverages' },
   { id: 'pharmacy', label: 'Pharmacy & Wellness', desc: 'Prescription medicines, OTC drugs, toiletries' },
-  { id: 'boutique', label: 'Boutique & Apparel', desc: 'Clothing, footwear, fabrics, accessories' },
+  { id: 'fashion', label: 'Boutique & Apparel', desc: 'Clothing, footwear, fabrics, accessories' },
   { id: 'electronics', label: 'Electronics & Repairs', desc: 'Phones, hardware gadgets, accessories' },
 ];
 
@@ -113,6 +113,7 @@ export const StoreSetupPage: React.FC = () => {
     // Logic per step
     if (currentStep === 1 || currentStep === 2) {
       setCurrentStep(currentStep + 1);
+      setStepError(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -165,6 +166,7 @@ export const StoreSetupPage: React.FC = () => {
   };
 
   const handleBack = () => {
+    if (isSaving || isLoadingData) return;
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -528,6 +530,12 @@ export const StoreSetupPage: React.FC = () => {
           </motion.div>
         </motion.div>
       </main>
+
+      <LoadingOverlay
+        isOpen={isSaving}
+        message="Saving Store Setup"
+        submessage="Applying branch location, tax profile, and payout details..."
+      />
 
       <Footer />
     </div>

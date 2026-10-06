@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthLayout } from '../components/layout/AuthLayout';
 import { GlassSurface } from '../components/ui/GlassSurface';
@@ -8,6 +8,7 @@ import { PhoneInput } from '../components/ui/PhoneInput';
 import { Button } from '../components/ui/Button';
 import { Alert } from '../components/ui/Alert';
 import { Modal } from '../components/ui/Modal';
+import { LoadingOverlay } from '../components/ui/LoadingOverlay';
 import { authApi } from '../api/auth.api';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../types/auth.types';
@@ -26,7 +27,8 @@ export const MerchantSignupPage: React.FC = () => {
   const [password, setPassword] = useState('OsuPass2025#');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Status & Error
+  // Validation & Error States
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof MerchantSignupFormData, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +38,7 @@ export const MerchantSignupPage: React.FC = () => {
   const [otpCarrier, setOtpCarrier] = useState('');
   const [debugOtp, setDebugOtp] = useState<string | null>(null);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState<number>(0);
 
@@ -48,9 +51,24 @@ export const MerchantSignupPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [cooldown]);
 
+  // Check URL hash on mount or change to scroll to form
+  useEffect(() => {
+    if (window.location.hash === '#signup-form') {
+      setTimeout(() => {
+        scrollToForm();
+      }, 150);
+    }
+  }, []);
+
+  const scrollToForm = () => {
+    formRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const handleInitialSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setError(null);
+    setFieldErrors({});
 
     const cleanPhone = phoneNumber.replace(/[\s\-()]/g, '');
 
@@ -79,9 +97,11 @@ export const MerchantSignupPage: React.FC = () => {
       setOtpCarrier(res.carrier);
       if (res.debugCode) {
         setDebugOtp(res.debugCode);
+        setOtpCode(res.debugCode);
       }
       setCooldown(60);
       setShowOtpModal(true);
+      toast.success('Verification Code Sent', `SMS code dispatched to ${phoneNumber}.`);
     } catch (err: unknown) {
       const apiErr = err as ApiError;
       if (apiErr.remainingCooldownSeconds) {
@@ -99,23 +119,36 @@ export const MerchantSignupPage: React.FC = () => {
   };
 
   const handleResendOtp = async () => {
-    if (cooldown > 0) return;
+    if (cooldown > 0 || isResendingOtp || isVerifyingOtp) return;
+    setIsResendingOtp(true);
     setOtpError(null);
     try {
       const res = await authApi.requestSignupOtp(phoneNumber);
       if (res.debugCode) {
         setDebugOtp(res.debugCode);
+        setOtpCode(res.debugCode);
       }
       setCooldown(60);
+      toast.success('Code Resent', 'A fresh verification code has been dispatched.');
     } catch (err: unknown) {
       const apiErr = err as ApiError;
-      setOtpError(apiErr.message || 'Failed to resend code.');
+      const msg = apiErr.message || 'Failed to resend code.';
+      setOtpError(msg);
+      toast.error('Resend Failed', msg);
+    } finally {
+      setIsResendingOtp(false);
     }
   };
 
   const handleVerifyAndRegister = async () => {
-    if (!otpCode || otpCode.length < 6) {
-      setOtpError('Please enter the full 6-digit verification code.');
+    if (isVerifyingOtp) return;
+
+    // Validate OTP against Zod schema
+    const otpValidation = otpVerificationSchema.safeParse({ otpCode });
+    if (!otpValidation.success) {
+      const msg = otpValidation.error.issues[0]?.message || 'Please enter the full 6-digit verification code.';
+      setOtpError(msg);
+      toast.warning('Invalid Code', msg);
       return;
     }
 
@@ -148,6 +181,7 @@ export const MerchantSignupPage: React.FC = () => {
         primaryBranchPhone: formattedPhone,
       });
 
+      toast.success('Registration Successful', 'Welcome to SikaPOS! Initializing store setup.');
       setShowOtpModal(false);
       navigate('/store-setup');
     } catch (err: unknown) {
@@ -278,7 +312,7 @@ export const MerchantSignupPage: React.FC = () => {
               Verify Phone & Continue
             </Button>
           </div>
-        </form>
+        </section>
 
         {/* Level 2/3: Clear, low-friction secondary route */}
         <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm text-slate-500">
@@ -299,7 +333,7 @@ export const MerchantSignupPage: React.FC = () => {
         title="Verify Your Phone"
         description={`We sent a 6-digit code to +233 ${phoneNumber}.`}
       >
-        <div className="space-y-4 pt-2">
+        <div className="space-y-5 pt-2">
           {otpError && <Alert variant="error">{otpError}</Alert>}
 
           {/* Sandbox Development Code */}
@@ -319,6 +353,7 @@ export const MerchantSignupPage: React.FC = () => {
               type="text"
               maxLength={6}
               autoFocus
+              disabled={isVerifyingOtp}
               inputMode="numeric"
               placeholder="000000"
               value={otpCode}
@@ -335,19 +370,22 @@ export const MerchantSignupPage: React.FC = () => {
             ) : (
               <button
                 type="button"
+                disabled={isResendingOtp || isVerifyingOtp}
                 onClick={handleResendOtp}
                 className="font-bold text-[#0D5C3A] hover:underline cursor-pointer"
               >
-                Resend Code
+                {isResendingOtp ? 'Resending Code...' : 'Resend Code'}
               </button>
             )}
           </div>
 
           <div className="pt-2">
             <Button
+              id="verify-register-button"
               type="button"
               className="w-full"
               size="lg"
+              disabled={isVerifyingOtp || isResendingOtp}
               isLoading={isVerifyingOtp}
               loadingText="Verifying..."
               onClick={handleVerifyAndRegister}
@@ -357,6 +395,14 @@ export const MerchantSignupPage: React.FC = () => {
           </div>
         </div>
       </Modal>
-    </AuthLayout>
+
+      <LoadingOverlay
+        isOpen={isVerifyingOtp}
+        message="Creating Merchant Account"
+        submessage="Verifying credentials and setting up your store tenant..."
+      />
+
+      <Footer />
+    </div>
   );
 };
