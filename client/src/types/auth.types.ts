@@ -61,8 +61,6 @@ export interface RegisterPayload {
   primaryBranchGps?: string;
   primaryBranchAddress?: string;
   primaryBranchPhone?: string;
-  primaryBranchRegion?: string;
-  primaryBranchGps?: string;
 }
 
 export interface AuthSuccessResponse {

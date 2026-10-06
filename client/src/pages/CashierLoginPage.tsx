@@ -6,6 +6,7 @@ import { GlassSurface } from '../components/ui/GlassSurface';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Alert } from '../components/ui/Alert';
+import { Badge } from '../components/ui/Badge';
 import { PinKeypad } from '../components/ui/PinKeypad';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
@@ -215,7 +216,7 @@ export const CashierLoginPage: React.FC = () => {
                           Select Shift Attendant
                         </label>
                         <div className="grid grid-cols-3 gap-3">
-                          {CASHIER_PROFILES.map((profile) => {
+                          {cashierProfiles.map((profile) => {
                             const isSelected = selectedCashier.id === profile.id;
                             return (
                               <button

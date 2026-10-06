@@ -100,42 +100,24 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer - simplified since mobile nav is not needed here */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3">
           <div className="flex flex-col space-y-2">
-            {navLinks.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className={cn(
-                  'px-3 py-2 rounded-lg text-sm font-medium',
-                  location.pathname === item.path
-                    ? 'bg-emerald-50 text-[#00A859] font-semibold'
-                    : 'text-slate-700 hover:bg-slate-50'
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
             <Link
-              to="/cashier-login"
+              to="/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg"
+              className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
-              Cashier PIN Sign In
+              Sign In
             </Link>
-            <button
-              type="button"
-              onClick={handleCreateAccountClick}
-              id="mobile-create-account"
-              className="w-full text-center py-2.5 rounded-full text-sm font-semibold text-white bg-[#00A859] cursor-pointer"
+            <Link
+              to="/merchant-signup"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               Create Account
-            </button>
+            </Link>
           </div>
         </div>
       )}

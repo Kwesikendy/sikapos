@@ -25,8 +25,22 @@ export const App: React.FC = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/merchant-signup" element={<MerchantSignupPage />} />
           <Route path="/cashier-login" element={<CashierLoginPage />} />
-          <Route path="/store-setup" element={<StoreSetupPage />} />
-          <Route path="/launch-readiness" element={<LaunchReadinessPage />} />
+          <Route 
+            path="/store-setup" 
+            element={
+              <ProtectedRoute fallbackPath="/login">
+                <StoreSetupPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/launch-readiness" 
+            element={
+              <ProtectedRoute fallbackPath="/login">
+                <LaunchReadinessPage />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* POS Terminal */}
           <Route 

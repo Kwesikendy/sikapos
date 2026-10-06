@@ -13,6 +13,16 @@ import { authApi } from '../api/auth.api';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../types/auth.types';
 import { Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Footer } from '../components/layout/Footer';
+
+interface MerchantSignupFormData {
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  businessName: string;
+  branchName: string;
+  password: string;
+}
 
 export const MerchantSignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -37,6 +47,7 @@ export const MerchantSignupPage: React.FC = () => {
   const [otpCode, setOtpCode] = useState('');
   const [otpCarrier, setOtpCarrier] = useState('');
   const [debugOtp, setDebugOtp] = useState<string | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isResendingOtp, setIsResendingOtp] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
@@ -101,7 +112,6 @@ export const MerchantSignupPage: React.FC = () => {
       }
       setCooldown(60);
       setShowOtpModal(true);
-      toast.success('Verification Code Sent', `SMS code dispatched to ${phoneNumber}.`);
     } catch (err: unknown) {
       const apiErr = err as ApiError;
       if (apiErr.remainingCooldownSeconds) {
@@ -129,12 +139,10 @@ export const MerchantSignupPage: React.FC = () => {
         setOtpCode(res.debugCode);
       }
       setCooldown(60);
-      toast.success('Code Resent', 'A fresh verification code has been dispatched.');
     } catch (err: unknown) {
       const apiErr = err as ApiError;
       const msg = apiErr.message || 'Failed to resend code.';
       setOtpError(msg);
-      toast.error('Resend Failed', msg);
     } finally {
       setIsResendingOtp(false);
     }
@@ -143,12 +151,10 @@ export const MerchantSignupPage: React.FC = () => {
   const handleVerifyAndRegister = async () => {
     if (isVerifyingOtp) return;
 
-    // Validate OTP against Zod schema
-    const otpValidation = otpVerificationSchema.safeParse({ otpCode });
-    if (!otpValidation.success) {
-      const msg = otpValidation.error.issues[0]?.message || 'Please enter the full 6-digit verification code.';
+    // Validate OTP manually
+    if (!otpCode || otpCode.length < 6) {
+      const msg = 'Please enter the full 6-digit verification code.';
       setOtpError(msg);
-      toast.warning('Invalid Code', msg);
       return;
     }
 
@@ -181,7 +187,6 @@ export const MerchantSignupPage: React.FC = () => {
         primaryBranchPhone: formattedPhone,
       });
 
-      toast.success('Registration Successful', 'Welcome to SikaPOS! Initializing store setup.');
       setShowOtpModal(false);
       navigate('/store-setup');
     } catch (err: unknown) {
@@ -312,7 +317,7 @@ export const MerchantSignupPage: React.FC = () => {
               Verify Phone & Continue
             </Button>
           </div>
-        </section>
+        </form>
 
         {/* Level 2/3: Clear, low-friction secondary route */}
         <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm text-slate-500">
@@ -403,6 +408,6 @@ export const MerchantSignupPage: React.FC = () => {
       />
 
       <Footer />
-    </div>
+    </AuthLayout>
   );
 };

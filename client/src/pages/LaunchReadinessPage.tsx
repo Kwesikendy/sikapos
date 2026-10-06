@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { pageVariants, staggerContainer, staggerItem } from '../lib/motion';
 import { GlassSurface } from '../components/ui/GlassSurface';
 import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
 import { PinKeypad } from '../components/ui/PinKeypad';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
@@ -26,6 +27,7 @@ export const LaunchReadinessPage: React.FC = () => {
   const [offlineMode, setOfflineMode] = useState(true);
   const [pin, setPin] = useState('');
   const [pinSaved, setPinSaved] = useState(false);
+  const [readinessScore, setReadinessScore] = useState<number>(100);
 
   const checklistItems = [
     { title: 'Merchant Account Verified', desc: 'Kwabena Mensah • Registered Owner', status: 'ready', icon: ShieldCheck },
@@ -33,7 +35,7 @@ export const LaunchReadinessPage: React.FC = () => {
     { title: 'GRA Sales Tax Profile Set', desc: 'Standard 15% VAT + 2.5% NHIL + 2.5% GETFund', status: 'ready', icon: Receipt },
     { title: 'Settlement Account Linked', desc: 'MTN Mobile Money (+233 24 412 3456)', status: 'ready', icon: Smartphone },
     { title: 'Cashier Shift Terminal Ready', desc: 'Tactile 4-digit PIN authentication active', status: 'ready', icon: Terminal },
-  ]);
+  ];
   const [activeCashierName, setActiveCashierName] = useState('Kwabena Mensah');
   const [pinNotice, setPinNotice] = useState<string | null>(null);
 
@@ -45,7 +47,7 @@ export const LaunchReadinessPage: React.FC = () => {
     try {
       const res = await posApi.getReadiness();
       if (res && res.score !== undefined) {
-        setReadinessScore(res.score);
+        setReadinessScore(res.score ?? 100);
       }
       const userRes = await authApi.getCurrentUser().catch(() => null);
       const name = (userRes?.user as any)?.fullName || (userRes?.user as any)?.full_name;

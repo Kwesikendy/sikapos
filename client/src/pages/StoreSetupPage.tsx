@@ -28,6 +28,7 @@ import { authApi } from '../api/auth.api';
 import { tenantApi } from '../api/tenant.api';
 import { ApiError } from '../types/auth.types';
 import { Alert } from '../components/ui/Alert';
+import { useAuth } from '../context/AuthContext';
 
 const STEPS: StepItem[] = [
   { id: 1, label: 'Owner Profile' },
@@ -74,38 +75,50 @@ export const StoreSetupPage: React.FC = () => {
   const [cashierPin, setCashierPin] = useState('');
   const [payoutMomoNumber, setPayoutMomoNumber] = useState('');
 
+  const { user: authUser, tenant: authTenant } = useAuth();
+
   useEffect(() => {
     const fetchContext = async () => {
       try {
-        const { user, tenant } = await authApi.getCurrentUser();
-        setOwnerName(user.fullName);
-        setOwnerPhone((user as any).phone || (user as any).phone_number || (user as any).phoneNumber);
-        setOwnerEmail(user.email || '');
-        setBusinessName(tenant.businessName);
-        
-        // Match category
-        if (tenant.tradeCategory.includes('pharmacy')) setSelectedCategory('pharmacy');
-        else if (tenant.tradeCategory.includes('fashion')) setSelectedCategory('boutique');
-        else if (tenant.tradeCategory.includes('electronics')) setSelectedCategory('electronics');
-        else setSelectedCategory('provision');
+        let u = authUser;
+        let t = authTenant;
+        if (!u || !t) {
+          const res = await authApi.getCurrentUser();
+          u = res.user;
+          t = res.tenant;
+        }
+
+        if (u) {
+          setOwnerName(u.fullName || '');
+          setOwnerPhone((u as any).phone || (u as any).phone_number || (u as any).phoneNumber || '');
+          setOwnerEmail(u.email || '');
+        }
+
+        if (t) {
+          setBusinessName(t.businessName || '');
+          if (t.tradeCategory?.includes('pharmacy')) setSelectedCategory('pharmacy');
+          else if (t.tradeCategory?.includes('fashion')) setSelectedCategory('boutique');
+          else if (t.tradeCategory?.includes('electronics')) setSelectedCategory('electronics');
+          else setSelectedCategory('provision');
+        }
 
         // Fetch Branches
-        const branches = await tenantApi.getBranches();
-        if (branches.length > 0) {
+        const branches = await tenantApi.getBranches().catch(() => []);
+        if (branches && branches.length > 0) {
           const primary = branches.find(b => b.is_primary) || branches[0];
           setBranchId(primary.id);
-          setBranchName(primary.name);
-          setGhanaPostGps(primary.gps_digital_address);
+          setBranchName(primary.name || '');
+          setGhanaPostGps(primary.gps_digital_address || '');
         }
       } catch (err) {
-        setError('Failed to load store data. Please log in again.');
+        setError('Authentication required to configure store setup. Please log in to your account.');
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchContext();
-  }, []);
+  }, [authUser, authTenant]);
 
   const handleNext = async () => {
     setError(null);
@@ -113,7 +126,7 @@ export const StoreSetupPage: React.FC = () => {
     // Logic per step
     if (currentStep === 1 || currentStep === 2) {
       setCurrentStep(currentStep + 1);
-      setStepError(null);
+      setError(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -166,7 +179,7 @@ export const StoreSetupPage: React.FC = () => {
   };
 
   const handleBack = () => {
-    if (isSaving || isLoadingData) return;
+    if (isSaving || isLoading) return;
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -202,7 +215,16 @@ export const StoreSetupPage: React.FC = () => {
 
           {error && (
             <motion.div variants={staggerItem} className="mb-6">
-              <Alert variant="error" className="shadow-sm">{error}</Alert>
+              <Alert variant="error" className="shadow-sm flex items-center justify-between gap-4">
+                <span>{error}</span>
+                <Button
+                  size="sm"
+                  onClick={() => navigate('/login')}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold shrink-0 px-4 h-9 text-xs rounded-lg"
+                >
+                  Sign In Now
+                </Button>
+              </Alert>
             </motion.div>
           )}
 
@@ -531,11 +553,15 @@ export const StoreSetupPage: React.FC = () => {
         </motion.div>
       </main>
 
-      <LoadingOverlay
-        isOpen={isSaving}
-        message="Saving Store Setup"
-        submessage="Applying branch location, tax profile, and payout details..."
-      />
+      {isSaving && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-8 shadow-xl text-center space-y-3">
+            <div className="w-10 h-10 rounded-full border-4 border-[#0D5C3A]/20 border-t-[#0D5C3A] animate-spin mx-auto" />
+            <p className="text-sm font-bold text-slate-900">Saving Store Setup</p>
+            <p className="text-xs text-slate-500">Applying branch location, tax profile, and payout details...</p>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
