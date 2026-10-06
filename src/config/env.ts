@@ -16,7 +16,10 @@ export interface AppConfig {
 }
 
 export function loadConfig(): AppConfig {
-  const isTestMode = process.env.NODE_ENV === 'test' || process.argv.includes('--test') || process.execArgv.includes('--test');
+  const isTestMode =
+    process.env.NODE_ENV === 'test' ||
+    process.argv.some(a => a.includes('test')) ||
+    process.execArgv.some(a => a.includes('test'));
   const nodeEnv = (process.env.NODE_ENV || (isTestMode ? 'test' : 'development')) as 'development' | 'test' | 'production';
 
   // In Google Cloud Run containers, NGINX is on 8080 and proxies to the app on port 3000
