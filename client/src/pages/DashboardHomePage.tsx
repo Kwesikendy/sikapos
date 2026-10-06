@@ -256,11 +256,11 @@ export const DashboardHomePage: React.FC = () => {
       {/* ---------------------------------------------------- */}
       <motion.div 
         variants={staggerItem} 
-        className="sika-raised rounded-[22px] p-6 sm:p-7 space-y-6"
+        className="sika-raised rounded-[22px] p-5 sm:p-7 space-y-6"
       >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 divide-y md:divide-y-0 md:divide-x divide-slate-200/60">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Total Transactions */}
-          <div className="space-y-1.5 pr-4">
+          <div className="space-y-1.5 p-3 sm:p-4 rounded-xl bg-slate-50/60 border border-slate-100">
             <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Completed Sales</p>
             <div className="flex items-baseline gap-2">
               <h3 className="text-2xl font-black text-slate-900 tabular-nums">{transactionCount}</h3>
@@ -270,7 +270,7 @@ export const DashboardHomePage: React.FC = () => {
           </div>
 
           {/* Average Order Value */}
-          <div className="space-y-1.5 pt-4 md:pt-0 md:px-6">
+          <div className="space-y-1.5 p-3 sm:p-4 rounded-xl bg-slate-50/60 border border-slate-100">
             <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Avg Order Value</p>
             <div className="flex items-baseline gap-2">
               <h3 className="text-2xl font-black text-slate-900 tabular-nums">{formatGHS(avgOrderValue)}</h3>
@@ -279,7 +279,7 @@ export const DashboardHomePage: React.FC = () => {
           </div>
 
           {/* MoMo Revenue */}
-          <div className="space-y-1.5 pt-4 md:pt-0 md:px-6">
+          <div className="space-y-1.5 p-3 sm:p-4 rounded-xl bg-slate-50/60 border border-slate-100">
             <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Mobile Money</p>
             <div className="flex items-baseline gap-2">
               <h3 className="text-2xl font-black text-[#0D5C3A] tabular-nums">{formatGHS(momoTotal)}</h3>
@@ -290,7 +290,7 @@ export const DashboardHomePage: React.FC = () => {
           </div>
 
           {/* Stock Health */}
-          <div className="space-y-1.5 pt-4 md:pt-0 md:pl-6">
+          <div className="space-y-1.5 p-3 sm:p-4 rounded-xl bg-slate-50/60 border border-slate-100">
             <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Active Inventory</p>
             <div className="flex items-baseline gap-2">
               <h3 className="text-2xl font-black text-slate-900 tabular-nums">{allProducts.length}</h3>
@@ -302,7 +302,7 @@ export const DashboardHomePage: React.FC = () => {
               </p>
             ) : (
               <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> Stock levels healthy
+                <CheckCircle2 className="w-3 h-3" /> Stock healthy
               </p>
             )}
           </div>
