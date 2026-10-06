@@ -64,6 +64,11 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
     );
   };
 
+  const digitsCount = (value || '').replace(/\D/g, '').length;
+  const activeHelper = errorText
+    ? null
+    : helperText || (digitsCount > 0 && digitsCount < 10 ? `${digitsCount}/10 digits entered (Ghana numbers have 10 digits)` : helperText);
+
   return (
     <div className="w-full space-y-1.5 text-left">
       <div className="flex items-center justify-between">
@@ -74,7 +79,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
       </div>
 
       <div className="flex items-center gap-2">
-        {/* Country Code Prefix (Strictly no emoji) */}
+        {/* Country Code Prefix */}
         <div className="h-12 px-3 rounded-lg bg-slate-100 border border-slate-300 text-slate-800 font-mono font-semibold text-sm flex items-center justify-center shrink-0 select-none">
           +233
         </div>
@@ -93,7 +98,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
             aria-describedby={
               errorText
                 ? `${inputId}-error`
-                : helperText
+                : activeHelper
                 ? `${inputId}-helper`
                 : undefined
             }
@@ -112,8 +117,8 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
 
       {errorText ? (
         <p id={`${inputId}-error`} role="alert" className="text-xs font-medium text-[#DC2626] mt-1">{errorText}</p>
-      ) : helperText ? (
-        <p id={`${inputId}-helper`} className="text-xs text-slate-500 mt-1">{helperText}</p>
+      ) : activeHelper ? (
+        <p id={`${inputId}-helper`} className="text-xs text-slate-500 mt-1">{activeHelper}</p>
       ) : null}
     </div>
   );

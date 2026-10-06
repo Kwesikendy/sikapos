@@ -9,6 +9,8 @@ import { PhoneInput } from '../components/ui/PhoneInput';
 import { Button } from '../components/ui/Button';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
+import { DotPattern } from '../components/visuals/DotPattern';
+import { AmbientGlow } from '../components/visuals/AmbientGlow';
 import {
   Building2,
   Store,
@@ -178,7 +180,11 @@ export const StoreSetupPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-transparent text-slate-900">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 overflow-hidden relative selection:bg-[#0D5C3A]/20 selection:text-[#0D5C3A]">
+      <DotPattern variant="emerald" size="md" opacity={0.85} />
+      <AmbientGlow color="emerald" position="top-left" className="opacity-40" />
+      <AmbientGlow color="amber" position="bottom-right" className="opacity-25" />
+
       <Header />
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">

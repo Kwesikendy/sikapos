@@ -66,9 +66,9 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Secondary CTA: Sign In */}
-          {location.pathname !== '/cashier-login' && (
+          {location.pathname !== '/login' && (
             <Link
-              to="/cashier-login"
+              to="/login"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D5C3A]"
             >
               <LogIn className="w-3.5 h-3.5 text-slate-500" aria-hidden="true" />

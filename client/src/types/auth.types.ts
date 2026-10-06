@@ -23,12 +23,17 @@ export interface Tenant {
 
 export interface Branch {
   id: string;
-  tenantId: string;
+  tenantId?: string;
+  tenant_id?: string;
   name: string;
-  code: string;
+  code?: string;
   address?: string | null;
+  physical_address?: string | null;
+  region?: string | null;
+  gps_digital_address?: string | null;
   phone?: string | null;
-  isPrimary: boolean;
+  isPrimary?: boolean;
+  is_primary?: boolean;
 }
 
 export interface RequestOtpResponse {
@@ -52,6 +57,8 @@ export interface RegisterPayload {
   ownerPhone: string;
   password: string;
   primaryBranchName: string;
+  primaryBranchRegion?: string;
+  primaryBranchGps?: string;
   primaryBranchAddress?: string;
   primaryBranchPhone?: string;
 }
@@ -76,4 +83,5 @@ export interface ApiError {
   status: number;
   remainingCooldownSeconds?: number;
   tenants?: TenantOption[];
+  details?: Record<string, string>;
 }

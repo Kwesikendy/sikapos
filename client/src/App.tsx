@@ -1,33 +1,65 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { LoginPage } from './pages/LoginPage';
 import { MerchantSignupPage } from './pages/MerchantSignupPage';
 import { StoreSetupPage } from './pages/StoreSetupPage';
 import { LaunchReadinessPage } from './pages/LaunchReadinessPage';
 import { CashierLoginPage } from './pages/CashierLoginPage';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { DashboardHomePage } from './pages/DashboardHomePage';
+import { InventoryPage } from './pages/InventoryPage';
+import { TransactionsPage } from './pages/TransactionsPage';
+import { ReportsPage } from './pages/ReportsPage';
+import { TeamPage } from './pages/TeamPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { POSPage } from './pages/POSPage';
 
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/merchant-signup" element={<MerchantSignupPage />} />
-        <Route path="/store-setup" element={<StoreSetupPage />} />
-        <Route path="/launch-readiness" element={<LaunchReadinessPage />} />
-        <Route path="/cashier-login" element={<CashierLoginPage />} />
-        <Route path="/pos" element={<POSPage />} />
-        
-        {/* Dashboard Shell Routes */}
-        <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<DashboardHomePage />} />
-          {/* Future routes will be nested here */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Route>
+      <AuthProvider>
+        <Routes>
+          {/* Public Auth Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/merchant-signup" element={<MerchantSignupPage />} />
+          <Route path="/cashier-login" element={<CashierLoginPage />} />
+          <Route path="/store-setup" element={<StoreSetupPage />} />
+          <Route path="/launch-readiness" element={<LaunchReadinessPage />} />
 
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+          {/* POS Terminal */}
+          <Route 
+            path="/pos" 
+            element={
+              <ProtectedRoute fallbackPath="/login">
+                <POSPage />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Protected Dashboard Shell Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute fallbackPath="/login">
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<DashboardHomePage />} />
+            <Route path="inventory" element={<InventoryPage />} />
+            <Route path="transactions" element={<TransactionsPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="team" element={<TeamPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Route>
+
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 };

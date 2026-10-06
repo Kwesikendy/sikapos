@@ -1,36 +1,65 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 
-interface DotPatternProps {
+export interface DotPatternProps {
   className?: string;
-  variant?: 'dark' | 'light';
+  variant?: 'emerald' | 'slate' | 'dark' | 'light';
   size?: 'sm' | 'md' | 'lg';
+  fadeMask?: 'radial' | 'top-fade' | 'bottom-fade' | 'linear' | 'none';
   opacity?: number;
 }
 
 export const DotPattern: React.FC<DotPatternProps> = ({ 
   className, 
-  variant = 'dark',
+  variant = 'emerald',
   size = 'md',
-  opacity = 1
+  fadeMask = 'radial',
+  opacity = 0.75
 }) => {
   const sizeClass = {
-    sm: 'bg-[size:10px_10px]',
-    md: 'bg-[size:20px_20px]',
-    lg: 'bg-[size:40px_40px]'
+    sm: 'bg-[size:16px_16px]',
+    md: 'bg-[size:24px_24px]',
+    lg: 'bg-[size:36px_36px]'
   }[size];
 
-  const variantClass = variant === 'dark' ? 'bg-dot-pattern' : 'bg-dot-pattern-light';
+  const variantClass = {
+    emerald: 'bg-dot-pattern',
+    dark: 'bg-dot-pattern',
+    slate: 'bg-dot-pattern-slate',
+    light: 'bg-dot-pattern-light',
+  }[variant] || 'bg-dot-pattern';
+
+  const maskStyle: React.CSSProperties = {
+    opacity,
+    WebkitMaskImage: fadeMask === 'radial'
+      ? 'radial-gradient(ellipse at 50% 30%, black 20%, rgba(0,0,0,0.5) 60%, transparent 95%)'
+      : fadeMask === 'top-fade'
+      ? 'linear-gradient(to bottom, black 10%, rgba(0,0,0,0.3) 70%, transparent 100%)'
+      : fadeMask === 'bottom-fade'
+      ? 'linear-gradient(to top, black 10%, rgba(0,0,0,0.3) 70%, transparent 100%)'
+      : fadeMask === 'linear'
+      ? 'linear-gradient(135deg, black 0%, transparent 80%)'
+      : 'none',
+    maskImage: fadeMask === 'radial'
+      ? 'radial-gradient(ellipse at 50% 30%, black 20%, rgba(0,0,0,0.5) 60%, transparent 95%)'
+      : fadeMask === 'top-fade'
+      ? 'linear-gradient(to bottom, black 10%, rgba(0,0,0,0.3) 70%, transparent 100%)'
+      : fadeMask === 'bottom-fade'
+      ? 'linear-gradient(to top, black 10%, rgba(0,0,0,0.3) 70%, transparent 100%)'
+      : fadeMask === 'linear'
+      ? 'linear-gradient(135deg, black 0%, transparent 80%)'
+      : 'none',
+  };
 
   return (
     <div 
       className={cn(
-        'absolute inset-0 pointer-events-none transition-opacity duration-1000',
+        'absolute inset-0 pointer-events-none transition-opacity duration-700',
         variantClass,
         sizeClass,
         className
       )}
-      style={{ opacity }}
+      style={maskStyle}
       aria-hidden="true"
     />
   );

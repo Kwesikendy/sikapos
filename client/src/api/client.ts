@@ -6,16 +6,20 @@ class HttpClient {
   private token: string | null = null;
 
   constructor() {
-    this.token = typeof window !== 'undefined' ? sessionStorage.getItem('sikapos_token') : null;
+    this.token = typeof window !== 'undefined'
+      ? window.sessionStorage.getItem('sikapos_token') || window.localStorage.getItem('sikapos_token')
+      : null;
   }
 
   setToken(token: string | null) {
     this.token = token;
     if (typeof window !== 'undefined') {
       if (token) {
-        sessionStorage.setItem('sikapos_token', token);
+        window.sessionStorage.setItem('sikapos_token', token);
+        window.localStorage.setItem('sikapos_token', token);
       } else {
-        sessionStorage.removeItem('sikapos_token');
+        window.sessionStorage.removeItem('sikapos_token');
+        window.localStorage.removeItem('sikapos_token');
       }
     }
   }
@@ -46,10 +50,21 @@ class HttpClient {
 
       if (!response.ok) {
         const errorData = json?.error || {};
+        let message = errorData.message || response.statusText || 'An unexpected error occurred.';
+        
+        if (errorData.details && typeof errorData.details === 'object') {
+          const detailStrings = Object.values(errorData.details)
+            .filter((v): v is string => typeof v === 'string' && Boolean(v));
+          if (detailStrings.length > 0) {
+            message = detailStrings.join('. ');
+          }
+        }
+
         const error: ApiError = {
           status: response.status,
           code: errorData.code || 'REQUEST_FAILED',
-          message: errorData.message || response.statusText || 'An unexpected error occurred.',
+          message,
+          details: errorData.details,
           remainingCooldownSeconds: errorData.remainingCooldownSeconds,
           tenants: errorData.tenants,
         };

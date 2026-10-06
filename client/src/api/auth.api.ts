@@ -6,6 +6,7 @@ import {
   AuthSuccessResponse,
   User,
   Tenant,
+  Branch,
 } from '../types/auth.types';
 
 export const authApi = {
@@ -57,8 +58,8 @@ export const authApi = {
     return res;
   },
 
-  getCurrentUser: async (): Promise<{ user: User; tenant: Tenant }> => {
-    return apiClient.get<{ user: User; tenant: Tenant }>('/auth/me');
+  getCurrentUser: async (): Promise<{ user: User; tenant: Tenant; primaryBranch?: Branch; branches?: Branch[] }> => {
+    return apiClient.get<{ user: User; tenant: Tenant; primaryBranch?: Branch; branches?: Branch[] }>('/auth/me');
   },
 
   logout: async (): Promise<{ loggedOut: boolean }> => {

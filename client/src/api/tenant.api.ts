@@ -45,5 +45,9 @@ export const tenantApi = {
 
   createCashier: async (payload: CashierPayload) => {
     return apiClient.post<any>('/tenants/cashiers', payload);
+  },
+
+  getCashiers: async () => {
+    return apiClient.get<any[]>('/tenants/public-staff');
   }
 };

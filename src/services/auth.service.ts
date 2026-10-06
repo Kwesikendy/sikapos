@@ -159,15 +159,32 @@ export class AuthService {
     clientIp?: string,
     userAgent?: string
   ): { token: string; user: UserSummary; tenantId: string } {
-    const normalizedEmail = email.toLowerCase().trim();
+    const identifier = email.trim();
+    const normalizedEmail = identifier.toLowerCase();
 
-    // Query all active accounts matching this email across organizations
+    // Support phone number login as well
+    const cleanPhone = identifier.replace(/[\s\-()]/g, '');
+    let phoneNorm1 = cleanPhone;
+    let phoneNorm2 = cleanPhone;
+    if (cleanPhone.startsWith('0')) {
+      phoneNorm1 = '+233' + cleanPhone.substring(1);
+    } else if (cleanPhone.startsWith('+233')) {
+      phoneNorm2 = '0' + cleanPhone.substring(4);
+    } else if (cleanPhone.startsWith('233')) {
+      phoneNorm1 = '+' + cleanPhone;
+      phoneNorm2 = '0' + cleanPhone.substring(3);
+    } else if (/^[25]\d{8}$/.test(cleanPhone)) {
+      phoneNorm1 = '+233' + cleanPhone;
+      phoneNorm2 = '0' + cleanPhone;
+    }
+
+    // Query all active accounts matching this email or phone across organizations
     const matchingUsers = this.db.prepare(`
       SELECT u.*, t.business_name, t.legal_name
       FROM users u
       INNER JOIN tenants t ON t.id = u.tenant_id
-      WHERE u.email = ? AND u.is_active = 1
-    `).all(normalizedEmail) as Array<User & {
+      WHERE (LOWER(u.email) = ? OR u.phone_number = ? OR u.phone_number = ? OR u.phone_number = ?) AND u.is_active = 1
+    `).all(normalizedEmail, cleanPhone, phoneNorm1, phoneNorm2) as Array<User & {
       password_hash: string;
       salt: string;
       business_name: string;

@@ -9,11 +9,13 @@ import { Button } from '../components/ui/Button';
 import { Alert } from '../components/ui/Alert';
 import { Modal } from '../components/ui/Modal';
 import { authApi } from '../api/auth.api';
+import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../types/auth.types';
 import { Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export const MerchantSignupPage: React.FC = () => {
   const navigate = useNavigate();
+  const { registerMerchant } = useAuth();
 
   // Form State
   const [fullName, setFullName] = useState('Kwabena Mensah');
@@ -50,10 +52,21 @@ export const MerchantSignupPage: React.FC = () => {
     e.preventDefault();
     setError(null);
 
-    if (!phoneNumber || phoneNumber.length < 9) {
-      setError('Please enter a valid Ghanaian mobile phone number.');
+    const cleanPhone = phoneNumber.replace(/[\s\-()]/g, '');
+
+    // Allow 10 digits starting with 0, or 9 digits without 0 (e.g. 599295290)
+    let formattedPhone = cleanPhone;
+    if (/^[25]\d{8}$/.test(cleanPhone)) {
+      formattedPhone = '0' + cleanPhone;
+    }
+
+    if (formattedPhone.length < 10) {
+      setError(
+        `Mobile phone has only ${formattedPhone.length} digits. A valid Ghanaian phone number must have 10 digits (e.g. 059 929 5290).`
+      );
       return;
     }
+
     if (password.length < 8) {
       setError('Password must be at least 8 characters long.');
       return;
@@ -62,7 +75,7 @@ export const MerchantSignupPage: React.FC = () => {
     setIsLoading(true);
     try {
       // Step 1: Request OTP from backend
-      const res = await authApi.requestSignupOtp(phoneNumber);
+      const res = await authApi.requestSignupOtp(formattedPhone);
       setOtpCarrier(res.carrier);
       if (res.debugCode) {
         setDebugOtp(res.debugCode);
@@ -75,7 +88,11 @@ export const MerchantSignupPage: React.FC = () => {
         setCooldown(apiErr.remainingCooldownSeconds);
         setShowOtpModal(true);
       }
-      setError(apiErr.message || 'Could not send verification code. Please try again.');
+      let errMessage = apiErr.message;
+      if (apiErr.details && apiErr.details.phoneNumber) {
+        errMessage = apiErr.details.phoneNumber;
+      }
+      setError(errMessage || 'Could not send verification code. Please check your phone number and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -105,27 +122,44 @@ export const MerchantSignupPage: React.FC = () => {
     setIsVerifyingOtp(true);
     setOtpError(null);
 
+    const cleanPhone = phoneNumber.replace(/[\s\-()]/g, '');
+    let formattedPhone = cleanPhone;
+    if (/^[25]\d{8}$/.test(cleanPhone)) {
+      formattedPhone = '0' + cleanPhone;
+    }
+
     try {
       // Step 2: Verify OTP
-      await authApi.verifySignupOtp(phoneNumber, otpCode);
+      await authApi.verifySignupOtp(formattedPhone, otpCode);
 
       // Step 3: Register Merchant Tenant
-      await authApi.registerMerchant({
+      await registerMerchant({
         businessLegalName: `${businessName} Ltd`,
         businessTradeName: businessName,
-        tradeCategory: 'grocery_minimart',
+        tradeCategory: 'provision_supermarket',
         ownerFullName: fullName,
         ownerEmail: email,
-        ownerPhone: phoneNumber,
+        ownerPhone: formattedPhone,
         password,
         primaryBranchName: branchName,
+        primaryBranchRegion: 'Greater Accra',
+        primaryBranchGps: 'GA-000-0000',
+        primaryBranchAddress: branchName || 'Accra, Ghana',
+        primaryBranchPhone: formattedPhone,
       });
 
       setShowOtpModal(false);
       navigate('/store-setup');
     } catch (err: unknown) {
       const apiErr = err as ApiError;
-      setOtpError(apiErr.message || 'Verification failed. Please check the code.');
+      let errMessage = apiErr.message;
+      if (apiErr.details) {
+        const detailsList = Object.values(apiErr.details).filter(Boolean);
+        if (detailsList.length > 0) {
+          errMessage = detailsList.join('. ');
+        }
+      }
+      setOtpError(errMessage || 'Verification failed. Please check the code.');
     } finally {
       setIsVerifyingOtp(false);
     }
@@ -250,10 +284,10 @@ export const MerchantSignupPage: React.FC = () => {
         <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm text-slate-500">
           <span>Already have a store?</span>
           <Link
-            to="/cashier-login"
+            to="/login"
             className="font-bold text-[#0D5C3A] hover:text-[#09432A] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D5C3A] rounded px-1"
           >
-            Sign in to terminal →
+            Sign in to your store →
           </Link>
         </div>
       </GlassSurface>

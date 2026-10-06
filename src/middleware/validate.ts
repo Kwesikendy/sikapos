@@ -17,21 +17,49 @@ export function validateGhanaPhone(phone: string): { valid: boolean; normalized?
 
   let normalized = cleaned;
   if (cleaned.startsWith('0')) {
+    if (cleaned.length !== 10) {
+      return {
+        valid: false,
+        error: `Phone number has ${cleaned.length} digits. A Ghanaian mobile number starting with 0 must have exactly 10 digits (e.g. 059 929 5290).`,
+      };
+    }
     normalized = '+233' + cleaned.substring(1);
   } else if (cleaned.startsWith('233')) {
+    if (cleaned.length !== 12) {
+      return {
+        valid: false,
+        error: `Phone number starting with 233 must have 12 digits (e.g. 233 59 929 5290).`,
+      };
+    }
     normalized = '+' + cleaned;
-  } else if (!cleaned.startsWith('+233')) {
+  } else if (cleaned.startsWith('+233')) {
+    if (cleaned.length !== 13) {
+      return {
+        valid: false,
+        error: `Phone number starting with +233 must have 9 digits after +233 (e.g. +233 59 929 5290).`,
+      };
+    }
+  } else if (/^[25]\d{8}$/.test(cleaned)) {
+    // 9 digits without leading 0 (e.g. 599295290)
+    normalized = '+233' + cleaned;
+  } else {
     // If international but not Ghana
     if (/^\+\d{10,15}$/.test(cleaned)) {
       return { valid: true, normalized: cleaned, carrier: 'International' };
     }
-    return { valid: false, error: 'Invalid Ghanaian or international phone format (e.g. +233 24 123 4567 or 0241234567)' };
+    return {
+      valid: false,
+      error: 'Please enter a valid 10-digit Ghanaian mobile number (e.g. 059 929 5290 or 024 123 4567).',
+    };
   }
 
   // Validate Ghana 9-digit suffix: +233 XX XXX XXXX
   const ghanaMatch = normalized.match(/^\+233(\d{2})(\d{7})$/);
   if (!ghanaMatch) {
-    return { valid: false, error: 'Invalid Ghanaian phone number format' };
+    return {
+      valid: false,
+      error: 'Invalid Ghanaian mobile network prefix. Supported networks include MTN (024, 025, 053, 054, 055, 059), Telecel (020, 050), and AT (026, 027, 056, 057).',
+    };
   }
 
   const prefix = ghanaMatch[1];
@@ -144,11 +172,12 @@ export function validateBody(rules: ValidationRule[]) {
     }
 
     if (Object.keys(errors).length > 0) {
+      const firstError = Object.values(errors)[0];
       res.status(400).json({
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'One or more request parameters failed validation',
+          message: firstError || 'One or more request parameters failed validation',
           details: errors
         }
       });

@@ -27,7 +27,7 @@ export function detectGhanaCarrier(phone: string): { name: string; slug: 'mtn' |
   }
 
   const prefix = clean.slice(0, 3);
-  if (['024', '054', '055', '059', '025'].includes(prefix)) {
+  if (['024', '054', '055', '059', '025', '053'].includes(prefix)) {
     return { name: 'MTN MoMo', slug: 'mtn' };
   }
   if (['020', '050'].includes(prefix)) {

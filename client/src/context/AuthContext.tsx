@@ -11,11 +11,12 @@ import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api/auth.api';
 import { apiClient } from '../api/client';
 import { setAuthToken as setServiceAuthToken, clearAuthToken as clearServiceAuthToken } from '../services/apiClient';
-import type { User, Tenant, AuthSuccessResponse } from '../types/auth.types';
+import type { User, Tenant, Branch, RegisterPayload, AuthSuccessResponse } from '../types/auth.types';
 
 export interface AuthContextType {
   user: User | null;
   tenant: Tenant | null;
+  primaryBranch: Branch | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -29,10 +30,14 @@ export interface AuthContextType {
     cashierId: string,
     pin: string
   ) => Promise<AuthSuccessResponse>;
+  registerMerchant: (
+    payload: RegisterPayload
+  ) => Promise<AuthSuccessResponse>;
   logout: (redirectTo?: string) => Promise<void>;
   checkAuth: () => Promise<boolean>;
   setUser: (user: User | null) => void;
   setTenant: (tenant: Tenant | null) => void;
+  setPrimaryBranch: (branch: Branch | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,8 +48,42 @@ export interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [user, setUserState] = useState<User | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = window.localStorage.getItem('sikapos_user');
+        return cached ? JSON.parse(cached) : null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  const [tenant, setTenantState] = useState<Tenant | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = window.localStorage.getItem('sikapos_tenant');
+        return cached ? JSON.parse(cached) : null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  const [primaryBranch, setPrimaryBranchState] = useState<Branch | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = window.localStorage.getItem('sikapos_branch');
+        return cached ? JSON.parse(cached) : null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
   const [token, setTokenState] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       return (
@@ -64,6 +103,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setServiceAuthToken(newToken);
   }, []);
 
+  const setUser = useCallback((u: User | null) => {
+    setUserState(u);
+    if (typeof window !== 'undefined') {
+      if (u) window.localStorage.setItem('sikapos_user', JSON.stringify(u));
+      else window.localStorage.removeItem('sikapos_user');
+    }
+  }, []);
+
+  const setTenant = useCallback((t: Tenant | null) => {
+    setTenantState(t);
+    if (typeof window !== 'undefined') {
+      if (t) window.localStorage.setItem('sikapos_tenant', JSON.stringify(t));
+      else window.localStorage.removeItem('sikapos_tenant');
+    }
+  }, []);
+
+  const setPrimaryBranch = useCallback((b: Branch | null) => {
+    setPrimaryBranchState(b);
+    if (typeof window !== 'undefined') {
+      if (b) window.localStorage.setItem('sikapos_branch', JSON.stringify(b));
+      else window.localStorage.removeItem('sikapos_branch');
+    }
+  }, []);
+
   // Check and verify current session with the backend API
   const checkAuth = useCallback(async (): Promise<boolean> => {
     const activeToken =
@@ -76,6 +139,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!activeToken) {
       setUser(null);
       setTenant(null);
+      setPrimaryBranch(null);
       setIsLoading(false);
       return false;
     }
@@ -85,6 +149,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const res = await authApi.getCurrentUser();
       setUser(res.user);
       setTenant(res.tenant);
+      if (res.primaryBranch) {
+        setPrimaryBranch(res.primaryBranch);
+      }
       setIsLoading(false);
       return true;
     } catch {
@@ -92,17 +159,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       syncToken(null);
       setUser(null);
       setTenant(null);
+      setPrimaryBranch(null);
       setIsLoading(false);
       return false;
     }
-  }, [syncToken]);
+  }, [syncToken, setUser, setTenant, setPrimaryBranch]);
 
   // Initial session verification on mount
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
-  // Login with Email & Password (Admin / Manager)
+  // Login with Email/Phone & Password (Admin / Manager)
   const loginWithPassword = useCallback(
     async (
       email: string,
@@ -119,12 +187,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (res.tenant) {
           setTenant(res.tenant);
         }
+        if (res.primaryBranch) {
+          setPrimaryBranch(res.primaryBranch);
+        }
         return res;
       } finally {
         setIsLoading(false);
       }
     },
-    [syncToken]
+    [syncToken, setUser, setTenant, setPrimaryBranch]
   );
 
   // Fast PIN login for Till Cashiers
@@ -144,17 +215,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (res.tenant) {
           setTenant(res.tenant);
         }
+        if (res.primaryBranch) {
+          setPrimaryBranch(res.primaryBranch);
+        }
         return res;
       } finally {
         setIsLoading(false);
       }
     },
-    [syncToken]
+    [syncToken, setUser, setTenant, setPrimaryBranch]
   );
 
-  // Logout and clear active session, wipe local storage user data, and redirect to signup page
+  // Register Merchant Tenant & Owner
+  const registerMerchant = useCallback(
+    async (payload: RegisterPayload): Promise<AuthSuccessResponse> => {
+      setIsLoading(true);
+      try {
+        const res = await authApi.registerMerchant(payload);
+        if (res.token) {
+          syncToken(res.token);
+        }
+        setUser(res.user);
+        if (res.tenant) {
+          setTenant(res.tenant);
+        }
+        if (res.primaryBranch) {
+          setPrimaryBranch(res.primaryBranch);
+        }
+        return res;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [syncToken, setUser, setTenant, setPrimaryBranch]
+  );
+
+  // Logout and clear active session, wipe local storage user data, and redirect to login page
   const logout = useCallback(
-    async (redirectTo: string = '/merchant-signup'): Promise<void> => {
+    async (redirectTo: string = '/login'): Promise<void> => {
       setIsLoading(true);
       try {
         await authApi.logout();
@@ -165,6 +263,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         clearServiceAuthToken();
         setUser(null);
         setTenant(null);
+        setPrimaryBranch(null);
 
         // Remove user data and authentication state from local and session storage
         if (typeof window !== 'undefined') {
@@ -175,6 +274,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             'sikapos_auth_token',
             'sikapos_user',
             'sikapos_tenant',
+            'sikapos_branch',
             'user',
             'user_data',
             'tenant',
@@ -215,7 +315,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         setIsLoading(false);
 
-        // Redirect user to the signup page
+        // Redirect user to the login page
         if (redirectTo) {
           try {
             navigate(redirectTo, { replace: true });
@@ -227,24 +327,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
     },
-    [syncToken, navigate]
+    [syncToken, setUser, setTenant, setPrimaryBranch, navigate]
   );
 
   const value = useMemo<AuthContextType>(
     () => ({
       user,
       tenant,
+      primaryBranch,
       token,
       isAuthenticated: Boolean(user && token),
       isLoading,
       loginWithPassword,
       loginWithPin,
+      registerMerchant,
       logout,
       checkAuth,
       setUser,
       setTenant,
+      setPrimaryBranch,
     }),
-    [user, tenant, token, isLoading, loginWithPassword, loginWithPin, logout, checkAuth]
+    [
+      user,
+      tenant,
+      primaryBranch,
+      token,
+      isLoading,
+      loginWithPassword,
+      loginWithPin,
+      registerMerchant,
+      logout,
+      checkAuth,
+      setUser,
+      setTenant,
+      setPrimaryBranch,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

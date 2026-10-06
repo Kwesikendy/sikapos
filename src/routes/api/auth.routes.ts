@@ -127,9 +127,9 @@ authRouter.post('/register', validateBody([
     validator: (val) => validatePassword(String(val))
   },
   { field: 'primaryBranchName', required: true },
-  { field: 'primaryBranchRegion', required: true },
-  { field: 'primaryBranchGps', required: true },
-  { field: 'primaryBranchAddress', required: true }
+  { field: 'primaryBranchRegion', required: false },
+  { field: 'primaryBranchGps', required: false },
+  { field: 'primaryBranchAddress', required: false }
 ]), (req, res, next) => {
   try {
     const {
@@ -162,16 +162,32 @@ authRouter.post('/register', validateBody([
       return;
     }
 
+    // Ensure tradeCategory satisfies DB CHECK constraint
+    const validCategories = ['provision_supermarket', 'pharmacy', 'fashion', 'electronics', 'general_retail'];
+    let safeTradeCategory: any = tradeCategory;
+    if (!validCategories.includes(safeTradeCategory)) {
+      if (safeTradeCategory === 'grocery_minimart' || safeTradeCategory === 'provision') {
+        safeTradeCategory = 'provision_supermarket';
+      } else {
+        safeTradeCategory = 'general_retail';
+      }
+    }
+
+    // Default primary branch details if deferred to Step 2 store setup
+    const branchRegion = (primaryBranchRegion && String(primaryBranchRegion).trim()) || 'Greater Accra';
+    const branchGps = (primaryBranchGps && String(primaryBranchGps).trim()) || 'GA-000-0000';
+    const branchAddress = (primaryBranchAddress && String(primaryBranchAddress).trim()) || primaryBranchName || 'Accra, Ghana';
+
     // 1. Create Tenant and Primary Branch
     const { tenant, primaryBranch } = tenantService.createTenant({
       legalName: businessLegalName,
       businessName: businessTradeName,
-      tradeCategory,
+      tradeCategory: safeTradeCategory,
       primaryBranch: {
         name: primaryBranchName,
-        region: primaryBranchRegion,
-        gpsDigitalAddress: primaryBranchGps,
-        physicalAddress: primaryBranchAddress,
+        region: branchRegion,
+        gpsDigitalAddress: branchGps,
+        physicalAddress: branchAddress,
         phone: phoneCheck.normalized!
       },
       taxConfiguration
@@ -204,22 +220,44 @@ authRouter.post('/register', validateBody([
 });
 
 /**
- * Step 4: Login with Email & Password (Multi-Tenant Aware)
+ * Step 4: Login with Email or Phone & Password (Multi-Tenant Aware)
  */
-authRouter.post('/login', loginLimiter, validateBody([
-  { field: 'email', required: true },
-  { field: 'password', required: true }
-]), (req, res, next) => {
+authRouter.post('/login', loginLimiter, (req, res, next) => {
   try {
-    const { email, password, tenantId } = req.body;
+    const identifier = req.body.email || req.body.identifier || req.body.phone || req.body.phoneNumber;
+    const { password, tenantId } = req.body;
+
+    if (!identifier) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Email or phone number is required' }
+      });
+      return;
+    }
+    if (!password) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Password is required' }
+      });
+      return;
+    }
+
     const clientIp = req.ip || (req.headers['x-forwarded-for'] as string);
     const userAgent = req.headers['user-agent'];
 
-    const result = authService.loginWithPassword(email, password, tenantId, clientIp, userAgent);
+    const result = authService.loginWithPassword(identifier, password, tenantId, clientIp, userAgent);
+    const tenant = tenantService.getTenantById(result.tenantId);
+    const branches = tenantService.getBranches(result.tenantId);
+    const primaryBranch = branches.find(b => b.is_primary) || branches[0] || null;
 
     res.json({
       success: true,
-      data: result
+      data: {
+        ...result,
+        tenant,
+        primaryBranch,
+        branches
+      }
     });
   } catch (err: unknown) {
     if (err instanceof MultipleTenantsError) {
@@ -263,10 +301,18 @@ authRouter.post('/login-pin', loginLimiter, validateBody([
     const userAgent = req.headers['user-agent'];
 
     const result = authService.loginWithPin(tenantId, cashierId, pin, clientIp, userAgent);
+    const tenant = tenantService.getTenantById(result.tenantId);
+    const branches = tenantService.getBranches(result.tenantId);
+    const primaryBranch = branches.find(b => b.is_primary) || branches[0] || null;
 
     res.json({
       success: true,
-      data: result
+      data: {
+        ...result,
+        tenant,
+        primaryBranch,
+        branches
+      }
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'PIN verification failed';
@@ -285,12 +331,16 @@ authRouter.post('/login-pin', loginLimiter, validateBody([
  */
 authRouter.get('/me', authenticate, (req, res) => {
   const tenant = tenantService.getTenantById(req.tenantId!);
+  const branches = tenantService.getBranches(req.tenantId!);
+  const primaryBranch = branches.find(b => b.is_primary) || branches[0] || null;
 
   res.json({
     success: true,
     data: {
       user: req.user,
-      tenant
+      tenant,
+      primaryBranch,
+      branches
     }
   });
 });
