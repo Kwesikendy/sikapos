@@ -304,7 +304,6 @@ export const StoreSetupPage: React.FC = () => {
                           value={businessName}
                           onChange={(e) => setBusinessName(e.target.value)}
                           required
-                          disabled
                           startIcon={<Building2 className="w-5 h-5" />}
                         />
 
@@ -319,11 +318,12 @@ export const StoreSetupPage: React.FC = () => {
                               return (
                                 <div
                                   key={cat.id}
+                                  onClick={() => setSelectedCategory(cat.id)}
                                   className={cn(
-                                    'p-4 rounded-2xl border transition-all select-none text-left flex flex-col justify-between shadow-xs',
+                                    'p-4 rounded-2xl border transition-all select-none text-left flex flex-col justify-between shadow-xs cursor-pointer',
                                     isSelected
                                       ? 'bg-white border-[#0D5C3A] ring-2 ring-[#0D5C3A]/20 shadow-md transform scale-[1.02]'
-                                      : 'bg-slate-50/50 border-slate-200 opacity-60'
+                                      : 'bg-slate-50/50 border-slate-200 opacity-60 hover:opacity-100 hover:border-slate-300 hover:bg-white'
                                   )}
                                 >
                                   <div className="flex items-center justify-between mb-1.5">
@@ -346,7 +346,6 @@ export const StoreSetupPage: React.FC = () => {
                             value={branchName}
                             onChange={(e) => setBranchName(e.target.value)}
                             required
-                            disabled
                             startIcon={<Store className="w-5 h-5" />}
                           />
 
@@ -356,8 +355,6 @@ export const StoreSetupPage: React.FC = () => {
                             placeholder="e.g. GA-183-9024"
                             value={ghanaPostGps}
                             onChange={(e) => setGhanaPostGps(e.target.value)}
-                            required
-                            disabled
                             startIcon={<MapPin className="w-5 h-5" />}
                           />
                         </div>
