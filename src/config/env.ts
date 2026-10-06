@@ -7,7 +7,9 @@ export interface AppConfig {
   databasePath: string;
   sessionSecret: string;
   sessionExpiryHours: number;
-  otpProvider: 'sandbox' | 'log' | 'mock';
+  otpProvider: 'sandbox' | 'log' | 'mock' | 'moolre';
+  moolreVasKey: string;
+  moolreSenderId: string;
   corsOrigin: string;
   authRateLimitWindowMs: number;
   authRateLimitMaxAttempts: number;
@@ -33,7 +35,9 @@ export function loadConfig(): AppConfig {
     databasePath: process.env.DATABASE_PATH || (nodeEnv === 'test' ? ':memory:' : path.resolve(process.cwd(), 'data', 'sikapos.db')),
     sessionSecret: process.env.SESSION_SECRET || 'dev-sikapos-secret-key-change-in-production-min32chars',
     sessionExpiryHours: parseInt(process.env.SESSION_EXPIRY_HOURS || '24', 10),
-    otpProvider: (process.env.OTP_PROVIDER || 'sandbox') as 'sandbox' | 'log' | 'mock',
+    otpProvider: (process.env.OTP_PROVIDER || 'sandbox') as 'sandbox' | 'log' | 'mock' | 'moolre',
+    moolreVasKey: process.env.MOOLRE_VAS_KEY || '',
+    moolreSenderId: process.env.MOOLRE_SENDER_ID || 'Business_Ad',
     corsOrigin: process.env.CORS_ORIGIN || '*',
     authRateLimitWindowMs: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS || '900000', 10),
     authRateLimitMaxAttempts: parseInt(process.env.AUTH_RATE_LIMIT_MAX_ATTEMPTS || '5', 10),

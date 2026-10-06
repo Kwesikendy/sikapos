@@ -36,6 +36,79 @@ export class SandboxOtpProvider implements IOtpProvider {
 
 import { config } from '../config/env.ts';
 
+/**
+ * Moolre SMS OTP Provider.
+ * Sends a real SMS via the Moolre SMS Gateway API.
+ * https://docs.moolre.com
+ *
+ * Required env vars:
+ *   MOOLRE_VAS_KEY   – Your JWT VAS API key
+ *   MOOLRE_SENDER_ID – Approved sender ID (default: Business_Ad)
+ */
+export class MoolreOtpProvider implements IOtpProvider {
+  public readonly name = 'moolre';
+  private readonly vasKey: string;
+  private readonly senderId: string;
+  private readonly apiUrl = 'https://api.moolre.com/open/sms/send';
+
+  constructor(vasKey?: string, senderId?: string) {
+    this.vasKey = vasKey || config.moolreVasKey;
+    this.senderId = senderId || config.moolreSenderId || 'Business_Ad';
+  }
+
+  public async sendOtp(recipient: string, code: string, purpose: string): Promise<OtpSendResult> {
+    const message = `Your SikaPOS verification code is: ${code}. Valid for 10 minutes. Do not share it.`;
+
+    // Normalise number to international format (strip leading 0, prepend 233 for Ghana)
+    let phone = recipient.replace(/\s+/g, '');
+    if (phone.startsWith('0')) {
+      phone = '233' + phone.slice(1);
+    } else if (phone.startsWith('+')) {
+      phone = phone.slice(1); // strip leading +
+    }
+
+    const params = new URLSearchParams({
+      type: '1',
+      senderid: this.senderId,
+      recipient: phone,
+      message,
+    });
+
+    try {
+      const response = await fetch(`${this.apiUrl}?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'X-API-VASKEY': this.vasKey,
+          'Accept': 'application/json',
+        },
+      });
+
+      const json = (await response.json()) as { status: number; code: string; message: string };
+
+      if (json.status === 1) {
+        return {
+          success: true,
+          messageId: json.code,
+          provider: this.name,
+        };
+      }
+
+      return {
+        success: false,
+        provider: this.name,
+        error: `Moolre error [${json.code}]: ${json.message}`,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        provider: this.name,
+        error: `Moolre network error: ${err?.message || String(err)}`,
+      };
+    }
+  }
+}
+
+
 export interface OtpVerificationResult {
   valid: boolean;
   reason?: string;
@@ -51,7 +124,13 @@ export class OtpService {
 
   constructor(customDb?: Database.Database, customProvider?: IOtpProvider, cooldownSeconds?: number) {
     this.db = customDb || getDb();
-    this.provider = customProvider || new SandboxOtpProvider();
+    if (customProvider) {
+      this.provider = customProvider;
+    } else if (config.otpProvider === 'moolre') {
+      this.provider = new MoolreOtpProvider();
+    } else {
+      this.provider = new SandboxOtpProvider();
+    }
     this.auditService = new AuditService(this.db);
     this.cooldownSeconds = cooldownSeconds !== undefined
       ? cooldownSeconds
