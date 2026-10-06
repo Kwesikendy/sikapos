@@ -373,22 +373,24 @@ export const POSPage: React.FC = () => {
           </div>
         </header>
 
-        {/* Categories Tabs */}
-        <div className="px-4 sm:px-6 py-3.5 flex items-center gap-2 overflow-x-auto scrollbar-hide border-b border-slate-200/40 bg-white/40 backdrop-blur-sm shrink-0 z-10">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={cn(
-                "px-4 py-2 rounded-xl text-[13px] font-bold whitespace-nowrap transition-all shadow-sm border cursor-pointer",
-                selectedCategory === cat 
-                  ? "bg-slate-900 text-white border-slate-900" 
-                  : "bg-white text-slate-600 border-slate-200/60 hover:border-slate-300 hover:text-slate-900"
-              )}
-            >
-              {cat}
-            </button>
-          ))}
+        {/* Categories Tabs in Tactile Well */}
+        <div className="px-4 sm:px-6 py-3 flex items-center gap-2 overflow-x-auto scrollbar-hide border-b border-slate-200/50 bg-white/60 backdrop-blur-sm shrink-0 z-10">
+          <div className="flex items-center gap-1.5 sika-recessed-sm p-1">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer sika-press",
+                  selectedCategory === cat 
+                    ? "sika-raised-sm text-slate-900" 
+                    : "text-slate-600 hover:text-slate-900"
+                )}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Product Grid */}
@@ -439,22 +441,22 @@ export const POSPage: React.FC = () => {
                     key={product.id}
                     variants={staggerItem}
                     onClick={() => addToCart(product)}
-                    className="group relative flex flex-col bg-white/80 backdrop-blur-md border border-slate-200/70 rounded-2xl overflow-hidden text-left hover:border-[#0D5C3A]/60 hover:shadow-xl transition-all active:scale-95 duration-200 shadow-sm min-h-[140px] cursor-pointer"
+                    className="group relative flex flex-col sika-raised-sm sika-press rounded-[20px] overflow-hidden text-left hover:border-[#0D5C3A]/60 hover:shadow-lg transition-all min-h-[140px] cursor-pointer"
                   >
                     <div className={cn(
                       "h-1.5 w-full",
                       isLowStock ? "bg-amber-500" : "bg-[#0D5C3A]"
                     )} />
-                    <div className="p-3 sm:p-4 flex flex-col flex-1">
+                    <div className="p-3.5 sm:p-4 flex flex-col flex-1">
                       <div className="flex justify-between items-start mb-2">
                         <span className={cn(
-                          "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md",
-                          isLowStock ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-600"
+                          "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md sika-recessed-sm",
+                          isLowStock ? "text-amber-800" : "text-slate-600"
                         )}>
                           Stock: {product.total_stock ?? 50}
                         </span>
                         {product.category_name && (
-                          <span className="text-[10px] text-slate-400 font-semibold truncate max-w-[90px]">
+                          <span className="text-[10px] text-slate-400 font-bold truncate max-w-[90px]">
                             {product.category_name}
                           </span>
                         )}
@@ -463,10 +465,10 @@ export const POSPage: React.FC = () => {
                         {product.name}
                       </h3>
                       <div className="mt-auto pt-2 border-t border-slate-100 flex items-center justify-between">
-                        <p className="text-[15px] sm:text-base font-extrabold tabular-nums text-slate-900">
+                        <p className="text-[15px] sm:text-base font-black tabular-nums text-slate-900">
                           {formatGHS(product.base_price)}
                         </p>
-                        <span className="w-7 h-7 rounded-lg bg-emerald-50 text-[#0D5C3A] opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <span className="w-7 h-7 rounded-lg bg-emerald-50 text-[#0D5C3A] opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity sika-raised-sm">
                           <Plus className="w-4 h-4" />
                         </span>
                       </div>

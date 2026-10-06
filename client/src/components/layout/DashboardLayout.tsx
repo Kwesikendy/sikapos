@@ -75,23 +75,27 @@ export const DashboardLayout: React.FC = () => {
         transition={{ type: 'spring', stiffness: 350, damping: 30 }}
         className="relative z-30 h-screen flex flex-col bg-white/75 backdrop-blur-2xl border-r border-slate-200/50 shadow-[4px_0_30px_rgba(0,0,0,0.02)]"
       >
-        {/* Brand / Store Logo Surface */}
-        <div className="h-20 flex items-center px-6 border-b border-slate-100/80 shrink-0">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0D5C3A] to-[#062F1D] text-white flex items-center justify-center shadow-lg shadow-[#0D5C3A]/20 shrink-0">
-            <Store className="w-5 h-5 text-emerald-100" />
-          </div>
+        {/* Brand / Store Logo Surface with Official SikaPOS Logo */}
+        <div className="h-20 flex items-center px-4 sm:px-5 border-b border-slate-100/80 shrink-0">
+          <NavLink to="/dashboard" className="flex items-center gap-3 shrink-0 focus:outline-none">
+            <img
+              src="/logo.png"
+              alt="SikaPOS"
+              className="h-10 w-auto object-contain rounded-xl drop-shadow-xs transition-transform hover:scale-105"
+            />
+          </NavLink>
           <AnimatePresence>
             {!isSidebarCollapsed && (
               <motion.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8, transition: { duration: 0.1 } }}
-                className="ml-3.5 min-w-0"
+                className="ml-2.5 min-w-0"
               >
-                <h1 className="text-[15px] font-extrabold text-slate-900 tracking-tight truncate leading-snug">
+                <h1 className="text-[13px] font-extrabold text-slate-900 tracking-tight truncate leading-tight">
                   {storeName}
                 </h1>
-                <p className="text-[10px] uppercase tracking-widest text-[#0D5C3A] font-extrabold truncate">
+                <p className="text-[9px] uppercase tracking-widest text-[#0D5C3A] font-extrabold truncate">
                   {branchName}
                 </p>
               </motion.div>
@@ -179,32 +183,35 @@ export const DashboardLayout: React.FC = () => {
 
       {/* Main Workspace Surface */}
       <div className="flex-1 flex flex-col min-w-0 z-10 relative h-screen overflow-hidden">
-        {/* Floating Top Header */}
-        <header className="h-20 bg-white/60 backdrop-blur-xl border-b border-slate-200/50 px-6 sm:px-10 flex items-center justify-between shrink-0 z-20">
+        {/* Floating Top Header with Kombai Soft Tactile Styling */}
+        <header className="h-20 bg-white/75 backdrop-blur-xl border-b border-slate-200/60 px-6 sm:px-10 flex items-center justify-between shrink-0 z-20">
           <div className="flex items-center gap-4 flex-1 min-w-0">
             <div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight hidden sm:block">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#0D5C3A] animate-pulse" />
+                  Live Accra Ledger
+                </span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight hidden sm:block">
                 Good day, {firstName}
               </h2>
-              <p className="text-xs text-slate-500 font-medium hidden md:block">
-                Here's what's happening at {storeName} today.
-              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 sm:gap-6">
-            {/* Floating Glass Search Input */}
+          <div className="flex items-center gap-3 sm:gap-5">
+            {/* Soft Sunken Recessed Search Input */}
             <div className="relative hidden md:block group">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-[#0D5C3A] transition-colors" />
               <input
                 type="text"
                 placeholder="Search transactions, inventory..."
-                className="h-10 pl-10 pr-4 rounded-xl bg-white/80 border border-slate-200/60 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D5C3A]/20 focus:border-[#0D5C3A]/50 transition-all w-64 shadow-xs placeholder:text-slate-400"
+                className="h-10 pl-10 pr-4 sika-recessed-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D5C3A]/20 focus:border-[#0D5C3A]/50 transition-all w-64 placeholder:text-slate-400 text-slate-800"
               />
             </div>
             
-            {/* Notification Control */}
-            <button className="relative p-2.5 text-slate-400 hover:text-slate-900 transition-all bg-white/80 rounded-xl border border-slate-200/60 shadow-xs hover:shadow-sm cursor-pointer">
+            {/* Notification Control with Soft Tactile Press */}
+            <button className="relative p-2.5 text-slate-500 hover:text-slate-900 sika-raised-sm sika-press cursor-pointer">
               <Bell className="w-4 h-4" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-amber-500 rounded-full border border-white" />
             </button>

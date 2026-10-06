@@ -169,6 +169,60 @@
   transition: transform 100ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Kombai Gallery Web 17 - Soft-tactile & Subtle Neumorphic Design Tokens for SikaPOS */
+.sika-raised {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 6px 6px 16px -2px rgba(15, 23, 42, 0.04), -6px -6px 16px -2px rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sika-raised:hover {
+  box-shadow: 8px 8px 20px -2px rgba(15, 23, 42, 0.06), -8px -8px 20px -2px rgba(255, 255, 255, 1);
+}
+
+.sika-raised-sm {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 3px 3px 8px -1px rgba(15, 23, 42, 0.035), -3px -3px 8px -1px rgba(255, 255, 255, 0.95);
+  border-radius: 14px;
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sika-recessed {
+  background-color: #F1F5F9;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: inset 2.5px 2.5px 6px rgba(15, 23, 42, 0.05), inset -2.5px -2.5px 6px rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+}
+
+.sika-recessed-sm {
+  background-color: #F8FAFC;
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  box-shadow: inset 1.5px 1.5px 4px rgba(15, 23, 42, 0.04), inset -1.5px -1.5px 4px rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+}
+
+.sika-press {
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 120ms ease-in-out;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sika-press:active {
+  transform: translateY(1.5px) scale(0.985);
+  box-shadow: inset 1.5px 1.5px 4px rgba(15, 23, 42, 0.08), inset -1.5px -1.5px 4px rgba(255, 255, 255, 0.6);
+}
+
+.sika-glow-emerald {
+  box-shadow: 0 0 0 2px rgba(13, 92, 58, 0.15), 0 4px 16px -2px rgba(13, 92, 58, 0.18);
+}
+
+.sika-glow-amber {
+  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.15), 0 4px 16px -2px rgba(217, 119, 6, 0.18);
+}
+
 /* Scrollbar refinement */
 ::-webkit-scrollbar {
   width: 6px;

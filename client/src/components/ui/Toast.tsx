@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { ToastMessage } from '../../hooks/useToast';
+
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
+
+export interface ToastMessage {
+  id: string;
+  type: ToastType;
+  title: string;
+  message?: string;
+  duration?: number;
+}
 
 interface ToastProps {
   toast: ToastMessage;
@@ -14,13 +23,6 @@ const icons = {
   error: AlertCircle,
   info: Info,
   warning: AlertTriangle,
-};
-
-const variants = {
-  success: 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-emerald-500/10',
-  error: 'bg-red-50 text-red-800 border-red-200 shadow-red-500/10',
-  info: 'bg-sky-50 text-sky-800 border-sky-200 shadow-sky-500/10',
-  warning: 'bg-amber-50 text-amber-800 border-amber-200 shadow-amber-500/10',
 };
 
 const iconColors = {
@@ -40,8 +42,8 @@ export const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
       className={cn(
-        'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl border p-4 shadow-xl backdrop-blur-md bg-white/90',
-        'ring-1 ring-black/5'
+        'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl border p-4 shadow-xl backdrop-blur-md bg-white/95',
+        'border-slate-200/80 ring-1 ring-black/5'
       )}
     >
       <div className={cn('shrink-0 mt-0.5', iconColors[toast.type])}>
@@ -82,4 +84,78 @@ export const Toaster: React.FC<ToasterProps> = ({ toasts, removeToast }) => {
       </AnimatePresence>
     </div>
   );
+};
+
+interface ToastContextType {
+  toasts: ToastMessage[];
+  showToast: (toast: Omit<ToastMessage, 'id'>) => string;
+  dismissToast: (id: string) => void;
+  removeToast: (id: string) => void;
+  toast: {
+    success: (title: string, message?: string, duration?: number) => string;
+    error: (title: string, message?: string, duration?: number) => string;
+    info: (title: string, message?: string, duration?: number) => string;
+    warning: (title: string, message?: string, duration?: number) => string;
+  };
+}
+
+const ToastContext = createContext<ToastContextType | undefined>(undefined);
+
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const removeToast = dismissToast;
+
+  const showToast = useCallback((toastData: Omit<ToastMessage, 'id'>) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { ...toastData, id }]);
+
+    if (toastData.duration !== Infinity) {
+      setTimeout(() => {
+        dismissToast(id);
+      }, toastData.duration || 4000);
+    }
+    return id;
+  }, [dismissToast]);
+
+  const toast = {
+    success: (title: string, message?: string, duration?: number) =>
+      showToast({ type: 'success', title, message, duration }),
+    error: (title: string, message?: string, duration?: number) =>
+      showToast({ type: 'error', title, message, duration }),
+    info: (title: string, message?: string, duration?: number) =>
+      showToast({ type: 'info', title, message, duration }),
+    warning: (title: string, message?: string, duration?: number) =>
+      showToast({ type: 'warning', title, message, duration }),
+  };
+
+  return (
+    <ToastContext.Provider value={{ toasts, showToast, dismissToast, removeToast, toast }}>
+      {children}
+      <Toaster toasts={toasts} removeToast={dismissToast} />
+    </ToastContext.Provider>
+  );
+};
+
+export const useToast = () => {
+  const context = useContext(ToastContext);
+  if (!context) {
+    return {
+      toasts: [],
+      showToast: () => '',
+      dismissToast: () => {},
+      removeToast: () => {},
+      toast: {
+        success: () => '',
+        error: () => '',
+        info: () => '',
+        warning: () => '',
+      },
+    };
+  }
+  return context;
 };

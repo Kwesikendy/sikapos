@@ -11,6 +11,7 @@ import { Modal } from '../components/ui/Modal';
 import { LoadingOverlay } from '../components/ui/LoadingOverlay';
 import { authApi } from '../api/auth.api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/ui/Toast';
 import { ApiError } from '../types/auth.types';
 import { Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Footer } from '../components/layout/Footer';
@@ -53,6 +54,7 @@ interface MerchantSignupFormData {
 export const MerchantSignupPage: React.FC = () => {
   const navigate = useNavigate();
   const { registerMerchant } = useAuth();
+  const { toast } = useToast();
 
   // Form State
   const [fullName, setFullName] = useState('Kwabena Mensah');
@@ -159,6 +161,7 @@ export const MerchantSignupPage: React.FC = () => {
       }
       setCooldown(60);
       setShowOtpModal(true);
+      toast.success('Verification code dispatched', 'Please check your phone for the 6-digit OTP code.');
     } catch (err: unknown) {
       const apiErr = err as ApiError;
       if (apiErr.remainingCooldownSeconds) {
@@ -170,6 +173,7 @@ export const MerchantSignupPage: React.FC = () => {
         errMessage = apiErr.details.phoneNumber;
       }
       setError(errMessage || 'Could not send verification code. Please check your phone number and try again.');
+      toast.error('Failed to dispatch OTP', errMessage || 'Could not send verification code.');
     } finally {
       setIsLoading(false);
     }
@@ -236,6 +240,7 @@ export const MerchantSignupPage: React.FC = () => {
       });
 
       setShowOtpModal(false);
+      toast.success('Registration successful', 'Your SikaPOS store account has been created.');
       navigate('/store-setup');
     } catch (err: unknown) {
       const apiErr = err as ApiError;
@@ -247,6 +252,7 @@ export const MerchantSignupPage: React.FC = () => {
         }
       }
       setOtpError(errMessage || 'Verification failed. Please check the code.');
+      toast.error('Registration failed', errMessage || 'Verification failed. Please check the code.');
     } finally {
       setIsVerifyingOtp(false);
     }

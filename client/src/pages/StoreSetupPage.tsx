@@ -30,6 +30,7 @@ import { ApiError } from '../types/auth.types';
 import { Alert } from '../components/ui/Alert';
 import { LoadingOverlay } from '../components/ui/LoadingOverlay';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/ui/Toast';
 
 const STEPS: StepItem[] = [
   { id: 1, label: 'Owner Profile' },
@@ -47,6 +48,7 @@ const CATEGORIES = [
 
 export const StoreSetupPage: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -140,10 +142,13 @@ export const StoreSetupPage: React.FC = () => {
           taxType: taxMode,
           tinNumber: tinNumber
         });
+        toast.success('Tax profile updated', 'GRA tax configuration saved.');
         setCurrentStep(currentStep + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err: unknown) {
-        setError((err as ApiError).message || 'Failed to update tax configuration');
+        const errMsg = (err as ApiError).message || 'Failed to update tax configuration';
+        setError(errMsg);
+        toast.error('Tax profile error', errMsg);
       } finally {
         setIsSaving(false);
       }
@@ -170,10 +175,13 @@ export const StoreSetupPage: React.FC = () => {
           pin: cashierPin
         });
         
+        toast.success('Store configuration saved', 'Cashier and till setup successfully.');
         // Setup complete
         navigate('/launch-readiness');
       } catch (err: unknown) {
-        setError((err as ApiError).message || 'Failed to setup cashier profile');
+        const errMsg = (err as ApiError).message || 'Failed to setup cashier profile';
+        setError(errMsg);
+        toast.error('Cashier setup error', errMsg);
       } finally {
         setIsSaving(false);
       }

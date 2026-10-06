@@ -100,12 +100,12 @@ export const DashboardHomePage: React.FC = () => {
       {/* ---------------------------------------------------- */}
       <motion.div 
         variants={staggerItem} 
-        className="relative rounded-3xl bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-xl overflow-hidden p-6 sm:p-10 transition-all"
+        className="relative sika-raised rounded-[22px] overflow-hidden p-6 sm:p-10 transition-all"
       >
         {/* Ambient Emerald Lighting Glow */}
         <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-gradient-to-bl from-[#0D5C3A]/10 via-[#0D5C3A]/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-        {/* Top Header & Actions (Hick's Law: Primary action 'Open POS' dominates) */}
+        {/* Top Header & Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 pb-8 border-b border-slate-100/80">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -117,18 +117,18 @@ export const DashboardHomePage: React.FC = () => {
                 <Clock className="w-3.5 h-3.5" /> Realtime SQLite Ledger
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               {tenant?.businessName || 'SikaPOS Store Overview'}
             </h1>
           </div>
 
-          {/* Action Hierarchy */}
+          {/* Action Hierarchy with Tactile Feedback */}
           <div className="flex items-center gap-3">
             <Button
               onClick={() => navigate('/dashboard/inventory')}
               variant="outline"
               size="md"
-              className="h-12 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 rounded-xl shadow-xs"
+              className="h-12 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 rounded-xl shadow-xs sika-press"
               leftIcon={<Plus className="w-4 h-4 text-slate-500" />}
             >
               Add Product
@@ -137,7 +137,7 @@ export const DashboardHomePage: React.FC = () => {
             <Button 
               onClick={() => navigate('/pos')}
               size="lg"
-              className="h-12 bg-[#0D5C3A] hover:bg-[#09432A] text-white font-extrabold px-6 rounded-xl shadow-lg shadow-[#0D5C3A]/25 cursor-pointer" 
+              className="h-12 bg-[#0D5C3A] hover:bg-[#09432A] text-white font-extrabold px-6 rounded-xl shadow-lg shadow-[#0D5C3A]/25 cursor-pointer sika-press" 
               rightIcon={<ArrowRight className="w-5 h-5" />}
             >
               Open POS Register
@@ -179,19 +179,19 @@ export const DashboardHomePage: React.FC = () => {
             )}
           </div>
 
-          {/* Integrated Chart Surface - Fluid SVG (Guideline #9) */}
+          {/* Integrated Chart Surface */}
           <div className="lg:col-span-7 flex flex-col justify-end">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Revenue Trend</span>
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/60">
+              <div className="flex items-center gap-1 sika-recessed-sm p-1">
                 {(['today', '7days', 'month'] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setDateRange(tab)}
                     className={cn(
-                      "px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer",
+                      "px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer sika-press",
                       dateRange === tab
-                        ? "bg-white text-slate-900 shadow-xs"
+                        ? "sika-raised-sm text-slate-900"
                         : "text-slate-500 hover:text-slate-900"
                     )}
                   >
@@ -201,8 +201,8 @@ export const DashboardHomePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Seamless Interactive SVG Curve */}
-            <div className="h-44 w-full relative rounded-2xl bg-gradient-to-b from-slate-50/50 to-emerald-50/20 border border-slate-200/50 p-3 overflow-hidden">
+            {/* Seamless Interactive SVG Curve in Inset Well */}
+            <div className="h-44 w-full relative sika-recessed-sm p-3 overflow-hidden">
               {isLoading ? (
                 <Skeleton variant="rectangular" className="w-full h-full rounded-xl" />
               ) : (
@@ -252,28 +252,28 @@ export const DashboardHomePage: React.FC = () => {
       </motion.div>
 
       {/* ---------------------------------------------------- */}
-      {/* 2. SECONDARY METRICS BAR (SPATIAL LAYOUT - NO CARDS) */}
+      {/* 2. SECONDARY METRICS BAR (KOMBAI SOFT RAISED SURFACE) */}
       {/* ---------------------------------------------------- */}
       <motion.div 
         variants={staggerItem} 
-        className="rounded-2xl bg-white/60 backdrop-blur-md border border-slate-200/50 p-6 shadow-xs"
+        className="sika-raised rounded-[22px] p-6 sm:p-7 space-y-6"
       >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 divide-y md:divide-y-0 md:divide-x divide-slate-200/60">
           {/* Total Transactions */}
           <div className="space-y-1.5 pr-4">
             <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Completed Sales</p>
             <div className="flex items-baseline gap-2">
-              <h3 className="text-2xl font-extrabold text-slate-900 tabular-nums">{transactionCount}</h3>
+              <h3 className="text-2xl font-black text-slate-900 tabular-nums">{transactionCount}</h3>
               <span className="text-xs text-slate-500 font-semibold">orders</span>
             </div>
-            <p className="text-[11px] text-emerald-700 font-medium">100% processed live</p>
+            <p className="text-[11px] text-emerald-700 font-semibold">100% processed live</p>
           </div>
 
           {/* Average Order Value */}
           <div className="space-y-1.5 pt-4 md:pt-0 md:px-6">
             <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Avg Order Value</p>
             <div className="flex items-baseline gap-2">
-              <h3 className="text-2xl font-extrabold text-slate-900 tabular-nums">{formatGHS(avgOrderValue)}</h3>
+              <h3 className="text-2xl font-black text-slate-900 tabular-nums">{formatGHS(avgOrderValue)}</h3>
             </div>
             <p className="text-[11px] text-slate-500 font-medium">per transaction</p>
           </div>
@@ -282,7 +282,7 @@ export const DashboardHomePage: React.FC = () => {
           <div className="space-y-1.5 pt-4 md:pt-0 md:px-6">
             <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Mobile Money</p>
             <div className="flex items-baseline gap-2">
-              <h3 className="text-2xl font-extrabold text-[#0D5C3A] tabular-nums">{formatGHS(momoTotal)}</h3>
+              <h3 className="text-2xl font-black text-[#0D5C3A] tabular-nums">{formatGHS(momoTotal)}</h3>
             </div>
             <p className="text-[11px] text-amber-700 font-semibold flex items-center gap-1">
               <Smartphone className="w-3 h-3 text-amber-500" /> MTN & Telecel
@@ -293,7 +293,7 @@ export const DashboardHomePage: React.FC = () => {
           <div className="space-y-1.5 pt-4 md:pt-0 md:pl-6">
             <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Active Inventory</p>
             <div className="flex items-baseline gap-2">
-              <h3 className="text-2xl font-extrabold text-slate-900 tabular-nums">{allProducts.length}</h3>
+              <h3 className="text-2xl font-black text-slate-900 tabular-nums">{allProducts.length}</h3>
               <span className="text-xs text-slate-500 font-semibold">products</span>
             </div>
             {lowStockItems.length > 0 ? (
@@ -307,6 +307,34 @@ export const DashboardHomePage: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Tactile Channel Reconciliation Split Bar (Kombai Telemetry Inspired) */}
+        <div className="pt-4 border-t border-slate-100/90 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-600">
+          <div className="flex items-center gap-4">
+            <span className="font-extrabold text-slate-700 uppercase tracking-wider text-[11px]">Channel Split:</span>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#FFCC00]" />
+              <span className="font-bold text-slate-800">MoMo: {formatGHS(momoTotal)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#15803D]" />
+              <span className="font-bold text-slate-800">Cash: {formatGHS(Math.max(0, totalRevenue - momoTotal))}</span>
+            </div>
+          </div>
+
+          <div className="w-full sm:w-56 h-3.5 sika-recessed-sm overflow-hidden flex p-0.5">
+            <div
+              style={{ width: `${totalRevenue > 0 ? Math.min(100, (momoTotal / totalRevenue) * 100) : 50}%` }}
+              className="h-full bg-[#FFCC00] rounded-l-md transition-all duration-500"
+              title="Mobile Money Portion"
+            />
+            <div
+              style={{ width: `${totalRevenue > 0 ? Math.max(0, 100 - (momoTotal / totalRevenue) * 100) : 50}%` }}
+              className="h-full bg-[#15803D] rounded-r-md transition-all duration-500"
+              title="Cash Till Portion"
+            />
+          </div>
+        </div>
       </motion.div>
 
       {/* ---------------------------------------------------- */}
@@ -314,15 +342,15 @@ export const DashboardHomePage: React.FC = () => {
       {/* ---------------------------------------------------- */}
       <motion.div variants={staggerItem} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Live Sales & Receipt Stream */}
-        <div className="lg:col-span-7 rounded-3xl bg-white/80 backdrop-blur-xl border border-slate-200/60 p-6 sm:p-8 shadow-sm space-y-6">
+        <div className="lg:col-span-7 sika-raised rounded-[22px] p-6 sm:p-8 space-y-6">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
-              <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">Recent Sales Stream</h3>
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">Recent Sales Stream</h3>
               <p className="text-xs text-slate-500 font-medium">Realtime transactions stored in SQLite database</p>
             </div>
             <button 
               onClick={() => navigate('/dashboard/transactions')}
-              className="text-xs font-extrabold text-[#0D5C3A] hover:underline flex items-center gap-1 cursor-pointer"
+              className="text-xs font-extrabold text-[#0D5C3A] hover:underline flex items-center gap-1 cursor-pointer sika-press"
             >
               View All <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -331,15 +359,15 @@ export const DashboardHomePage: React.FC = () => {
           <div className="space-y-3">
             {isLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div key={i} className="flex items-center justify-between p-4 sika-recessed-sm">
                   <Skeleton variant="text" width={140} height={20} />
                   <Skeleton variant="text" width={80} height={20} />
                 </div>
               ))
             ) : recentSales.length === 0 ? (
-              /* Contextual Empty State (Guideline #16) */
-              <div className="text-center py-10 px-6 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200 space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#0D5C3A] flex items-center justify-center mx-auto">
+              /* Contextual Empty State */
+              <div className="text-center py-10 px-6 sika-recessed-sm space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#0D5C3A] flex items-center justify-center mx-auto border border-emerald-200/60 shadow-2xs">
                   <Receipt className="w-6 h-6" />
                 </div>
                 <h4 className="text-sm font-extrabold text-slate-900">Your first sale is waiting</h4>
@@ -349,7 +377,7 @@ export const DashboardHomePage: React.FC = () => {
                 <Button 
                   onClick={() => navigate('/pos')}
                   size="sm"
-                  className="bg-[#0D5C3A] hover:bg-[#09432A] text-white font-bold rounded-xl px-4 mt-2"
+                  className="bg-[#0D5C3A] hover:bg-[#09432A] text-white font-bold rounded-xl px-4 mt-2 sika-press"
                 >
                   Open POS Register
                 </Button>
@@ -359,7 +387,7 @@ export const DashboardHomePage: React.FC = () => {
                 <div 
                   key={sale.id}
                   onClick={() => navigate('/dashboard/transactions')}
-                  className="flex items-center justify-between p-3.5 rounded-2xl bg-white border border-slate-200/60 hover:border-[#0D5C3A]/40 hover:shadow-md transition-all cursor-pointer group"
+                  className="flex items-center justify-between p-3.5 rounded-2xl sika-raised-sm sika-press group"
                 >
                   <div className="flex items-center gap-3.5">
                     <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-[#0D5C3A] flex items-center justify-center font-extrabold text-xs shrink-0 group-hover:bg-[#0D5C3A] group-hover:text-white transition-colors">
@@ -376,7 +404,7 @@ export const DashboardHomePage: React.FC = () => {
                   </div>
 
                   <div className="text-right">
-                    <p className="text-sm font-extrabold text-slate-900 tabular-nums">
+                    <p className="text-sm font-black text-slate-900 tabular-nums">
                       {formatGHS(sale.grand_total)}
                     </p>
                     <span className="inline-block text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 tracking-wider mt-0.5">
@@ -390,16 +418,16 @@ export const DashboardHomePage: React.FC = () => {
         </div>
 
         {/* Right Column: Inventory Restock & Stock Health Alert */}
-        <div className="lg:col-span-5 rounded-3xl bg-white/80 backdrop-blur-xl border border-slate-200/60 p-6 sm:p-8 shadow-sm space-y-6 flex flex-col justify-between">
+        <div className="lg:col-span-5 sika-raised rounded-[22px] p-6 sm:p-8 space-y-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
               <div>
-                <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">Low Stock Alerts</h3>
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">Low Stock Alerts</h3>
                 <p className="text-xs text-slate-500 font-medium">Items requiring quick replenishment</p>
               </div>
               <button 
                 onClick={() => navigate('/dashboard/inventory')}
-                className="text-xs font-extrabold text-[#0D5C3A] hover:underline cursor-pointer"
+                className="text-xs font-extrabold text-[#0D5C3A] hover:underline cursor-pointer sika-press"
               >
                 Catalog
               </button>
@@ -414,7 +442,7 @@ export const DashboardHomePage: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 {lowStockItems.slice(0, 4).map((item) => (
-                  <div key={item.id} className="p-3 bg-amber-50/40 border border-amber-200/60 rounded-xl flex items-center justify-between">
+                  <div key={item.id} className="p-3 sika-recessed-sm flex items-center justify-between">
                     <div>
                       <p className="text-xs font-bold text-slate-900">{item.name}</p>
                       <p className="text-[11px] text-slate-500 font-medium">{formatGHS(item.base_price)}</p>
@@ -428,7 +456,7 @@ export const DashboardHomePage: React.FC = () => {
             )}
           </div>
 
-          {/* Contextual Inventory Restock Callout */}
+          {/* Contextual Inventory Restock Callout with Tactile Button */}
           <div className="pt-4 border-t border-slate-100">
             <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 flex items-center justify-between shadow-md">
               <div>
@@ -438,7 +466,7 @@ export const DashboardHomePage: React.FC = () => {
               <Button
                 onClick={() => navigate('/dashboard/inventory')}
                 size="sm"
-                className="bg-white text-slate-900 hover:bg-slate-100 font-extrabold text-xs px-3.5 h-9 rounded-xl"
+                className="bg-white text-slate-900 hover:bg-slate-100 font-extrabold text-xs px-3.5 h-9 rounded-xl sika-press"
               >
                 Open Inventory
               </Button>

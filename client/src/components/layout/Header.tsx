@@ -3,10 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../visuals/BrandLogo';
 import { ProgressSteps } from '../ui/ProgressSteps';
 import { LogIn } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Determine current onboarding step index
@@ -20,6 +22,8 @@ export const Header: React.FC = () => {
 
   const currentStep = getOnboardingStep(location.pathname);
   const isOnboarding = currentStep >= 0;
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/merchant-signup' || location.pathname === '/cashier-login';
+  const showInternalLinks = isAuthenticated && !isAuthPage && !isOnboarding;
 
   const handleCreateAccountClick = (e: React.MouseEvent) => {
     setMobileMenuOpen(false);
@@ -46,7 +50,7 @@ export const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         {/* Brand Anchor */}
         <Link
-          to="/merchant-signup"
+          to={showInternalLinks ? '/dashboard' : '/login'}
           className="flex items-center gap-2 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D5C3A] rounded-lg transition-opacity"
           aria-label="SikaPOS Home"
         >
@@ -58,7 +62,7 @@ export const Header: React.FC = () => {
           <div className="hidden md:flex items-center">
             <ProgressSteps currentStepIndex={currentStep} />
           </div>
-        ) : (
+        ) : showInternalLinks ? (
           <nav className="hidden md:flex items-center gap-1 text-sm font-semibold text-slate-600" aria-label="Main Navigation">
             <Link
               to="/dashboard"
@@ -73,7 +77,7 @@ export const Header: React.FC = () => {
               Point of Sale
             </Link>
           </nav>
-        )}
+        ) : null}
 
         {/* Right: Restrained Status + Single Clear Secondary Action */}
         <div className="flex items-center gap-3">
