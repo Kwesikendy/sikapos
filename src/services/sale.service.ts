@@ -178,7 +178,7 @@ export class SaleService {
         );
 
         if (item.productId) {
-          this.productService.adjustStock(params.tenantId, item.productId, -item.quantity);
+          this.productService.adjustStock(params.tenantId, branchId, item.productId, -item.quantity);
         }
       }
     });

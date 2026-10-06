@@ -31,6 +31,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             id={inputId}
             ref={ref}
+            aria-invalid={errorText ? 'true' : undefined}
+            aria-describedby={
+              errorText
+                ? `${inputId}-error`
+                : helperText
+                ? `${inputId}-helper`
+                : undefined
+            }
             className={cn(
               'w-full h-12 rounded-lg bg-white border-[1.5px] text-slate-900 placeholder:text-slate-400',
               'text-base transition-all duration-200 shadow-xs hover:border-slate-300',
@@ -50,12 +58,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {errorText ? (
-          <p className="text-xs font-medium text-[#DC2626] mt-1.5 flex items-center gap-1.5">
+          <p id={`${inputId}-error`} role="alert" className="text-xs font-medium text-[#DC2626] mt-1.5 flex items-center gap-1.5">
             <span className="w-1 h-1 rounded-full bg-[#DC2626]"></span>
             {errorText}
           </p>
         ) : helperText ? (
-          <p className="text-xs text-slate-500 mt-1.5">{helperText}</p>
+          <p id={`${inputId}-helper`} className="text-xs text-slate-500 mt-1.5">{helperText}</p>
         ) : null}
       </div>
     );

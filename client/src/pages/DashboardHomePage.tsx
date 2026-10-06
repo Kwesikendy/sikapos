@@ -5,6 +5,8 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Skeleton } from '../components/ui/Skeleton';
+import { posApi } from '../api/pos.api';
+import { formatGHS } from '../lib/utils';
 import { 
   TrendingUp, 
   ArrowRight, 
@@ -16,20 +18,37 @@ import {
 
 export const DashboardHomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [salesData, setSalesData] = useState<any>(null);
+  const [productData, setProductData] = useState<any>(null);
 
   useEffect(() => {
-    // Simulate network loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
+    const fetchData = async () => {
+      try {
+        const [salesRes, prodRes] = await Promise.all([
+          posApi.getSales(5),
+          posApi.getProducts()
+        ]);
+        setSalesData(salesRes);
+        setProductData(prodRes);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  const kpis = [
-    { title: 'Gross Sales', value: 'GH₵ 12,450.00', trend: '+14.2% vs yesterday', isPositive: true, icon: Wallet },
-    { title: 'Total Orders', value: '143', trend: '+5.4% vs yesterday', isPositive: true, icon: CreditCard },
-    { title: 'Active Inventory', value: '1,492', trend: '12 low stock items', isPositive: false, icon: PackageSearch },
-    { title: 'Customers', value: '89', trend: '+12 new today', isPositive: true, icon: Users },
+  const kpis = salesData && productData ? [
+    { title: 'Gross Sales', value: formatGHS(salesData.summary.totalRevenue), trend: 'Today', isPositive: true, icon: Wallet },
+    { title: 'Total Orders', value: salesData.summary.transactionCount.toString(), trend: 'Today', isPositive: true, icon: CreditCard },
+    { title: 'Active Inventory', value: productData.products.length.toString(), trend: `${productData.products.filter((p: any) => (p.total_stock || 0) < 10).length} low stock`, isPositive: false, icon: PackageSearch },
+    { title: 'MoMo Received', value: formatGHS(salesData.summary.momoTotal), trend: 'Today', isPositive: true, icon: Users },
+  ] : [
+    { title: 'Gross Sales', value: '-', trend: '-', isPositive: true, icon: Wallet },
+    { title: 'Total Orders', value: '-', trend: '-', isPositive: true, icon: CreditCard },
+    { title: 'Active Inventory', value: '-', trend: '-', isPositive: false, icon: PackageSearch },
+    { title: 'MoMo Received', value: '-', trend: '-', isPositive: true, icon: Users },
   ];
 
   return (
@@ -147,23 +166,23 @@ export const DashboardHomePage: React.FC = () => {
                   </div>
                 ))
               : /* Mock Sales List */
-                [1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 group cursor-pointer">
+                salesData?.sales?.length ? salesData.sales.map((sale: any, idx: number) => (
+                  <div key={sale.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 group cursor-pointer">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xs group-hover:bg-[#0D5C3A] group-hover:text-white transition-colors">
-                        #0{i}
+                        #{idx + 1}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-900">Walk-in Customer</p>
-                        <p className="text-[11px] text-slate-500 font-medium">12:4{i} PM • Till 1</p>
+                        <p className="text-sm font-bold text-slate-900">{sale.receipt_number}</p>
+                        <p className="text-[11px] text-slate-500 font-medium">{new Date(sale.created_at).toLocaleTimeString()} • {sale.cashier_name || 'Till 1'}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold tabular-nums text-slate-900">GH₵ {(i * 45).toFixed(2)}</p>
-                      <p className="text-[10px] uppercase font-bold text-emerald-600 tracking-widest mt-0.5">Paid</p>
+                      <p className="text-sm font-bold tabular-nums text-slate-900">{formatGHS(sale.grand_total)}</p>
+                      <p className="text-[10px] uppercase font-bold text-emerald-600 tracking-widest mt-0.5">{sale.payment_method}</p>
                     </div>
                   </div>
-                ))}
+                )) : <div className="text-center text-sm text-slate-500 py-6">No recent sales</div>}
           </div>
         </Card>
       </motion.div>

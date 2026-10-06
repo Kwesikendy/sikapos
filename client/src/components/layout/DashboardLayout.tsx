@@ -18,6 +18,9 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Badge } from '../ui/Badge';
+import { DotPattern } from '../visuals/DotPattern';
+import { AmbientGlow } from '../visuals/AmbientGlow';
+import { DecorativeGrid } from '../visuals/DecorativeGeometry';
 
 interface NavItem {
   icon: React.ElementType;
@@ -40,11 +43,12 @@ export const DashboardLayout: React.FC = () => {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-slate-50 flex overflow-hidden font-sans text-slate-900 selection:bg-emerald-100 selection:text-emerald-900">
-      {/* Background Decorators */}
+    <div className="min-h-screen bg-[#F8FAFC] flex overflow-hidden font-sans text-slate-900 selection:bg-emerald-100 selection:text-emerald-900 relative">
+      {/* Background Decorators - SikaPOS Texture System */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-emerald-200/20 blur-[100px]" />
-        <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-sky-200/20 blur-[100px]" />
+        <DotPattern variant="dark" size="sm" opacity={0.3} />
+        <AmbientGlow color="emerald" position="top-left" className="opacity-40" />
+        <DecorativeGrid opacity={0.2} />
       </div>
 
       {/* Sidebar Navigation */}

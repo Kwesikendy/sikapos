@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { pageVariants, staggerContainer, staggerItem } from '../lib/motion';
-import { Card } from '../components/ui/Card';
+import { GlassSurface } from '../components/ui/GlassSurface';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Alert } from '../components/ui/Alert';
@@ -120,7 +120,7 @@ export const CashierLoginPage: React.FC = () => {
 
           {/* Main Terminal Shell */}
           <motion.div variants={staggerItem} className="w-full">
-            <Card glass className="w-full p-6 sm:p-10 shadow-xl border-white/50 bg-white/70">
+            <GlassSurface variant="light" intensity="high" className="w-full p-6 sm:p-10 shadow-xl border-white/50 bg-white/70">
               {/* Switch Mode Tabs */}
               <div className="flex p-1 bg-slate-100/80 backdrop-blur-sm rounded-2xl mb-8 border border-slate-200/60 shadow-inner">
                 <button
@@ -331,7 +331,7 @@ export const CashierLoginPage: React.FC = () => {
                   Need to register a new store? Create an account
                 </Link>
               </div>
-            </Card>
+            </GlassSurface>
           </motion.div>
         </motion.div>
       </main>

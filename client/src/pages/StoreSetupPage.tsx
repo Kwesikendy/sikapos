@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { pageVariants, staggerContainer, staggerItem } from '../lib/motion';
-import { Card } from '../components/ui/Card';
+import { GlassSurface } from '../components/ui/GlassSurface';
 import { Stepper, StepItem } from '../components/ui/Stepper';
 import { Input } from '../components/ui/Input';
 import { PhoneInput } from '../components/ui/PhoneInput';
@@ -22,6 +22,10 @@ import {
   FileCheck
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { authApi } from '../api/auth.api';
+import { tenantApi } from '../api/tenant.api';
+import { ApiError } from '../types/auth.types';
+import { Alert } from '../components/ui/Alert';
 
 const STEPS: StepItem[] = [
   { id: 1, label: 'Owner Profile' },
@@ -39,33 +43,122 @@ const CATEGORIES = [
 
 export const StoreSetupPage: React.FC = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Data state
+  const [branchId, setBranchId] = useState('');
 
   // Step 1: Owner Profile
-  const [ownerName, setOwnerName] = useState('Kwabena Mensah');
-  const [ownerPhone, setOwnerPhone] = useState('0244123456');
-  const [ownerEmail, setOwnerEmail] = useState('kwabena@mensahstores.com');
+  const [ownerName, setOwnerName] = useState('');
+  const [ownerPhone, setOwnerPhone] = useState('');
+  const [ownerEmail, setOwnerEmail] = useState('');
 
   // Step 2: Store Details
-  const [businessName, setBusinessName] = useState('Mensah Provision Store & Supermarket');
+  const [businessName, setBusinessName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('provision');
-  const [branchName, setBranchName] = useState('Osu Oxford St. Branch');
-  const [ghanaPostGps, setGhanaPostGps] = useState('GA-183-9024');
+  const [branchName, setBranchName] = useState('');
+  const [ghanaPostGps, setGhanaPostGps] = useState('');
 
   // Step 3: Tax Profile (Ghana GRA Options)
-  const [taxMode, setTaxMode] = useState<'standard' | 'non_vat'>('standard');
-  const [tinNumber, setTinNumber] = useState('P0012345678');
+  const [taxMode, setTaxMode] = useState<'standard_gra' | 'not_registered'>('standard_gra');
+  const [tinNumber, setTinNumber] = useState('');
 
   // Step 4: Cashier PIN & Payout
-  const [cashierPin, setCashierPin] = useState('1234');
-  const [payoutMomoNumber, setPayoutMomoNumber] = useState('0244123456');
+  const [cashierName, setCashierName] = useState('Cashier 01');
+  const [cashierPhone, setCashierPhone] = useState('');
+  const [cashierPin, setCashierPin] = useState('');
+  const [payoutMomoNumber, setPayoutMomoNumber] = useState('');
 
-  const handleNext = () => {
-    if (currentStep < 4) {
+  useEffect(() => {
+    const fetchContext = async () => {
+      try {
+        const { user, tenant } = await authApi.getCurrentUser();
+        setOwnerName(user.fullName);
+        setOwnerPhone((user as any).phone || (user as any).phone_number || (user as any).phoneNumber);
+        setOwnerEmail(user.email || '');
+        setBusinessName(tenant.businessName);
+        
+        // Match category
+        if (tenant.tradeCategory.includes('pharmacy')) setSelectedCategory('pharmacy');
+        else if (tenant.tradeCategory.includes('fashion')) setSelectedCategory('boutique');
+        else if (tenant.tradeCategory.includes('electronics')) setSelectedCategory('electronics');
+        else setSelectedCategory('provision');
+
+        // Fetch Branches
+        const branches = await tenantApi.getBranches();
+        if (branches.length > 0) {
+          const primary = branches.find(b => b.is_primary) || branches[0];
+          setBranchId(primary.id);
+          setBranchName(primary.name);
+          setGhanaPostGps(primary.gps_digital_address);
+        }
+      } catch (err) {
+        setError('Failed to load store data. Please log in again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchContext();
+  }, []);
+
+  const handleNext = async () => {
+    setError(null);
+    
+    // Logic per step
+    if (currentStep === 1 || currentStep === 2) {
       setCurrentStep(currentStep + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      navigate('/launch-readiness');
+      return;
+    }
+
+    if (currentStep === 3) {
+      setIsSaving(true);
+      try {
+        await tenantApi.updateTaxProfile({
+          taxType: taxMode,
+          tinNumber: tinNumber
+        });
+        setCurrentStep(currentStep + 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err: unknown) {
+        setError((err as ApiError).message || 'Failed to update tax configuration');
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
+
+    if (currentStep === 4) {
+      if (cashierPin.length !== 4) {
+        setError('Cashier PIN must be exactly 4 digits');
+        return;
+      }
+      if (!cashierPhone) {
+        setError('Please provide a valid phone number for the cashier');
+        return;
+      }
+      
+      setIsSaving(true);
+      try {
+        // Create initial cashier
+        await tenantApi.createCashier({
+          branchId,
+          fullName: cashierName,
+          phoneNumber: cashierPhone,
+          pin: cashierPin
+        });
+        
+        // Setup complete
+        navigate('/launch-readiness');
+      } catch (err: unknown) {
+        setError((err as ApiError).message || 'Failed to setup cashier profile');
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -75,6 +168,14 @@ export const StoreSetupPage: React.FC = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-8 h-8 rounded-full border-4 border-[#0D5C3A]/20 border-t-[#0D5C3A] animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-slate-900">
@@ -88,12 +189,18 @@ export const StoreSetupPage: React.FC = () => {
         >
           {/* Step Indicator */}
           <motion.div variants={staggerItem} className="mb-8">
-            <Stepper steps={STEPS} currentStep={currentStep} onStepClick={setCurrentStep} />
+            <Stepper steps={STEPS} currentStep={currentStep} onStepClick={() => {}} />
           </motion.div>
+
+          {error && (
+            <motion.div variants={staggerItem} className="mb-6">
+              <Alert variant="error" className="shadow-sm">{error}</Alert>
+            </motion.div>
+          )}
 
           {/* Step Content Shell */}
           <motion.div variants={staggerItem}>
-            <Card glass className="p-6 sm:p-10 shadow-lg border-white/50 bg-white/70 backdrop-blur-xl">
+            <GlassSurface variant="light" intensity="high" className="p-6 sm:p-10 shadow-lg border-white/50 bg-white/70 backdrop-blur-xl">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStep}
@@ -123,12 +230,14 @@ export const StoreSetupPage: React.FC = () => {
                           value={ownerName}
                           onChange={(e) => setOwnerName(e.target.value)}
                           required
+                          disabled
                         />
                         <PhoneInput
                           label="Primary Mobile Phone"
                           value={ownerPhone}
                           onChange={setOwnerPhone}
                           required
+                          disabled
                         />
                         <Input
                           label="Email Address"
@@ -136,6 +245,7 @@ export const StoreSetupPage: React.FC = () => {
                           value={ownerEmail}
                           onChange={(e) => setOwnerEmail(e.target.value)}
                           required
+                          disabled
                         />
                       </div>
                     </div>
@@ -164,6 +274,7 @@ export const StoreSetupPage: React.FC = () => {
                           value={businessName}
                           onChange={(e) => setBusinessName(e.target.value)}
                           required
+                          disabled
                           startIcon={<Building2 className="w-5 h-5" />}
                         />
 
@@ -178,12 +289,11 @@ export const StoreSetupPage: React.FC = () => {
                               return (
                                 <div
                                   key={cat.id}
-                                  onClick={() => setSelectedCategory(cat.id)}
                                   className={cn(
-                                    'p-4 rounded-2xl border transition-all cursor-pointer select-none text-left flex flex-col justify-between shadow-xs',
+                                    'p-4 rounded-2xl border transition-all select-none text-left flex flex-col justify-between shadow-xs',
                                     isSelected
                                       ? 'bg-white border-[#0D5C3A] ring-2 ring-[#0D5C3A]/20 shadow-md transform scale-[1.02]'
-                                      : 'bg-slate-50/50 border-slate-200 hover:bg-white hover:border-slate-300'
+                                      : 'bg-slate-50/50 border-slate-200 opacity-60'
                                   )}
                                 >
                                   <div className="flex items-center justify-between mb-1.5">
@@ -206,6 +316,7 @@ export const StoreSetupPage: React.FC = () => {
                             value={branchName}
                             onChange={(e) => setBranchName(e.target.value)}
                             required
+                            disabled
                             startIcon={<Store className="w-5 h-5" />}
                           />
 
@@ -216,6 +327,7 @@ export const StoreSetupPage: React.FC = () => {
                             value={ghanaPostGps}
                             onChange={(e) => setGhanaPostGps(e.target.value)}
                             required
+                            disabled
                             startIcon={<MapPin className="w-5 h-5" />}
                           />
                         </div>
@@ -241,15 +353,15 @@ export const StoreSetupPage: React.FC = () => {
                       <div className="space-y-4 pt-2">
                         {/* Option 1: Standard GRA VAT Registered */}
                         <div
-                          onClick={() => setTaxMode('standard')}
+                          onClick={() => setTaxMode('standard_gra')}
                           className={cn(
                             'p-5 rounded-2xl border transition-all cursor-pointer select-none text-left flex items-start gap-5 shadow-xs',
-                            taxMode === 'standard'
+                            taxMode === 'standard_gra'
                               ? 'bg-white border-[#0D5C3A] ring-2 ring-[#0D5C3A]/20 shadow-md transform scale-[1.01]'
                               : 'bg-slate-50/50 border-slate-200 hover:bg-white hover:border-slate-300'
                           )}
                         >
-                          <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm", taxMode === 'standard' ? 'bg-[#0D5C3A] text-white' : 'bg-slate-200 text-slate-600')}>
+                          <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm", taxMode === 'standard_gra' ? 'bg-[#0D5C3A] text-white' : 'bg-slate-200 text-slate-600')}>
                             <Receipt className="w-6 h-6" />
                           </div>
                           <div className="flex-1 space-y-1">
@@ -257,7 +369,7 @@ export const StoreSetupPage: React.FC = () => {
                               <h3 className="text-base font-bold text-slate-900">
                                 VAT Registered Business (Standard Configuration)
                               </h3>
-                              {taxMode === 'standard' && (
+                              {taxMode === 'standard_gra' && (
                                 <CheckCircle2 className="w-5 h-5 text-[#0D5C3A]" />
                               )}
                             </div>
@@ -280,15 +392,15 @@ export const StoreSetupPage: React.FC = () => {
 
                         {/* Option 2: Not VAT Registered */}
                         <div
-                          onClick={() => setTaxMode('non_vat')}
+                          onClick={() => setTaxMode('not_registered')}
                           className={cn(
                             'p-5 rounded-2xl border transition-all cursor-pointer select-none text-left flex items-start gap-5 shadow-xs',
-                            taxMode === 'non_vat'
+                            taxMode === 'not_registered'
                               ? 'bg-white border-[#0D5C3A] ring-2 ring-[#0D5C3A]/20 shadow-md transform scale-[1.01]'
                               : 'bg-slate-50/50 border-slate-200 hover:bg-white hover:border-slate-300'
                           )}
                         >
-                          <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm", taxMode === 'non_vat' ? 'bg-[#0D5C3A] text-white' : 'bg-slate-200 text-slate-600')}>
+                          <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm", taxMode === 'not_registered' ? 'bg-[#0D5C3A] text-white' : 'bg-slate-200 text-slate-600')}>
                             <Percent className="w-6 h-6" />
                           </div>
                           <div className="flex-1 space-y-1">
@@ -296,7 +408,7 @@ export const StoreSetupPage: React.FC = () => {
                               <h3 className="text-base font-bold text-slate-900">
                                 Not VAT Registered
                               </h3>
-                              {taxMode === 'non_vat' && (
+                              {taxMode === 'not_registered' && (
                                 <CheckCircle2 className="w-5 h-5 text-[#0D5C3A]" />
                               )}
                             </div>
@@ -307,7 +419,7 @@ export const StoreSetupPage: React.FC = () => {
                         </div>
 
                         <AnimatePresence>
-                          {taxMode === 'standard' && (
+                          {taxMode === 'standard_gra' && (
                             <motion.div 
                               initial={{ opacity: 0, height: 0 }} 
                               animate={{ opacity: 1, height: 'auto' }} 
@@ -340,13 +452,27 @@ export const StoreSetupPage: React.FC = () => {
                           Cashier PIN & Payout
                         </h2>
                         <p className="text-sm text-slate-500 mt-1.5">
-                          Set up your counter PIN and destination account for Mobile Money deposits.
+                          Set up your first till cashier and destination account for payouts.
                         </p>
                       </div>
 
                       <div className="space-y-5 pt-2">
                         <Input
-                          label="Master Till Cashier PIN (4 Digits)"
+                          label="Cashier Full Name"
+                          helperText="Who will be operating the till?"
+                          placeholder="e.g. Ama Serwaa"
+                          value={cashierName}
+                          onChange={(e) => setCashierName(e.target.value)}
+                          required
+                        />
+                        <PhoneInput
+                          label="Cashier Mobile Phone"
+                          value={cashierPhone}
+                          onChange={setCashierPhone}
+                          required
+                        />
+                        <Input
+                          label="Till Cashier PIN (4 Digits)"
                           type="password"
                           maxLength={4}
                           helperText="Cashiers use this quick 4-digit code to log into countertops and tablets"
@@ -356,14 +482,6 @@ export const StoreSetupPage: React.FC = () => {
                           required
                           startIcon={<Lock className="w-5 h-5" />}
                           className="font-mono tracking-widest text-lg"
-                        />
-
-                        <PhoneInput
-                          label="Settlement Mobile Money Account"
-                          helperText="Instant payouts from customer MTN MoMo and Telecel Cash drop here"
-                          value={payoutMomoNumber}
-                          onChange={setPayoutMomoNumber}
-                          required
                         />
                       </div>
                     </div>
@@ -381,6 +499,7 @@ export const StoreSetupPage: React.FC = () => {
                     onClick={handleBack}
                     leftIcon={<ArrowLeft className="w-4 h-4" />}
                     className="shadow-none border-slate-300"
+                    disabled={isSaving}
                   >
                     Previous Step
                   </Button>
@@ -392,13 +511,14 @@ export const StoreSetupPage: React.FC = () => {
                   type="button"
                   size="md"
                   onClick={handleNext}
+                  isLoading={isSaving}
                   rightIcon={<ArrowRight className="w-4 h-4" />}
                   className="px-8 shadow-md"
                 >
                   {currentStep === 4 ? 'Save and Go to Launchpad' : 'Continue'}
                 </Button>
               </div>
-            </Card>
+            </GlassSurface>
           </motion.div>
         </motion.div>
       </main>

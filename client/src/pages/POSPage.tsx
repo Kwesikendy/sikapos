@@ -13,7 +13,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '../lib/utils';
+import { cn, formatGHS } from '../lib/utils';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { staggerContainer, staggerItem } from '../lib/motion';
@@ -148,25 +148,25 @@ export const POSPage: React.FC = () => {
         <div className="space-y-2 mb-4">
           <div className="flex justify-between text-[13px] text-slate-500 font-medium">
             <span>Subtotal</span>
-            <span className="tabular-nums">GH₵ {subtotal.toFixed(2)}</span>
+            <span className="tabular-nums">{formatGHS(subtotal)}</span>
           </div>
           <div className="flex justify-between text-[13px] text-slate-500 font-medium pb-3 border-b border-slate-100">
             <span>Tax (15%)</span>
-            <span className="tabular-nums">GH₵ {tax.toFixed(2)}</span>
+            <span className="tabular-nums">{formatGHS(tax)}</span>
           </div>
           <div className="flex justify-between items-end pt-1">
             <span className="text-sm font-bold text-slate-900">Total Due</span>
-            <span className="text-2xl font-extrabold text-[#0D5C3A] tabular-nums tracking-tight">GH₵ {total.toFixed(2)}</span>
+            <span className="text-2xl font-extrabold text-[#0D5C3A] tabular-nums tracking-tight">{formatGHS(total)}</span>
           </div>
         </div>
         
         <Button 
           size="lg" 
-          className="w-full h-14 text-[15px] font-extrabold shadow-lg shadow-[#0D5C3A]/20"
+          className="w-full h-14 text-base font-extrabold shadow-lg shadow-[#0D5C3A]/25"
           rightIcon={<ArrowRight className="w-5 h-5" />}
           disabled={cart.length === 0}
         >
-          CHARGE
+          {cart.length === 0 ? 'Select Items to Charge' : `Charge ${formatGHS(total)}`}
         </Button>
       </div>
     </div>

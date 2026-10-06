@@ -49,7 +49,7 @@ export const PosTerminalPage: React.FC = () => {
 
   // Products catalog & categories
   const [products, setProducts] = useState<ProductItem[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
@@ -154,7 +154,7 @@ export const PosTerminalPage: React.FC = () => {
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const matchesCategory =
-        selectedCategory === 'all' || p.category.toLowerCase() === selectedCategory.toLowerCase();
+        selectedCategory === 'all' || p.category_id === selectedCategory;
       const matchesSearch =
         searchQuery.trim() === '' ||
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -201,7 +201,7 @@ export const PosTerminalPage: React.FC = () => {
   // Calculations
   const subtotal = useMemo(() => {
     return Number(
-      cart.reduce((sum, item) => sum + item.product.selling_price * item.quantity, 0).toFixed(2)
+      cart.reduce((sum, item) => sum + item.product.base_price * item.quantity, 0).toFixed(2)
     );
   }, [cart]);
 
@@ -271,7 +271,7 @@ export const PosTerminalPage: React.FC = () => {
           productId: item.product.id,
           productName: item.product.name,
           quantity: item.quantity,
-          unitPrice: item.product.selling_price,
+          unitPrice: item.product.base_price,
         })),
         paymentMethod,
         amountTendered: paymentMethod === 'cash' ? parseFloat(cashTendered) : taxes.grandTotal,
@@ -321,10 +321,10 @@ export const PosTerminalPage: React.FC = () => {
     try {
       await posApi.createProduct({
         name: newProductName.trim(),
-        category: newProductCategory,
+        categoryId: newProductCategory,
         sellingPrice: parseFloat(newProductPrice),
         costPrice: newProductCost ? parseFloat(newProductCost) : 0,
-        stockQuantity: parseInt(newProductStock) || 0,
+        initialStock: parseInt(newProductStock) || 0,
       });
       setShowAddProductModal(false);
       setNewProductName('');
@@ -545,7 +545,7 @@ export const PosTerminalPage: React.FC = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5">
                 {filteredProducts.map((product) => {
                   const inCartItem = cart.find((i) => i.product.id === product.id);
-                  const isLowStock = product.stock_quantity <= product.low_stock_threshold;
+                  const isLowStock = (product.total_stock || 0) <= 5;
 
                   return (
                     <div
@@ -560,9 +560,9 @@ export const PosTerminalPage: React.FC = () => {
                       <div>
                         {/* Top: Category and stock info as clean unboxed text */}
                         <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1.5 font-medium">
-                          <span>{product.category}</span>
+                          <span>{(product.category_name || "Uncategorized")}</span>
                           <span className={isLowStock ? 'text-amber-600 font-bold' : 'text-slate-500'}>
-                            {product.stock_quantity} in stock
+                            {(product.total_stock || 0)} in stock
                           </span>
                         </div>
 
@@ -575,7 +575,7 @@ export const PosTerminalPage: React.FC = () => {
                       {/* Bottom Price & Add Action */}
                       <div className="pt-3 mt-2 border-t border-slate-100 flex items-center justify-between">
                         <span className="text-sm sm:text-base font-extrabold text-slate-900 tabular-nums">
-                          {formatGHS(product.selling_price)}
+                          {formatGHS(product.base_price)}
                         </span>
 
                         {inCartItem ? (
@@ -637,13 +637,13 @@ export const PosTerminalPage: React.FC = () => {
               </div>
             ) : (
               cart.map((item) => {
-                const lineTotal = item.product.selling_price * item.quantity;
+                const lineTotal = item.product.base_price * item.quantity;
                 return (
                   <div key={item.product.id} className="pt-2.5 first:pt-0 flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-slate-900 truncate">{item.product.name}</p>
                       <p className="text-[11px] text-slate-500 tabular-nums">
-                        {formatGHS(item.product.selling_price)} each
+                        {formatGHS(item.product.base_price)} each
                       </p>
                     </div>
 

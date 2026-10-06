@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { pageVariants, staggerContainer, staggerItem } from '../lib/motion';
-import { Card } from '../components/ui/Card';
+import { GlassSurface } from '../components/ui/GlassSurface';
 import { Button } from '../components/ui/Button';
 import { PinKeypad } from '../components/ui/PinKeypad';
 import { Badge } from '../components/ui/Badge';
@@ -79,7 +79,7 @@ export const LaunchReadinessPage: React.FC = () => {
           {/* Dual Bento Grid */}
           <motion.div variants={staggerItem} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left: Terminal Fast-Switch Security (5 cols) */}
-            <Card glass className="lg:col-span-5 p-6 sm:p-8 space-y-6 text-left shadow-lg border-white/50 bg-white/60">
+            <GlassSurface variant="light" intensity="high" className="lg:col-span-5 p-6 sm:p-8 space-y-6 text-left shadow-lg border-white/50 bg-white/60">
               <div className="border-b border-slate-200/60 pb-5">
                 <span className="text-[11px] font-bold uppercase tracking-widest text-[#0D5C3A] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
                   Countertop Security
@@ -130,11 +130,11 @@ export const LaunchReadinessPage: React.FC = () => {
                   </div>
                 </label>
               </div>
-            </Card>
+            </GlassSurface>
 
             {/* Right: Launchpad Readiness Checklist & Action (7 cols) */}
             <div className="lg:col-span-7 space-y-6 text-left">
-              <Card glass className="p-6 sm:p-8 space-y-6 shadow-lg border-white/50 bg-white/70">
+              <GlassSurface variant="light" intensity="high" className="p-6 sm:p-8 space-y-6 shadow-lg border-white/50 bg-white/70">
                 <div className="border-b border-slate-200/60 pb-5">
                   <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-800 bg-[#E8F5EE] px-3 py-1 rounded-full border border-emerald-200 inline-flex mb-3 shadow-xs">
                     Readiness Score: 100%
@@ -192,7 +192,7 @@ export const LaunchReadinessPage: React.FC = () => {
                     Launches high-cadence checkout mode with local cache and instant MoMo push.
                   </p>
                 </div>
-              </Card>
+              </GlassSurface>
             </div>
           </motion.div>
         </motion.div>

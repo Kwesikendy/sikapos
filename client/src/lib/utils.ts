@@ -6,7 +6,14 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatGHS(amount: number): string {
-  return `GH₵ ${amount.toFixed(2)}`;
+  if (isNaN(amount) || amount === null || amount === undefined) {
+    return 'GH₵ 0.00';
+  }
+  const formatted = new Intl.NumberFormat('en-GH', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+  return `GH₵ ${formatted}`;
 }
 
 export function detectGhanaCarrier(phone: string): { name: string; slug: 'mtn' | 'telecel' | 'at' | 'unknown' } {

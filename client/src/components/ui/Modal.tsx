@@ -50,6 +50,8 @@ export const Modal: React.FC<ModalProps> = ({
         <div
           role="dialog"
           aria-modal="true"
+          aria-labelledby={title ? 'modal-title' : undefined}
+          aria-describedby={description ? 'modal-description' : undefined}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
         >
           {/* Backdrop */}
@@ -75,12 +77,12 @@ export const Modal: React.FC<ModalProps> = ({
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
                 {title && (
-                  <h3 className="text-xl font-extrabold text-slate-900 leading-tight">
+                  <h3 id="modal-title" className="text-xl font-extrabold text-slate-900 leading-tight">
                     {title}
                   </h3>
                 )}
                 {description && (
-                  <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">
+                  <p id="modal-description" className="text-sm text-slate-500 mt-1.5 leading-relaxed">
                     {description}
                   </p>
                 )}

@@ -16,9 +16,9 @@ const authenticate = createAuthMiddleware(authService);
 productRouter.get('/', authenticate, enforceTenantContext, (req, res) => {
   const tenantId = req.tenantContext!.tenantId;
   const search = req.query.search ? String(req.query.search) : undefined;
-  const category = req.query.category ? String(req.query.category) : undefined;
+  const categoryId = req.query.categoryId ? String(req.query.categoryId) : undefined;
 
-  const products = productService.getProducts(tenantId, { search, category });
+  const products = productService.getProducts(tenantId, { search, categoryId });
   const categories = productService.getCategories(tenantId);
 
   res.json({
@@ -41,6 +41,25 @@ productRouter.get('/categories', authenticate, enforceTenantContext, (req, res) 
   });
 });
 
+// POST /api/v1/products/categories
+productRouter.post('/categories', authenticate, enforceTenantContext, requirePermission('products.create'), validateBody([
+  { field: 'name', required: true }
+]), (req, res, next) => {
+  try {
+    const tenantId = req.tenantContext!.tenantId;
+    const { name, colorCode } = req.body;
+    
+    const category = productService.createCategory(tenantId, name, colorCode);
+    
+    res.status(201).json({
+      success: true,
+      data: category
+    });
+  } catch(err) {
+    next(err);
+  }
+});
+
 // POST /api/v1/products
 productRouter.post('/', authenticate, enforceTenantContext, requirePermission('products.create'), validateBody([
   { field: 'name', required: true },
@@ -48,17 +67,26 @@ productRouter.post('/', authenticate, enforceTenantContext, requirePermission('p
 ]), (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
-    const { name, barcode, category, costPrice, sellingPrice, stockQuantity, lowStockThreshold } = req.body;
+    const { name, barcode, sku, categoryId, description, costPrice, sellingPrice, isTaxable, initialStock, branchId } = req.body;
 
     const product = productService.createProduct(tenantId, {
       name,
       barcode,
-      category,
+      sku,
+      categoryId,
+      description,
       costPrice,
       sellingPrice,
-      stockQuantity,
-      lowStockThreshold
+      isTaxable
     });
+
+    if (initialStock && initialStock > 0 && branchId) {
+      productService.adjustStock(tenantId, branchId, product.id, initialStock);
+      // Reload product to get stock
+      const productWithStock = productService.getProductById(tenantId, product.id);
+      res.status(201).json({ success: true, data: productWithStock });
+      return;
+    }
 
     res.status(201).json({
       success: true,
@@ -77,6 +105,37 @@ productRouter.put('/:id', authenticate, enforceTenantContext, requirePermission(
 
     const updated = productService.updateProduct(tenantId, productId, req.body);
 
+    if (!updated) {
+      res.status(404).json({
+        success: false,
+        error: { code: 'PRODUCT_NOT_FOUND', message: 'Product not found' }
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: updated
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/v1/products/:id/stock
+productRouter.post('/:id/stock', authenticate, enforceTenantContext, requirePermission('inventory.adjust'), validateBody([
+  { field: 'branchId', required: true },
+  { field: 'quantity', required: true, type: 'number' }
+]), (req, res, next) => {
+  try {
+    const tenantId = req.tenantContext!.tenantId;
+    const productId = String(req.params.id);
+    const { branchId, quantity } = req.body;
+
+    productService.adjustStock(tenantId, branchId, productId, quantity);
+    
+    const updated = productService.getProductById(tenantId, productId);
+    
     if (!updated) {
       res.status(404).json({
         success: false,

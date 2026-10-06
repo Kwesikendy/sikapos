@@ -5,12 +5,14 @@ export interface ProductItem {
   tenant_id: string;
   name: string;
   barcode: string | null;
-  category: string;
+  sku: string | null;
+  category_id: string | null;
+  category_name?: string;
   cost_price: number;
-  selling_price: number;
-  stock_quantity: number;
-  low_stock_threshold: number;
-  is_active: number;
+  base_price: number;
+  total_stock?: number;
+  is_taxable: number;
+  status: string;
 }
 
 export interface SaleItemPayload {
@@ -100,21 +102,23 @@ export interface ReadinessResponse {
 
 export const posApi = {
   // Products
-  getProducts: async (search?: string, category?: string): Promise<{ products: ProductItem[]; categories: string[] }> => {
+  getProducts: async (search?: string, categoryId?: string): Promise<{ products: ProductItem[]; categories: any[] }> => {
     const params = new URLSearchParams();
     if (search) params.append('search', search);
-    if (category && category !== 'all') params.append('category', category);
+    if (categoryId && categoryId !== 'all') params.append('categoryId', categoryId);
     const qs = params.toString() ? `?${params.toString()}` : '';
-    return apiClient.get<{ products: ProductItem[]; categories: string[] }>(`/products${qs}`);
+    return apiClient.get<{ products: ProductItem[]; categories: any[] }>(`/products${qs}`);
   },
 
   createProduct: async (product: {
     name: string;
     barcode?: string;
-    category?: string;
+    sku?: string;
+    categoryId?: string;
     costPrice?: number;
     sellingPrice: number;
-    stockQuantity?: number;
+    initialStock?: number;
+    branchId?: string;
   }): Promise<ProductItem> => {
     return apiClient.post<ProductItem>('/products', product);
   },

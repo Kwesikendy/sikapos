@@ -14,8 +14,12 @@ export function initializeDatabase(db?: Database.Database): Database.Database {
   const schemaPath = path.join(__dirname, 'schema.sql');
   const schemaSql = fs.readFileSync(schemaPath, 'utf8');
 
-  // Execute schema
+  const schemaPhase3Path = path.join(__dirname, 'schema_phase3.sql');
+  const schemaPhase3Sql = fs.readFileSync(schemaPhase3Path, 'utf8');
+
+  // Execute schemas
   database.exec(schemaSql);
+  database.exec(schemaPhase3Sql);
 
   // Seed core roles and permissions
   seedRolesAndPermissions(database);

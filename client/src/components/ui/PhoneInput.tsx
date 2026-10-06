@@ -89,12 +89,20 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
             value={value}
             onChange={handleInputChange}
             placeholder="024 000 0000"
+            aria-invalid={errorText ? 'true' : undefined}
+            aria-describedby={
+              errorText
+                ? `${inputId}-error`
+                : helperText
+                ? `${inputId}-helper`
+                : undefined
+            }
             className={cn(
               'w-full h-12 rounded-lg bg-slate-50 border text-slate-900 placeholder:text-slate-400 font-mono',
               'text-base sm:text-sm px-3.5 transition-colors duration-150',
               'focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0D5C3A] focus:border-transparent',
               'disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed',
-              errorText ? 'border-rose-500 bg-rose-50/20 focus:ring-rose-500' : 'border-slate-300',
+              errorText ? 'border-[#DC2626] bg-[#FEF2F2] focus:ring-[#DC2626]' : 'border-slate-300',
               className
             )}
             {...props}
@@ -103,9 +111,9 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
       </div>
 
       {errorText ? (
-        <p className="text-xs font-medium text-rose-600 mt-1">{errorText}</p>
+        <p id={`${inputId}-error`} role="alert" className="text-xs font-medium text-[#DC2626] mt-1">{errorText}</p>
       ) : helperText ? (
-        <p className="text-xs text-slate-500 mt-1">{helperText}</p>
+        <p id={`${inputId}-helper`} className="text-xs text-slate-500 mt-1">{helperText}</p>
       ) : null}
     </div>
   );

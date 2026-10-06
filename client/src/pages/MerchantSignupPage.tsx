@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthLayout } from '../components/layout/AuthLayout';
-import { Card } from '../components/ui/Card';
+import { GlassSurface } from '../components/ui/GlassSurface';
+import { FormSection } from '../components/ui/FormSection';
 import { Input } from '../components/ui/Input';
 import { PhoneInput } from '../components/ui/PhoneInput';
 import { Button } from '../components/ui/Button';
@@ -9,7 +10,7 @@ import { Alert } from '../components/ui/Alert';
 import { Modal } from '../components/ui/Modal';
 import { authApi } from '../api/auth.api';
 import { ApiError } from '../types/auth.types';
-import { Lock, Eye, EyeOff, ShieldCheck, ArrowRight, UserCheck } from 'lucide-react';
+import { Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export const MerchantSignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ export const MerchantSignupPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Step 1: Request OTP from real backend
+      // Step 1: Request OTP from backend
       const res = await authApi.requestSignupOtp(phoneNumber);
       setOtpCarrier(res.carrier);
       if (res.debugCode) {
@@ -131,84 +132,65 @@ export const MerchantSignupPage: React.FC = () => {
   };
 
   return (
-    <AuthLayout
-      title="Run your shop from one place."
-      subtitle="Built for modern Ghanaian traders, pharmacies, minimarts, and retail shops."
-    >
-      <Card glass className="w-full">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-8 mb-6 border-b border-slate-200/60">
-          <div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#0D5C3A] text-[11px] font-bold uppercase tracking-widest border border-emerald-100 mb-2">
-              Stage 02 • Merchant Registration
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
-              Create Account
-            </h2>
-            <p className="text-sm text-slate-500 mt-1.5">
-              Set up your business tenant and store manager access.
-            </p>
-          </div>
-
-          <div className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 shadow-inner">
-            <UserCheck className="w-4 h-4 text-[#0D5C3A]" />
-            <span>Store Owner Access</span>
-          </div>
-        </div>
-
-        {/* Informational Guidance */}
-        <div className="mb-8">
-          <Alert variant="info" className="bg-sky-50/50 backdrop-blur-sm border-sky-100 text-sky-800 shadow-sm">
-            Cashiers do not register here. You will invite staff with fast 4-digit PINs after setting up your store.
-          </Alert>
+    <AuthLayout>
+      <GlassSurface
+        variant="light"
+        intensity="high"
+        className="w-full p-6 sm:p-8 bg-white/95 rounded-2xl border border-slate-200/80 shadow-card"
+      >
+        {/* Screen Title & Narrative */}
+        <div className="mb-6 space-y-1">
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            Create Store Account
+          </h2>
+          <p className="text-sm text-slate-500">
+            Start selling in minutes with your phone number and store profile.
+          </p>
         </div>
 
         {error && (
           <div className="mb-6">
-            <Alert variant="error" className="shadow-sm">{error}</Alert>
+            <Alert variant="error" className="shadow-xs">{error}</Alert>
           </div>
         )}
 
-        {/* Registration Form */}
-        <form onSubmit={handleInitialSubmit} className="space-y-8">
+        {/* Clean, Grouped Form applying Proximity Law */}
+        <form onSubmit={handleInitialSubmit} className="space-y-6">
           
-          {/* Section: Owner Details */}
-          <div className="space-y-5">
-            <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">Owner Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Input
-                label="Full Name"
-                helperText="As printed on your Ghana Card"
-                placeholder="e.g. Kwabena Mensah"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-              />
+          {/* Group 1: Your Details */}
+          <FormSection title="1. Your Details">
+            <Input
+              label="Full Name"
+              placeholder="e.g. Kwabena Mensah"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <PhoneInput
-                label="Mobile Phone Number"
-                helperText="For instant OTP verification & MoMo"
+                label="Mobile Phone"
                 value={phoneNumber}
                 onChange={setPhoneNumber}
                 required
               />
-            </div>
-            <Input
-              label="Email Address"
-              type="email"
-              placeholder="e.g. kwabena@mensahstores.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
 
-          {/* Section: Business Details */}
-          <div className="space-y-5">
-            <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">Business Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Input
-                label="Business Trade Name"
+                label="Email Address"
+                type="email"
+                placeholder="e.g. kwabena@shop.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+          </FormSection>
+
+          {/* Group 2: Your Business */}
+          <FormSection title="2. Your Business">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Store Name"
                 placeholder="e.g. Mensah Provision Store"
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
@@ -216,97 +198,90 @@ export const MerchantSignupPage: React.FC = () => {
               />
 
               <Input
-                label="Primary Outlet / Branch"
-                placeholder="e.g. Osu Oxford St. Branch"
+                label="Branch / Location"
+                placeholder="e.g. Osu Oxford St."
                 value={branchName}
                 onChange={(e) => setBranchName(e.target.value)}
                 required
               />
             </div>
-          </div>
+          </FormSection>
 
-          {/* Section: Security */}
-          <div className="space-y-5">
-            <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">Security</h3>
+          {/* Group 3: Security */}
+          <FormSection title="3. Security">
             <Input
-              label="Account Password"
+              label="Password"
               type={showPassword ? 'text' : 'password'}
-              helperText="Minimum 8 characters with at least one number and special character"
-              placeholder="Enter secure password"
+              helperText="At least 8 characters"
+              placeholder="Create a secure password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              startIcon={<Lock className="w-5 h-5" />}
+              startIcon={<Lock className="w-4 h-4" aria-hidden="true" />}
               endIcon={
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-slate-400 hover:text-[#0D5C3A] transition-colors cursor-pointer"
+                  className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               }
             />
-          </div>
+          </FormSection>
 
-          <div className="pt-6">
+          {/* Level 1: Primary Action (Von Restorff Effect) */}
+          <div className="pt-2">
             <Button
               type="submit"
               size="lg"
-              className="w-full text-[15px]"
+              className="w-full text-base font-bold shadow-md hover:shadow-lg transition-all"
               isLoading={isLoading}
-              rightIcon={<ArrowRight className="w-5 h-5" />}
+              loadingText="Sending verification code..."
+              rightIcon={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
             >
-              Verify Phone and Continue
+              Verify Phone & Continue
             </Button>
           </div>
         </form>
 
-        {/* Existing User Alternatives */}
-        <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-          <span className="font-medium">Already have an account?</span>
-          <div className="flex items-center gap-3">
-            <Link
-              to="/cashier-login"
-              className="font-bold text-[#0D5C3A] hover:text-[#09432A] transition-colors flex items-center gap-1 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100"
-            >
-              Cashier PIN Login
-            </Link>
-            <span className="text-slate-300">•</span>
-            <Link
-              to="/cashier-login?tab=admin"
-              className="font-semibold text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              Admin Login
-            </Link>
-          </div>
+        {/* Level 2/3: Clear, low-friction secondary route */}
+        <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm text-slate-500">
+          <span>Already have a store?</span>
+          <Link
+            to="/cashier-login"
+            className="font-bold text-[#0D5C3A] hover:text-[#09432A] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D5C3A] rounded px-1"
+          >
+            Sign in to terminal →
+          </Link>
         </div>
-      </Card>
+      </GlassSurface>
 
       {/* OTP Verification Modal */}
       <Modal
         isOpen={showOtpModal}
         onClose={() => setShowOtpModal(false)}
-        title="Verify Your Phone Number"
-        description={`We sent a 6-digit verification code to +233 ${phoneNumber}.`}
+        title="Verify Your Phone"
+        description={`We sent a 6-digit code to +233 ${phoneNumber}.`}
       >
         <div className="space-y-4 pt-2">
           {otpError && <Alert variant="error">{otpError}</Alert>}
 
-          {/* Development Sandbox Helper Notice */}
+          {/* Sandbox Development Code */}
           {debugOtp && (
-            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-900">
-              <span className="font-semibold">Sandbox Testing Code:</span>{' '}
-              <code className="bg-amber-100 px-1.5 py-0.5 rounded font-mono font-bold">{debugOtp}</code>
+            <div className="p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
+              <span>Testing OTP:</span>
+              <code className="bg-amber-100 px-2 py-0.5 rounded font-mono font-bold text-sm">{debugOtp}</code>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Enter 6-Digit Verification Code
+            <label htmlFor="otp-input" className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Enter 6-Digit Code
             </label>
             <input
+              id="otp-input"
               type="text"
               maxLength={6}
               autoFocus
@@ -314,19 +289,20 @@ export const MerchantSignupPage: React.FC = () => {
               placeholder="000000"
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-              className="w-full h-14 text-center font-mono text-2xl font-bold tracking-[0.5em] rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0D5C3A]"
+              aria-label="6-digit verification code"
+              className="w-full h-14 text-center font-mono text-2xl font-bold tracking-[0.4em] rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0D5C3A]"
             />
           </div>
 
           <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-            <span>Network: {otpCarrier || 'Ghana Telco'}</span>
+            <span>{otpCarrier || 'Ghana Telco'}</span>
             {cooldown > 0 ? (
-              <span className="font-mono text-amber-700">Resend in {cooldown}s</span>
+              <span className="font-mono text-amber-700 font-semibold">Resend in {cooldown}s</span>
             ) : (
               <button
                 type="button"
                 onClick={handleResendOtp}
-                className="font-semibold text-[#0D5C3A] hover:underline cursor-pointer"
+                className="font-bold text-[#0D5C3A] hover:underline cursor-pointer"
               >
                 Resend Code
               </button>
@@ -339,9 +315,10 @@ export const MerchantSignupPage: React.FC = () => {
               className="w-full"
               size="lg"
               isLoading={isVerifyingOtp}
+              loadingText="Verifying..."
               onClick={handleVerifyAndRegister}
             >
-              Verify and Complete Registration
+              Verify & Complete Registration
             </Button>
           </div>
         </div>

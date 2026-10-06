@@ -80,6 +80,14 @@ class HttpClient {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   }
+
+  put<T>(endpoint: string, body?: unknown, headers?: Record<string, string>): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PUT',
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  }
 }
 
 export const apiClient = new HttpClient();
