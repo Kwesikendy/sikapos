@@ -16,6 +16,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { TeamPage } from './pages/TeamPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { POSPage } from './pages/POSPage';
+import { InstallPrompt } from './components/pwa/InstallPrompt';
 const PosTerminalPage = POSPage;
 
 export const App: React.FC = () => {
@@ -84,6 +85,7 @@ export const App: React.FC = () => {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
+        <InstallPrompt />
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>

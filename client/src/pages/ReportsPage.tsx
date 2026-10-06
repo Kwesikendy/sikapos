@@ -8,6 +8,7 @@ import { posApi } from '../api/pos.api';
 import { formatGHS } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
 import { BarChart3, RefreshCw, Download, Wallet, CreditCard, ShieldCheck, PieChart } from 'lucide-react';
+import { Skeleton } from '../components/ui/Skeleton';
 
 export const ReportsPage: React.FC = () => {
   const { tenant, primaryBranch } = useAuth();
@@ -76,8 +77,44 @@ export const ReportsPage: React.FC = () => {
 
       {/* Revenue Breakdown Grid */}
       <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Payment Channels */}
-        <Card glass className="p-6 border border-slate-200/80 bg-white shadow-card space-y-4">
+        {isLoading ? (
+          <>
+            <Card glass className="p-6 border border-slate-200/80 bg-white shadow-card space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <Skeleton variant="text" width="50%" height="1.25rem" />
+                <Skeleton variant="rectangular" width="4rem" height="1rem" className="rounded-md" />
+              </div>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <Skeleton variant="text" width="60%" height="0.875rem" />
+                  <Skeleton variant="rectangular" height="0.625rem" className="w-full rounded-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton variant="text" width="50%" height="0.875rem" />
+                  <Skeleton variant="rectangular" height="0.625rem" className="w-full rounded-full" />
+                </div>
+              </div>
+            </Card>
+
+            <Card glass className="p-6 border border-slate-200/80 bg-white shadow-card space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <Skeleton variant="text" width="55%" height="1.25rem" />
+                <Skeleton variant="rectangular" width="4.5rem" height="1rem" className="rounded-md" />
+              </div>
+              <div className="space-y-3 pt-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex justify-between py-1 border-b border-slate-50">
+                    <Skeleton variant="text" width="45%" height="0.875rem" />
+                    <Skeleton variant="text" width="25%" height="0.875rem" />
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </>
+        ) : (
+          <>
+            {/* Payment Channels */}
+            <Card glass className="p-6 border border-slate-200/80 bg-white shadow-card space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
               <PieChart className="w-5 h-5 text-[#0D5C3A]" />
@@ -144,6 +181,8 @@ export const ReportsPage: React.FC = () => {
             </div>
           </div>
         </Card>
+          </>
+        )}
       </motion.div>
     </motion.div>
   );

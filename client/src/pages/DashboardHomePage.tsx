@@ -100,13 +100,13 @@ export const DashboardHomePage: React.FC = () => {
       {/* ---------------------------------------------------- */}
       <motion.div 
         variants={staggerItem} 
-        className="relative sika-raised rounded-[22px] overflow-hidden p-6 sm:p-10 transition-all"
+        className="relative sika-raised rounded-[22px] overflow-hidden p-4 sm:p-8 lg:p-10 transition-all"
       >
         {/* Ambient Emerald Lighting Glow */}
         <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-gradient-to-bl from-[#0D5C3A]/10 via-[#0D5C3A]/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
         {/* Top Header & Actions */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 pb-8 border-b border-slate-100/80">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6 relative z-10 pb-6 sm:pb-8 border-b border-slate-100/80">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-extrabold uppercase tracking-widest text-[#0D5C3A] bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60">
@@ -123,12 +123,12 @@ export const DashboardHomePage: React.FC = () => {
           </div>
 
           {/* Action Hierarchy with Tactile Feedback */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
             <Button
               onClick={() => navigate('/dashboard/inventory')}
               variant="outline"
               size="md"
-              className="h-12 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 rounded-xl shadow-xs sika-press"
+              className="h-12 border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 rounded-xl shadow-xs sika-press w-full sm:w-auto justify-center"
               leftIcon={<Plus className="w-4 h-4 text-slate-500" />}
             >
               Add Product
@@ -137,7 +137,7 @@ export const DashboardHomePage: React.FC = () => {
             <Button 
               onClick={() => navigate('/pos')}
               size="lg"
-              className="h-12 bg-[#0D5C3A] hover:bg-[#09432A] text-white font-extrabold px-6 rounded-xl shadow-lg shadow-[#0D5C3A]/25 cursor-pointer sika-press" 
+              className="h-12 bg-[#0D5C3A] hover:bg-[#09432A] text-white font-extrabold px-6 rounded-xl shadow-lg shadow-[#0D5C3A]/25 cursor-pointer sika-press w-full sm:w-auto justify-center" 
               rightIcon={<ArrowRight className="w-5 h-5" />}
             >
               Open POS Register
@@ -181,9 +181,9 @@ export const DashboardHomePage: React.FC = () => {
 
           {/* Integrated Chart Surface */}
           <div className="lg:col-span-7 flex flex-col justify-end">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Revenue Trend</span>
-              <div className="flex items-center gap-1 sika-recessed-sm p-1">
+              <div className="flex items-center gap-1 sika-recessed-sm p-1 self-start sm:self-auto">
                 {(['today', '7days', 'month'] as const).map((tab) => (
                   <button
                     key={tab}

@@ -10,6 +10,7 @@ import { StatusBadge } from '../components/ui/StatusBadge';
 import { tenantApi } from '../api/tenant.api';
 import { useAuth } from '../context/AuthContext';
 import { Users, Plus, KeyRound, UserCheck, Shield } from 'lucide-react';
+import { Skeleton } from '../components/ui/Skeleton';
 
 export const TeamPage: React.FC = () => {
   const { tenant, primaryBranch, user } = useAuth();
@@ -109,8 +110,26 @@ export const TeamPage: React.FC = () => {
 
       {/* Staff Grid */}
       <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Owner Card */}
-        <Card glass className="p-5 border border-emerald-200 bg-white/90 shadow-sm relative overflow-hidden">
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, idx) => (
+            <Card key={idx} glass className="p-5 border border-slate-200/80 bg-white shadow-sm space-y-4">
+              <div className="flex items-center gap-3">
+                <Skeleton variant="circular" width="3rem" height="3rem" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton variant="text" width="60%" height="1.125rem" />
+                  <Skeleton variant="text" width="40%" height="0.875rem" />
+                </div>
+              </div>
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <Skeleton variant="text" width="50%" height="0.75rem" />
+                <Skeleton variant="rectangular" width="4rem" height="1.25rem" className="rounded-md" />
+              </div>
+            </Card>
+          ))
+        ) : (
+          <>
+            {/* Owner Card */}
+            <Card glass className="p-5 border border-emerald-200 bg-white/90 shadow-sm relative overflow-hidden">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-[#0D5C3A] text-white flex items-center justify-center font-bold text-base shadow-sm">
               {user?.fullName ? user.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'OW'}
@@ -148,6 +167,8 @@ export const TeamPage: React.FC = () => {
             </div>
           </Card>
         ))}
+          </>
+        )}
       </motion.div>
 
       {/* Add Cashier Modal */}

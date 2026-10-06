@@ -14,7 +14,9 @@ import {
   LogOut,
   CreditCard,
   BarChart3,
-  Sparkles
+  Sparkles,
+  Menu,
+  X
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { DotPattern } from '../visuals/DotPattern';
@@ -41,6 +43,7 @@ const navItems: NavItem[] = [
 
 export const DashboardLayout: React.FC = () => {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isMobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const location = useLocation();
   const { user, tenant, primaryBranch, logout } = useAuth();
 
@@ -66,14 +69,14 @@ export const DashboardLayout: React.FC = () => {
         <DecorativeGrid opacity={0.15} />
       </div>
 
-      {/* Sidebar Navigation - Spatial Floating Panel */}
+      {/* Sidebar Navigation - Spatial Floating Panel (Desktop Only) */}
       <motion.aside
         initial={false}
         animate={{
           width: isSidebarCollapsed ? '80px' : '260px',
         }}
         transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-        className="relative z-30 h-screen flex flex-col bg-white/75 backdrop-blur-2xl border-r border-slate-200/50 shadow-[4px_0_30px_rgba(0,0,0,0.02)]"
+        className="hidden lg:flex relative z-30 h-screen flex-col bg-white/75 backdrop-blur-2xl border-r border-slate-200/50 shadow-[4px_0_30px_rgba(0,0,0,0.02)]"
       >
         {/* Brand / Store Logo Surface with Official SikaPOS Logo */}
         <div className="h-20 flex items-center px-4 sm:px-5 border-b border-slate-100/80 shrink-0">
@@ -183,51 +186,226 @@ export const DashboardLayout: React.FC = () => {
 
       {/* Main Workspace Surface */}
       <div className="flex-1 flex flex-col min-w-0 z-10 relative h-screen overflow-hidden">
-        {/* Floating Top Header with Kombai Soft Tactile Styling */}
-        <header className="h-20 bg-white/75 backdrop-blur-xl border-b border-slate-200/60 px-6 sm:px-10 flex items-center justify-between shrink-0 z-20">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div>
+        {/* Responsive Top Header */}
+        <header className="h-16 lg:h-20 bg-white/75 backdrop-blur-xl border-b border-slate-200/60 px-4 sm:px-6 lg:px-10 flex items-center justify-between shrink-0 z-20">
+          {/* Mobile Brand / Greeting */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <NavLink to="/dashboard" className="lg:hidden flex items-center gap-2.5 shrink-0 focus:outline-none">
+              <img
+                src="/logo.png"
+                alt="SikaPOS"
+                className="h-8 w-auto object-contain rounded-lg drop-shadow-xs"
+              />
+              <div className="min-w-0">
+                <h1 className="text-xs font-black text-slate-900 truncate leading-tight">{storeName}</h1>
+                <span className="text-[9px] font-bold text-[#0D5C3A] uppercase tracking-wider block truncate">{branchName}</span>
+              </div>
+            </NavLink>
+
+            {/* Desktop Greeting */}
+            <div className="hidden lg:block">
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-[#0D5C3A] animate-pulse" />
                   Live Accra Ledger
                 </span>
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight hidden sm:block">
+              <h2 className="text-xl font-black text-slate-900 tracking-tight">
                 Good day, {firstName}
               </h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-5">
+          <div className="flex items-center gap-2.5 sm:gap-4">
             {/* Soft Sunken Recessed Search Input */}
             <div className="relative hidden md:block group">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-[#0D5C3A] transition-colors" />
               <input
                 type="text"
                 placeholder="Search transactions, inventory..."
-                className="h-10 pl-10 pr-4 sika-recessed-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D5C3A]/20 focus:border-[#0D5C3A]/50 transition-all w-64 placeholder:text-slate-400 text-slate-800"
+                className="h-10 pl-10 pr-4 sika-recessed-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D5C3A]/20 focus:border-[#0D5C3A]/50 transition-all w-56 lg:w-64 placeholder:text-slate-400 text-slate-800"
               />
             </div>
             
-            {/* Notification Control with Soft Tactile Press */}
-            <button className="relative p-2.5 text-slate-500 hover:text-slate-900 sika-raised-sm sika-press cursor-pointer">
+            {/* Notification Control */}
+            <button className="relative p-2 text-slate-500 hover:text-slate-900 sika-raised-sm sika-press cursor-pointer">
               <Bell className="w-4 h-4" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-amber-500 rounded-full border border-white" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full border border-white" />
             </button>
             
-            {/* Reusable Cloud Sync Status Component */}
-            <CloudSyncStatus state="online" />
+            {/* Cloud Sync Status */}
+            <div className="hidden sm:block">
+              <CloudSyncStatus state="online" />
+            </div>
+
+            {/* Mobile Hamburger Drawer Trigger */}
+            <button
+              onClick={() => setMobileDrawerOpen(true)}
+              className="lg:hidden p-2 rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+              aria-label="Open mobile navigation"
+            >
+              <Menu className="w-5 h-5 text-slate-700" />
+            </button>
           </div>
         </header>
 
-        {/* Content Workspace Surface */}
-        <main className="flex-1 overflow-y-auto p-6 sm:p-10 scrollbar-hide">
+        {/* Content Workspace Surface - Full Width on Mobile */}
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-10 pb-28 lg:pb-10 scrollbar-hide">
           <div className="max-w-7xl mx-auto w-full">
             <Outlet />
           </div>
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation Bar (Phone Only) */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 px-2 py-1.5 flex items-center justify-around shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">
+        <NavLink
+          to="/dashboard"
+          end
+          className={({ isActive }) =>
+            cn(
+              "flex flex-col items-center py-1 px-2.5 rounded-xl transition-colors",
+              isActive ? "text-[#0D5C3A] font-bold" : "text-slate-400 hover:text-slate-600"
+            )
+          }
+        >
+          <LayoutDashboard className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-medium">Overview</span>
+        </NavLink>
+
+        <NavLink
+          to="/dashboard/inventory"
+          className={({ isActive }) =>
+            cn(
+              "flex flex-col items-center py-1 px-2.5 rounded-xl transition-colors",
+              isActive ? "text-[#0D5C3A] font-bold" : "text-slate-400 hover:text-slate-600"
+            )
+          }
+        >
+          <Package className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-medium">Stock</span>
+        </NavLink>
+
+        {/* Elevated POS Quick-Action Button */}
+        <NavLink
+          to="/pos"
+          className="flex flex-col items-center -translate-y-3.5 focus:outline-none group"
+        >
+          <div className="w-13 h-13 rounded-2xl bg-[#0D5C3A] text-white flex items-center justify-center shadow-lg shadow-[#0D5C3A]/30 group-hover:scale-105 active:scale-95 transition-transform border-2 border-white">
+            <Store className="w-6 h-6" />
+          </div>
+          <span className="text-[10px] font-black text-[#0D5C3A] mt-0.5">Sell / POS</span>
+        </NavLink>
+
+        <NavLink
+          to="/dashboard/transactions"
+          className={({ isActive }) =>
+            cn(
+              "flex flex-col items-center py-1 px-2.5 rounded-xl transition-colors",
+              isActive ? "text-[#0D5C3A] font-bold" : "text-slate-400 hover:text-slate-600"
+            )
+          }
+        >
+          <CreditCard className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-medium">Sales</span>
+        </NavLink>
+
+        <button
+          type="button"
+          onClick={() => setMobileDrawerOpen(true)}
+          className="flex flex-col items-center py-1 px-2.5 rounded-xl text-slate-400 hover:text-slate-600 cursor-pointer"
+        >
+          <Menu className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-medium">Menu</span>
+        </button>
+      </nav>
+
+      {/* Mobile Slide-Over Drawer */}
+      <AnimatePresence>
+        {isMobileDrawerOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileDrawerOpen(false)}
+              className="lg:hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 cursor-pointer"
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="lg:hidden fixed right-0 top-0 bottom-0 w-4/5 max-w-xs bg-white z-50 flex flex-col shadow-2xl p-5"
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <img src="/logo.png" alt="SikaPOS" className="h-8 w-auto object-contain rounded-lg" />
+                  <div>
+                    <h2 className="text-sm font-black text-slate-900 leading-tight">{storeName}</h2>
+                    <span className="text-[10px] font-bold text-[#0D5C3A] uppercase tracking-wide">{branchName}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 bg-slate-100 cursor-pointer"
+                  aria-label="Close menu"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Drawer Nav Items */}
+              <div className="flex-1 overflow-y-auto py-4 space-y-1">
+                {navItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setMobileDrawerOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-colors",
+                        isActive
+                          ? "bg-[#0D5C3A]/10 text-[#0D5C3A]"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      <span>{item.label}</span>
+                    </NavLink>
+                  );
+                })}
+              </div>
+
+              {/* Drawer User Footer */}
+              <div className="pt-4 border-t border-slate-100 space-y-3">
+                <div className="flex items-center gap-3 px-2">
+                  <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-sm">
+                    {initials}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-slate-900 truncate">{displayName}</p>
+                    <p className="text-xs text-slate-400 truncate">{roleLabel}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileDrawerOpen(false);
+                    logout('/login');
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Log Out of Account</span>
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

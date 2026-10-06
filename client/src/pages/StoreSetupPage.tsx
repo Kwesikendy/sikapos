@@ -31,6 +31,7 @@ import { Alert } from '../components/ui/Alert';
 import { LoadingOverlay } from '../components/ui/LoadingOverlay';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/ui/Toast';
+import { Skeleton } from '../components/ui/Skeleton';
 
 const STEPS: StepItem[] = [
   { id: 1, label: 'Owner Profile' },
@@ -198,8 +199,35 @@ export const StoreSetupPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-8 h-8 rounded-full border-4 border-[#0D5C3A]/20 border-t-[#0D5C3A] animate-spin" />
+      <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 overflow-hidden relative">
+        <DotPattern variant="emerald" size="md" opacity={0.85} />
+        <Header />
+        <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8">
+          <div className="flex items-center justify-between gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex-1 flex items-center gap-3">
+                <Skeleton variant="circular" width="2rem" height="2rem" />
+                <Skeleton variant="text" width="60%" height="0.875rem" />
+              </div>
+            ))}
+          </div>
+          <div className="p-6 sm:p-10 rounded-3xl bg-white/70 border border-slate-200/60 shadow-lg space-y-6">
+            <div className="space-y-2">
+              <Skeleton variant="text" width="40%" height="1.75rem" />
+              <Skeleton variant="text" width="65%" height="1rem" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+              <Skeleton variant="rectangular" height="3.25rem" className="rounded-xl w-full" />
+              <Skeleton variant="rectangular" height="3.25rem" className="rounded-xl w-full" />
+              <Skeleton variant="rectangular" height="3.25rem" className="rounded-xl w-full" />
+              <Skeleton variant="rectangular" height="3.25rem" className="rounded-xl w-full" />
+            </div>
+            <div className="pt-6 flex justify-between">
+              <Skeleton variant="rectangular" width="6rem" height="2.75rem" className="rounded-xl" />
+              <Skeleton variant="rectangular" width="8rem" height="2.75rem" className="rounded-xl" />
+            </div>
+          </div>
+        </main>
       </div>
     );
   }

@@ -30,6 +30,7 @@ import { useAuth } from '../context/AuthContext';
 import { formatGHS } from '../lib/utils';
 import { PinKeypad } from '../components/ui/PinKeypad';
 import { LoadingOverlay } from '../components/ui/LoadingOverlay';
+import { ProductGridSkeleton, POSCartItemSkeleton } from '../components/ui/Skeletons';
 
 interface CartItem {
   product: ProductItem;
@@ -527,9 +528,7 @@ export const PosTerminalPage: React.FC = () => {
           {/* Product Cards Grid */}
           <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
             {isLoadingProducts ? (
-              <div className="py-20 text-center text-slate-400 text-sm">
-                Loading product catalog...
-              </div>
+              <ProductGridSkeleton count={8} />
             ) : filteredProducts.length === 0 ? (
               <div className="py-20 text-center space-y-3">
                 <p className="text-sm font-semibold text-slate-600">No matching products found</p>
