@@ -133,11 +133,10 @@ export class SaleService {
     const insertSaleStmt = this.db.prepare(`
       INSERT INTO sales (
         id, receipt_number, tenant_id, branch_id, cashier_id,
-        subtotal, tax_amount, grand_total, payment_method,
-        amount_tendered, change_due, customer_phone, tax_breakdown_json,
+        subtotal, tax_total, grand_total, payment_method,
         status, created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', ?)
     `);
 
     const insertItemStmt = this.db.prepare(`
@@ -158,10 +157,6 @@ export class SaleService {
         taxAmount,
         grandTotal,
         params.paymentMethod,
-        tendered,
-        changeDue,
-        params.customerPhone || null,
-        JSON.stringify(taxBreakdown),
         now
       );
 

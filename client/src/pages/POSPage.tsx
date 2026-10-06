@@ -16,6 +16,7 @@ import {
   CreditCard,
   Printer,
   Sparkles,
+  PackageSearch,
   AlertCircle,
   Loader2,
   RefreshCw
@@ -409,7 +410,7 @@ export const POSPage: React.FC = () => {
           ) : products.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-white/70 backdrop-blur-md rounded-3xl border border-dashed border-slate-300 shadow-xs max-w-lg mx-auto my-12">
               <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-[#0D5C3A] flex items-center justify-center mb-4">
-                <Sparkles className="w-8 h-8" />
+                <PackageSearch className="w-8 h-8" />
               </div>
               <h3 className="text-lg font-extrabold text-slate-900">No Products in Store Catalog</h3>
               <p className="text-sm text-slate-500 mt-1 mb-6 leading-relaxed">
@@ -419,7 +420,7 @@ export const POSPage: React.FC = () => {
                 onClick={handleSeedCatalog} 
                 isLoading={isSeeding}
                 className="bg-[#0D5C3A] hover:bg-[#09432A] text-white px-6 h-12 rounded-xl shadow-md font-bold"
-                leftIcon={<Sparkles className="w-4 h-4" />}
+                leftIcon={<Plus className="w-4 h-4" />}
               >
                 Seed Real Demo Catalog (8 Items)
               </Button>
