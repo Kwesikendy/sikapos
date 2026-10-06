@@ -16,7 +16,6 @@ import { UpdatePrompt } from '../components/pwa/UpdatePrompt';
 import { useAuth } from '../context/AuthContext';
 import { ApiError, TenantOption } from '../types/auth.types';
 import { Store, User, Lock, KeyRound, Eye, EyeOff, Smartphone, ArrowRight } from 'lucide-react';
-import type { ConfirmationResult } from '../lib/firebase';
 
 interface CashierPreset {
   id: string;
@@ -58,8 +57,8 @@ export const LoginPage: React.FC = () => {
     loginWithPassword,
     loginWithPin,
     loginWithGoogle,
-    requestFirebasePhoneOtp,
-    confirmFirebasePhoneOtp,
+    requestPhoneLoginOtp,
+    verifyPhoneLoginOtp,
   } = useAuth();
 
   const initialTab = searchParams.get('mode') === 'cashier' ? 'cashier' : 'owner';
@@ -74,7 +73,6 @@ export const LoginPage: React.FC = () => {
 
   // Phone OTP login fields
   const [phoneInput, setPhoneInput] = useState('');
-  const [phoneConfirmation, setPhoneConfirmation] = useState<ConfirmationResult | null>(null);
   const [phoneOtpCode, setPhoneOtpCode] = useState('');
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
 
@@ -139,12 +137,21 @@ export const LoginPage: React.FC = () => {
 
     setIsLoading(true);
     setError(null);
+    setNotRegisteredInfo(null);
     try {
-      const confirmation = await requestFirebasePhoneOtp(cleanPhone, 'phone-otp-recaptcha-btn');
-      setPhoneConfirmation(confirmation);
+      await requestPhoneLoginOtp(cleanPhone);
       setPhoneOtpSent(true);
     } catch (err: any) {
-      setError(err?.message || 'Failed to send SMS OTP. Please check your number.');
+      if (
+        err?.code === 'USER_NOT_REGISTERED' ||
+        err?.response?.data?.error?.code === 'USER_NOT_REGISTERED'
+      ) {
+        setNotRegisteredInfo({ phone: phoneInput });
+        setError('No store registered with this phone number yet.');
+        return;
+      }
+      const apiErr = err as ApiError;
+      setError(apiErr?.message || err?.message || 'Failed to send SMS OTP. Please check your number.');
     } finally {
       setIsLoading(false);
     }
@@ -153,16 +160,22 @@ export const LoginPage: React.FC = () => {
   // 3. Phone OTP Verification
   const handleVerifyPhoneOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phoneConfirmation) return;
     if (!phoneOtpCode.trim() || phoneOtpCode.length < 6) {
       setError('Please enter the 6-digit code sent to your phone.');
       return;
     }
 
+    let cleanPhone = phoneInput.replace(/[\s\-()]/g, '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '+233' + cleanPhone.substring(1);
+    } else if (!cleanPhone.startsWith('+')) {
+      cleanPhone = '+233' + cleanPhone;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
-      await confirmFirebasePhoneOtp(phoneConfirmation, phoneOtpCode.trim());
+      await verifyPhoneLoginOtp(cleanPhone, phoneOtpCode.trim());
       const redirect = searchParams.get('redirect') || '/dashboard';
       navigate(redirect);
     } catch (err: any) {
@@ -174,7 +187,8 @@ export const LoginPage: React.FC = () => {
         setError('No store registered with this phone number yet.');
         return;
       }
-      setError(err?.message || 'Invalid verification code. Please try again.');
+      const apiErr = err as ApiError;
+      setError(apiErr?.message || err?.message || 'Invalid verification code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -239,7 +253,6 @@ export const LoginPage: React.FC = () => {
         <AuthCard
           title="Sign In to SikaPOS"
           subtitle="Access your store dashboard, inventory, and POS terminal."
-          icon={<Store className="w-6 h-6 text-white" aria-hidden="true" />}
           footer={
             <div className="flex items-center justify-between text-xs sm:text-sm text-slate-500">
               <span>New to SikaPOS?</span>
@@ -380,8 +393,6 @@ export const LoginPage: React.FC = () => {
                     placeholder="024 412 3456"
                     helperText="We will send an SMS verification code to your phone"
                   />
-
-                  <div id="phone-otp-recaptcha-btn" className="hidden" />
 
                   <div className="pt-1">
                     <AuthSubmitButton isLoading={isLoading} loadingText="Sending code...">

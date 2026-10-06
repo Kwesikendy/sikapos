@@ -18,6 +18,26 @@ export const authApi = {
     return apiClient.post<VerifyOtpResponse>('/auth/signup-otp/verify', { phoneNumber, code });
   },
 
+  requestPhoneLoginOtp: async (phoneNumber: string): Promise<RequestOtpResponse> => {
+    return apiClient.post<RequestOtpResponse>('/auth/login-otp/request', { phoneNumber });
+  },
+
+  verifyPhoneLoginOtp: async (
+    phoneNumber: string,
+    code: string,
+    tenantId?: string
+  ): Promise<AuthSuccessResponse> => {
+    const res = await apiClient.post<AuthSuccessResponse>('/auth/login-otp/verify', {
+      phoneNumber,
+      code,
+      tenantId,
+    });
+    if (res.token) {
+      apiClient.setToken(res.token);
+    }
+    return res;
+  },
+
   registerMerchant: async (payload: RegisterPayload): Promise<AuthSuccessResponse> => {
     const res = await apiClient.post<AuthSuccessResponse>('/auth/register', payload);
     if (res.token) {

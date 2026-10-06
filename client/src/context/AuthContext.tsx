@@ -46,6 +46,12 @@ export interface AuthContextType {
     confirmationResult: ConfirmationResult,
     code: string
   ) => Promise<AuthSuccessResponse>;
+  requestPhoneLoginOtp: (phoneNumber: string) => Promise<RequestOtpResponse>;
+  verifyPhoneLoginOtp: (
+    phoneNumber: string,
+    code: string,
+    tenantId?: string
+  ) => Promise<AuthSuccessResponse>;
   loginWithPin: (
     tenantId: string,
     cashierId: string,
@@ -300,6 +306,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     [loginWithFirebaseToken]
   );
 
+  // Send Phone Login OTP via native backend SMS
+  const requestPhoneLoginOtp = useCallback(
+    async (phoneNumber: string): Promise<RequestOtpResponse> => {
+      setIsLoading(true);
+      try {
+        return await authApi.requestPhoneLoginOtp(phoneNumber);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  // Verify Phone Login OTP and establish active session
+  const verifyPhoneLoginOtp = useCallback(
+    async (
+      phoneNumber: string,
+      code: string,
+      tenantId?: string
+    ): Promise<AuthSuccessResponse> => {
+      setIsLoading(true);
+      try {
+        const res = await authApi.verifyPhoneLoginOtp(phoneNumber, code, tenantId);
+        if (res.token) {
+          syncToken(res.token);
+        }
+        setUser(res.user);
+        if (res.tenant) {
+          setTenant(res.tenant);
+        }
+        if (res.primaryBranch) {
+          setPrimaryBranch(res.primaryBranch);
+        }
+        return res;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [syncToken, setUser, setTenant, setPrimaryBranch]
+  );
+
   // Fast PIN login for Till Cashiers
   const loginWithPin = useCallback(
     async (
@@ -445,6 +492,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       loginWithFirebaseToken,
       requestFirebasePhoneOtp,
       confirmFirebasePhoneOtp,
+      requestPhoneLoginOtp,
+      verifyPhoneLoginOtp,
       loginWithPin,
       registerMerchant,
       logout,
@@ -464,6 +513,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       loginWithFirebaseToken,
       requestFirebasePhoneOtp,
       confirmFirebasePhoneOtp,
+      requestPhoneLoginOtp,
+      verifyPhoneLoginOtp,
       loginWithPin,
       registerMerchant,
       logout,

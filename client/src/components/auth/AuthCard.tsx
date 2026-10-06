@@ -36,9 +36,15 @@ export const AuthCard: React.FC<AuthCardProps> = ({
     >
       {/* ── Visual Hierarchy Header ── */}
       <div className="mb-6 space-y-1.5 text-center">
-        {/* Emblem / Icon */}
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0D5C3A] via-[#09432A] to-[#062F1D] text-white shadow-md shadow-[#0D5C3A]/20 mb-2">
-          {icon || <Store className="w-6 h-6 text-white" aria-hidden="true" />}
+        {/* Official SikaPOS Logo */}
+        <div className="flex items-center justify-center mb-3">
+          {icon || (
+            <img
+              src="/logo.png"
+              alt="SikaPOS"
+              className="h-12 w-auto object-contain drop-shadow-xs"
+            />
+          )}
         </div>
 
         {/* Highest visual emphasis */}

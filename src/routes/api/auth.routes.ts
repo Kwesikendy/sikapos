@@ -4,6 +4,7 @@ import { OtpService } from '../../services/otp.service.ts';
 import { TenantService } from '../../services/tenant.service.ts';
 import { FirebaseService } from '../../services/firebase.service.ts';
 import { getFirebaseAuth } from '../../lib/firebase-admin.ts';
+import { getDb } from '../../db/connection.ts';
 import { createAuthMiddleware } from '../../middleware/auth.ts';
 import { createRateLimiter } from '../../middleware/rateLimit.ts';
 import {
@@ -16,6 +17,7 @@ import {
 
 export const authRouter = Router();
 
+const db = getDb();
 const authService = new AuthService();
 const otpService = new OtpService();
 const tenantService = new TenantService();
@@ -386,6 +388,162 @@ authRouter.post('/firebase-login', loginLimiter, async (req, res, next) => {
       }
     });
   }
+});
+
+/**
+ * Step 4c: Send Phone Login OTP via Moolre SMS
+ */
+authRouter.post('/login-otp/request', otpLimiter, validateBody([
+  {
+    field: 'phoneNumber',
+    required: true,
+    validator: (val) => {
+      const res = validateGhanaPhone(String(val));
+      return { valid: res.valid, error: res.error };
+    }
+  }
+]), async (req, res, next) => {
+  try {
+    const { phoneNumber } = req.body;
+    const phoneCheck = validateGhanaPhone(phoneNumber);
+    const normalized = phoneCheck.normalized || phoneNumber;
+    const localFormat = normalized.startsWith('+233') ? '0' + normalized.substring(4) : normalized;
+
+    // Check if account exists
+    const user = db.prepare(`
+      SELECT u.id, u.full_name, u.phone_number
+      FROM users u
+      WHERE (u.phone_number = ? OR u.phone_number = ? OR u.phone_number = ?) AND u.is_active = 1
+      LIMIT 1
+    `).get(normalized, phoneNumber, localFormat);
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_REGISTERED',
+          message: 'No store registered with this phone number yet. Please create an account to get started.',
+          phoneNumber: normalized
+        }
+      });
+      return;
+    }
+
+    const result = await otpService.requestOtp(normalized, 'merchant_signup');
+
+    res.json({
+      success: true,
+      data: {
+        recipient: normalized,
+        carrier: phoneCheck.carrier,
+        expiresAt: result.expiresAt,
+        ...(result.debugCode ? { debugCode: result.debugCode } : {})
+      }
+    });
+  } catch (err: any) {
+    if (err && err.code === 'RESEND_COOLDOWN') {
+      res.status(429).json({
+        success: false,
+        error: {
+          code: 'RESEND_COOLDOWN',
+          message: err.message,
+          remainingSeconds: err.remainingSeconds
+        }
+      });
+      return;
+    }
+    next(err);
+  }
+});
+
+/**
+ * Step 4d: Verify Phone Login OTP and create session
+ */
+authRouter.post('/login-otp/verify', otpLimiter, validateBody([
+  { field: 'phoneNumber', required: true },
+  { field: 'code', required: true }
+]), (req, res) => {
+  const { phoneNumber, code, tenantId } = req.body;
+  const phoneCheck = validateGhanaPhone(phoneNumber);
+  const normalized = phoneCheck.normalized || phoneNumber;
+  const localFormat = normalized.startsWith('+233') ? '0' + normalized.substring(4) : normalized;
+
+  const result = otpService.verifyOtp(normalized, String(code).trim(), 'merchant_signup');
+
+  if (!result.valid) {
+    res.status(400).json({
+      success: false,
+      error: {
+        code: result.code || 'OTP_VERIFICATION_FAILED',
+        message: result.reason || 'Invalid OTP code',
+        ...(result.remainingAttempts !== undefined ? { remainingAttempts: result.remainingAttempts } : {})
+      }
+    });
+    return;
+  }
+
+  // Find user matching this phone
+  const matchingUsers = db.prepare(`
+    SELECT u.*, t.business_name, t.legal_name
+    FROM users u
+    INNER JOIN tenants t ON t.id = u.tenant_id
+    WHERE (u.phone_number = ? OR u.phone_number = ? OR u.phone_number = ?) AND u.is_active = 1
+  `).all(normalized, phoneNumber, localFormat) as Array<any>;
+
+  if (matchingUsers.length === 0) {
+    res.status(404).json({
+      success: false,
+      error: {
+        code: 'USER_NOT_REGISTERED',
+        message: 'No active account found for this phone number'
+      }
+    });
+    return;
+  }
+
+  let targetUser = matchingUsers[0];
+  if (tenantId) {
+    targetUser = matchingUsers.find(u => u.tenant_id === tenantId);
+    if (!targetUser) {
+      res.status(404).json({
+        success: false,
+        error: { code: 'TENANT_NOT_FOUND', message: 'User not found in specified store' }
+      });
+      return;
+    }
+  } else if (matchingUsers.length > 1) {
+    res.status(409).json({
+      success: false,
+      error: {
+        code: 'MULTIPLE_TENANTS_FOUND',
+        message: 'This phone number is linked to multiple stores. Please select one.',
+        tenants: matchingUsers.map(u => ({
+          id: u.tenant_id,
+          businessName: u.business_name,
+          legalName: u.legal_name
+        }))
+      }
+    });
+    return;
+  }
+
+  const sessionToken = authService.createSession(targetUser.id, targetUser.tenant_id);
+  const tenant = tenantService.getTenantById(targetUser.tenant_id);
+  const branches = tenantService.getBranches(targetUser.tenant_id);
+  const primaryBranch = branches.find(b => b.is_primary) || branches[0] || null;
+  const userSummary = authService.getUserSummary(targetUser.id);
+
+  res.json({
+    success: true,
+    data: {
+      token: sessionToken,
+      user: userSummary,
+      tenantId: targetUser.tenant_id,
+      tenant,
+      primaryBranch,
+      branches
+    }
+  });
 });
 
 /**
