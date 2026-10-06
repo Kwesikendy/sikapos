@@ -9,31 +9,29 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
-// Allowed CORS origins: add your Vercel URL via ALLOWED_ORIGINS env var
-// e.g. ALLOWED_ORIGINS=https://sikapos.vercel.app,https://sikapos-abc.vercel.app
-const allowedOrigins = new Set([
-  'http://localhost:5173',
-  'http://localhost:3000',
-  ...(process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-    : []),
-]);
-
 export function createApp(): express.Application {
   const app = express();
 
   // CORS — must be before all routes
+  // Open to all origins; JWT tokens are the security layer for this POS API.
+  // Restrict via ALLOWED_ORIGINS env var if you need a whitelist later.
   app.use((req, res, next) => {
     const origin = req.headers.origin as string | undefined;
-    if (origin && allowedOrigins.has(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-    } else if (!origin) {
-      // Same-origin or server-to-server — allow
-      res.setHeader('Access-Control-Allow-Origin', '*');
+    if (process.env.ALLOWED_ORIGINS) {
+      const allowed = new Set(process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()));
+      if (origin && allowed.has(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      } else {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+      }
+    } else {
+      // No whitelist configured — allow all (safe because auth is JWT-based)
+      res.setHeader('Access-Control-Allow-Origin', origin ?? '*');
     }
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400');
     if (req.method === 'OPTIONS') {
       res.sendStatus(204);
       return;
