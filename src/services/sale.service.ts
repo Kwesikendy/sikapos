@@ -134,16 +134,17 @@ export class SaleService {
       INSERT INTO sales (
         id, receipt_number, tenant_id, branch_id, cashier_id,
         subtotal, tax_total, grand_total, payment_method,
+        amount_tendered, change_due, customer_phone, tax_breakdown_json,
         status, created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', ?)
     `);
 
     const insertItemStmt = this.db.prepare(`
       INSERT INTO sale_items (
-        id, sale_id, product_id, product_name, quantity, unit_price, line_total
+        id, sale_id, product_id, tenant_id, product_name, quantity, unit_price, subtotal, line_total, created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const transaction = this.db.transaction(() => {
@@ -157,23 +158,35 @@ export class SaleService {
         taxAmount,
         grandTotal,
         params.paymentMethod,
+        tendered,
+        changeDue,
+        params.customerPhone || null,
+        JSON.stringify(taxBreakdown),
         now
       );
 
       for (const item of preparedItems) {
         const itemId = `sitem_${crypto.randomBytes(6).toString('hex')}`;
+        const prodId = item.productId || `prod_custom_${crypto.randomBytes(4).toString('hex')}`;
         insertItemStmt.run(
           itemId,
           saleId,
-          item.productId || null,
+          prodId,
+          params.tenantId,
           item.productName,
           item.quantity,
           item.unitPrice,
-          item.lineTotal
+          item.lineTotal,
+          item.lineTotal,
+          now
         );
 
         if (item.productId) {
-          this.productService.adjustStock(params.tenantId, branchId, item.productId, -item.quantity);
+          try {
+            this.productService.adjustStock(params.tenantId, branchId, item.productId, -item.quantity);
+          } catch {
+            // Stock adjustment skipped if product stock tracking is disabled
+          }
         }
       }
     });

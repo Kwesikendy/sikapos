@@ -32,9 +32,19 @@ export function initializeDatabase(db?: Database.Database): Database.Database {
     }
   };
 
-  // sale_items: schema_phase3 created this table without product_name / line_total
+  // sale_items: ensure tenant_id, product_name, line_total, subtotal, created_at exist
+  safeAddColumn('sale_items', 'tenant_id',    'TEXT NOT NULL DEFAULT ""');
   safeAddColumn('sale_items', 'product_name', 'TEXT NOT NULL DEFAULT ""');
   safeAddColumn('sale_items', 'line_total',   'REAL NOT NULL DEFAULT 0');
+  safeAddColumn('sale_items', 'subtotal',     'REAL NOT NULL DEFAULT 0');
+  safeAddColumn('sale_items', 'created_at',   'TEXT NOT NULL DEFAULT (DATETIME("now"))');
+
+  // sales: reconcile amount_tendered, change_due, customer_phone, tax_breakdown_json
+  safeAddColumn('sales', 'amount_tendered',    'REAL');
+  safeAddColumn('sales', 'change_due',        'REAL');
+  safeAddColumn('sales', 'customer_phone',    'TEXT');
+  safeAddColumn('sales', 'tax_breakdown_json', 'TEXT');
+
   // products: reconcile base_price, is_taxable, status, selling_price
   safeAddColumn('products', 'base_price', 'REAL NOT NULL DEFAULT 0');
   safeAddColumn('products', 'is_taxable', 'INTEGER NOT NULL DEFAULT 1');

@@ -15,19 +15,27 @@ export function getFirebaseAdmin(): App {
     return app;
   }
 
-  // 1. Try local serviceAccountKey.json in project root
-  const localKeyPath = path.resolve(process.cwd(), 'serviceAccountKey.json');
-  if (fs.existsSync(localKeyPath)) {
-    try {
-      const fileData = fs.readFileSync(localKeyPath, 'utf8');
-      const serviceAccount = JSON.parse(fileData);
-      app = initializeApp({
-        credential: cert(serviceAccount),
-        projectId: serviceAccount.project_id || 'sikapos-27544',
-      });
-      return app;
-    } catch (e) {
-      console.warn('[FirebaseAdmin] Failed to load local serviceAccountKey.json:', e);
+  // 1. Try local or Render secret file locations
+  const candidateKeyPaths = [
+    process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    '/etc/secrets/serviceAccountKey.json',
+    path.resolve(process.cwd(), 'serviceAccountKey.json'),
+    path.resolve(process.cwd(), 'sikapos-27544-firebase-adminsdk-fbsvc-a39353bf94.json'),
+  ].filter(Boolean) as string[];
+
+  for (const candidatePath of candidateKeyPaths) {
+    if (fs.existsSync(candidatePath)) {
+      try {
+        const fileData = fs.readFileSync(candidatePath, 'utf8');
+        const serviceAccount = JSON.parse(fileData);
+        app = initializeApp({
+          credential: cert(serviceAccount),
+          projectId: serviceAccount.project_id || 'sikapos-27544',
+        });
+        return app;
+      } catch (e) {
+        console.warn(`[FirebaseAdmin] Failed to load key from ${candidatePath}:`, e);
+      }
     }
   }
 
