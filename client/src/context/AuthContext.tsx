@@ -19,7 +19,7 @@ import {
   signInWithPhoneNumber,
   type ConfirmationResult,
 } from '../lib/firebase';
-import type { User, Tenant, Branch, RegisterPayload, AuthSuccessResponse } from '../types/auth.types';
+import type { User, Tenant, Branch, RegisterPayload, AuthSuccessResponse, RequestOtpResponse } from '../types/auth.types';
 
 export interface AuthContextType {
   user: User | null;

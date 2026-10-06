@@ -35,6 +35,11 @@ export function initializeDatabase(db?: Database.Database): Database.Database {
   // sale_items: schema_phase3 created this table without product_name / line_total
   safeAddColumn('sale_items', 'product_name', 'TEXT NOT NULL DEFAULT ""');
   safeAddColumn('sale_items', 'line_total',   'REAL NOT NULL DEFAULT 0');
+  // products: reconcile base_price, is_taxable, status, selling_price
+  safeAddColumn('products', 'base_price', 'REAL NOT NULL DEFAULT 0');
+  safeAddColumn('products', 'is_taxable', 'INTEGER NOT NULL DEFAULT 1');
+  safeAddColumn('products', 'status', 'TEXT NOT NULL DEFAULT "active"');
+  safeAddColumn('products', 'selling_price', 'REAL NOT NULL DEFAULT 0');
   // users: firebase_uid for Firebase Auth integration
   safeAddColumn('users', 'firebase_uid', 'TEXT');
   try {
