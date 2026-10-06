@@ -9,12 +9,42 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
+// Allowed CORS origins: add your Vercel URL via ALLOWED_ORIGINS env var
+// e.g. ALLOWED_ORIGINS=https://sikapos.vercel.app,https://sikapos-abc.vercel.app
+const allowedOrigins = new Set([
+  'http://localhost:5173',
+  'http://localhost:3000',
+  ...(process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+    : []),
+]);
+
 export function createApp(): express.Application {
   const app = express();
+
+  // CORS — must be before all routes
+  app.use((req, res, next) => {
+    const origin = req.headers.origin as string | undefined;
+    if (origin && allowedOrigins.has(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else if (!origin) {
+      // Same-origin or server-to-server — allow
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(204);
+      return;
+    }
+    next();
+  });
 
   // Basic security and parsing middleware
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
 
   // Serve compiled React client assets
   const clientDist = path.join(rootDir, 'dist', 'client');
