@@ -21,6 +21,22 @@ export function initializeDatabase(db?: Database.Database): Database.Database {
   database.exec(schemaSql);
   database.exec(schemaPhase3Sql);
 
+  // ── Column migrations ────────────────────────────────────────────────────────
+  // SQLite has no "ALTER TABLE … ADD COLUMN IF NOT EXISTS", so we attempt each
+  // missing column and silently swallow the "duplicate column" error.
+  const safeAddColumn = (table: string, column: string, definition: string) => {
+    try {
+      database.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+    } catch {
+      // Column already exists — safe to ignore
+    }
+  };
+
+  // sale_items: schema_phase3 created this table without product_name / line_total
+  safeAddColumn('sale_items', 'product_name', 'TEXT NOT NULL DEFAULT ""');
+  safeAddColumn('sale_items', 'line_total',   'REAL NOT NULL DEFAULT 0');
+  // ─────────────────────────────────────────────────────────────────────────────
+
   // Seed core roles and permissions
   seedRolesAndPermissions(database);
 
@@ -28,6 +44,7 @@ export function initializeDatabase(db?: Database.Database): Database.Database {
   seedDemoMerchant(database);
 
   return database;
+
 }
 
 function seedDemoMerchant(db: Database.Database): void {
