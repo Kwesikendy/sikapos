@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0D5C3A" />
+      <stop offset="60%" stop-color="#09432A" />
+      <stop offset="100%" stop-color="#062F1D" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+
+  <!-- Gold Accent Accent Pip -->
+  <circle cx="410" cy="102" r="28" fill="#D97706" />
+
+  <!-- POS Terminal Terminal Geometric Frame -->
+  <g filter="url(#shadow)" transform="translate(96, 96)">
+    <rect x="16" y="24" width="288" height="272" rx="48" fill="#FFFFFF" fill-opacity="0.12" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" />
+    
+    <!-- Receipt / Card Dispenser Line -->
+    <path d="M80 88 H240" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" />
+    
+    <!-- Screen / Keypad Grid Lines -->
+    <path d="M80 152 H180" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" />
+    <path d="M80 216 H140" stroke="#FFFFFF" stroke-width="24" stroke-linecap="round" />
+    
+    <!-- Cashier Success Coin / Terminal Pulse -->
+    <circle cx="232" cy="208" r="28" fill="#D97706" stroke="#FFFFFF" stroke-width="12" />
+  </g>
+</svg>

@@ -15,6 +15,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { TeamPage } from './pages/TeamPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { POSPage } from './pages/POSPage';
+const PosTerminalPage = POSPage;
 
 export const App: React.FC = () => {
   return (
@@ -48,6 +49,14 @@ export const App: React.FC = () => {
             element={
               <ProtectedRoute fallbackPath="/login">
                 <POSPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/terminal" 
+            element={
+              <ProtectedRoute>
+                <PosTerminalPage />
               </ProtectedRoute>
             } 
           />

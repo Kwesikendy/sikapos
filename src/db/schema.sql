@@ -62,7 +62,6 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE INDEX IF NOT EXISTS idx_users_tenant ON users(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone_number);
-CREATE INDEX IF NOT EXISTS idx_users_firebase_uid ON users(firebase_uid);
 
 -- 4. Roles (System-Defined & Future Custom Roles)
 CREATE TABLE IF NOT EXISTS roles (

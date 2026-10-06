@@ -405,3 +405,50 @@ To ensure that downstream screens generated in Stages 2 through 7 maintain 100% 
 > 4. All financial numbers and checkout amounts must include the class `tabular-nums` and format with `GH₵ X,XXX.XX`.
 > 5. Payment chips use dedicated tokens: MTN MoMo (`#FFCC00` bg, black text), Telecel Cash (`#E60000` bg, white text), AT Money (`#0284C7` bg, white text), Cash (`#15803D` bg, white text).
 > 6. Adhere strictly to the 48px minimum touch target on mobile viewports.
+
+---
+
+## 13. MODERN SAAS VISUAL FOUNDATION & PWA SYSTEM SPECIFICATION
+
+### 13.1 Glass Surfaces & Layered Depth
+- **Translucency Ratio:** `background: rgba(255, 255, 255, 0.75 - 0.85)` with `backdrop-filter: blur(16px - 22px)` and `border: 1px solid rgba(226, 232, 240, 0.7)`.
+- **Restraint Rule:** Never apply glassmorphism to form inputs or buttons. Glass is strictly reserved for floating navbars, modal/card shells, and contextual status overlays to preserve contrast and legibility.
+- **Inner Light Rim:** Cards incorporate a subtle inner white shadow (`inset 0 0 0 1px rgba(255, 255, 255, 0.85)`) to produce tactile edge illumination without harsh borders.
+
+### 13.2 Animated Background System (Atmospheric Living Network)
+- **Base Canvas:** Layer 1 is clean off-white `#F8FAFC`.
+- **Layer 2 (Dual-Strata Dotted Mesh):**
+  - Primary network: `radial-gradient(rgba(13, 92, 58, 0.15) 1.25px, transparent 1.25px)` with `background-size: 28px 28px`. Drifts along a 70s linear infinite alternate CSS keyframe.
+  - Secondary depth layer: `radial-gradient(rgba(15, 23, 42, 0.07) 1.5px, transparent 1.5px)` with `background-size: 44px 44px`. Drifts along a 110s reverse trajectory.
+- **Layer 3 (Central Focal Glow):** A soft, low-opacity radial emerald glow (`rgba(13, 92, 58, 0.05)`) directly behind central cards.
+- **Layer 4 (Corner Ambient Tints):** Soft amber (`rgba(217, 119, 6, 0.12)`) and emerald (`rgba(13, 92, 58, 0.14)`) ambient radial gradients at opposite corners with blur radius 48px+ and opacity under 35%.
+- **Reduced Motion:** When `@media (prefers-reduced-motion: reduce)` is active, all background drift animations are halted (`animation: none !important`), retaining the static dot grid.
+
+### 13.3 Floating Glass Navigation Bar (AppNavbar)
+- **Desktop Architecture:** Floating header container with breathing room (`max-w-6xl mx-auto px-4 mt-3 rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-white/75 backdrop-blur-xl shadow-xs`).
+- **Brand Identity:** SikaPOS logo with emerald depth gradient, top gold accent pip (`#D97706`), and bold uppercase subline `AKOMA COMMERCE CLOUD`.
+- **Mobile Header:** Full-width responsive header with 44px touch targets. Toggling the hamburger button opens an animated glass drawer containing full-width navigation and contextual action triggers.
+- **Network Status Integration:** Houses the persistent `NetworkStatus` badge.
+
+### 13.4 Reusable Network Status System (NetworkStatus)
+- **States:**
+  - `Online`: Emerald dot (`#16A34A`), text `#064E3B`, subtle emerald border/background.
+  - `Offline`: Rose dot (`#E11D48`), text `#881337`, subtle rose border/background.
+  - `Reconnecting`: Amber pulsating dot (`#F59E0B`), text `#78350F`.
+  - `Syncing`: Blue pulsating dot (`#2563EB`), text `#1E3A8A`.
+- **Event Listeners:** Hooks into window `online`/`offline` lifecycle events and provides optimistic feedback.
+
+### 13.5 PWA Architecture & Install Experience
+- **Manifest:** Standalone display mode, theme color `#0D5C3A`, background color `#F8FAFC`, start URL `/login`.
+- **Icon Set:** Clean geometric SikaPOS terminal emblem in 192x192, 512x512, and maskable formats.
+- **Workbox Caching Policy:** Strict whitelist for application shell (HTML, CSS, JS, fonts, static assets). `runtimeCaching` explicitly routes all `/api/*` traffic via `NetworkOnly` to protect multi-tenant authentication and cashier ledger integrity.
+- **InstallPrompt Component:**
+  - Chromium/Android: Captures `beforeinstallprompt` event; provides a non-intrusive bottom glass card with one-click install and 14-day dismissal persistence.
+  - iOS Safari: Detects iOS Safari and renders contextual step-by-step guidance (`Share → Add to Home Screen`).
+- **UpdatePrompt Component:** Detects service worker updates and prompts cashiers with `Refresh to update` without abruptly dropping active transactions.
+
+### 13.6 Auth Architecture & Form Controls
+- **Segmented Control (AuthMethodSwitcher):** Segmented pill switcher with smooth Framer Motion sliding indicator (`layoutId="activeAuthIndicator"`).
+- **Form Inputs (AuthInput):** 46px height, neutral background `#F8FAFC`, hover border `#CBD5E1`, focus ring `#0D5C3A` (2px with 15% opacity tint).
+- **Animated Error Banner (AuthError):** Soft rose banner animated via Framer Motion slide-fade (`duration: 0.2s`) to prevent layout jump.
+- **Primary CTA (AuthSubmitButton):** Emerald gradient button with active tactile depression, arrow translation micro-interaction, and accessible loading state.

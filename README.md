@@ -15,6 +15,7 @@ SikaPOS (*Sika* = Gold / Money in Akan) is an offline-resilient, multi-tenant cl
 - **`business_store_setup_wizard/`**: Multi-step business profile, store configuration, and currency/tax setup wizard.
 - **`cashier_pin_launch_readiness/`**: Terminal readiness checklist and launch screen.
 - **`cashier_pin_login_otp_verification/`**: Rapid PIN pad authentication and phone OTP verification flow.
+- **`docs/PWA_AND_AUTH_REDESIGN.md`**: Complete architectural guide for the modern SaaS authentication redesign, floating glass navigation, animated dot network, and Progressive Web App implementation.
 
 ## License
 

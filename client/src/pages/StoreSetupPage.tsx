@@ -28,6 +28,7 @@ import { authApi } from '../api/auth.api';
 import { tenantApi } from '../api/tenant.api';
 import { ApiError } from '../types/auth.types';
 import { Alert } from '../components/ui/Alert';
+import { LoadingOverlay } from '../components/ui/LoadingOverlay';
 import { useAuth } from '../context/AuthContext';
 
 const STEPS: StepItem[] = [
@@ -121,6 +122,7 @@ export const StoreSetupPage: React.FC = () => {
   }, [authUser, authTenant]);
 
   const handleNext = async () => {
+    if (isSaving) return;
     setError(null);
     
     // Logic per step
@@ -550,15 +552,11 @@ export const StoreSetupPage: React.FC = () => {
         </motion.div>
       </main>
 
-      {isSaving && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-8 shadow-xl text-center space-y-3">
-            <div className="w-10 h-10 rounded-full border-4 border-[#0D5C3A]/20 border-t-[#0D5C3A] animate-spin mx-auto" />
-            <p className="text-sm font-bold text-slate-900">Saving Store Setup</p>
-            <p className="text-xs text-slate-500">Applying branch location, tax profile, and payout details...</p>
-          </div>
-        </div>
-      )}
+      <LoadingOverlay
+        isOpen={isSaving}
+        message="Saving Store Setup"
+        submessage="Applying branch location, tax profile, and payout details..."
+      />
 
       <Footer />
     </div>

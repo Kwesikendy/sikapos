@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGradMask" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0D5C3A" />
+      <stop offset="60%" stop-color="#09432A" />
+      <stop offset="100%" stop-color="#062F1D" />
+    </linearGradient>
+  </defs>
+
+  <!-- Full-bleed background for maskable icon safe zone -->
+  <rect width="512" height="512" fill="url(#bgGradMask)" />
+
+  <!-- Accent Pip inside safe zone -->
+  <circle cx="360" cy="140" r="22" fill="#D97706" />
+
+  <!-- Inner safe zone content (within center 80%) -->
+  <g transform="translate(136, 136)">
+    <rect x="12" y="18" width="216" height="204" rx="36" fill="#FFFFFF" fill-opacity="0.14" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" />
+    <path d="M60 66 H180" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" />
+    <path d="M60 114 H135" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" />
+    <path d="M60 162 H105" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" />
+    <circle cx="174" cy="156" r="21" fill="#D97706" stroke="#FFFFFF" stroke-width="9" />
+  </g>
+</svg>
