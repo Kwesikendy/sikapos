@@ -61,6 +61,7 @@ export interface RegisterPayload {
   primaryBranchGps?: string;
   primaryBranchAddress?: string;
   primaryBranchPhone?: string;
+  firebaseUid?: string;
 }
 
 export interface AuthSuccessResponse {

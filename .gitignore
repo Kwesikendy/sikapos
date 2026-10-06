@@ -25,3 +25,7 @@ yarn-error.log*
 *.db-shm
 *.db-wal
 
+# Firebase service account keys
+*serviceAccount*.json
+*firebase-adminsdk*.json
+

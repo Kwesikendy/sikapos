@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { AuthService, MultipleTenantsError } from '../../services/auth.service.ts';
 import { OtpService } from '../../services/otp.service.ts';
 import { TenantService } from '../../services/tenant.service.ts';
+import { FirebaseService } from '../../services/firebase.service.ts';
+import { getFirebaseAuth } from '../../lib/firebase-admin.ts';
 import { createAuthMiddleware } from '../../middleware/auth.ts';
 import { createRateLimiter } from '../../middleware/rateLimit.ts';
 import {
@@ -17,6 +19,7 @@ export const authRouter = Router();
 const authService = new AuthService();
 const otpService = new OtpService();
 const tenantService = new TenantService();
+const firebaseService = new FirebaseService();
 const authenticate = createAuthMiddleware(authService);
 
 const otpLimiter = createRateLimiter({ keyPrefix: 'rl_otp' });
@@ -210,10 +213,15 @@ authRouter.post('/register', validateBody([
       fullName: ownerFullName,
       email: ownerEmail,
       phoneNumber: phoneCheck.normalized!,
-      password
+      password,
+      firebaseUid: req.body.firebaseUid,
     });
 
-    // 3. Issue Session Token
+    // 3. Sync Tenant & User to Firestore in background
+    firebaseService.syncTenant(tenant, primaryBranch).catch(() => {});
+    firebaseService.syncUser(owner, req.body.firebaseUid).catch(() => {});
+
+    // 4. Issue Session Token
     const token = authService.createSession(owner.id, tenant.id);
 
     res.status(201).json({
@@ -233,7 +241,7 @@ authRouter.post('/register', validateBody([
 /**
  * Step 4: Login with Email or Phone & Password (Multi-Tenant Aware)
  */
-authRouter.post('/login', loginLimiter, (req, res, next) => {
+authRouter.post('/login', loginLimiter, async (req, res, next) => {
   try {
     const identifier = req.body.email || req.body.identifier || req.body.phone || req.body.phoneNumber;
     const { password, tenantId } = req.body;
@@ -256,10 +264,30 @@ authRouter.post('/login', loginLimiter, (req, res, next) => {
     const clientIp = req.ip || (req.headers['x-forwarded-for'] as string);
     const userAgent = req.headers['user-agent'];
 
-    const result = authService.loginWithPassword(identifier, password, tenantId, clientIp, userAgent);
+    let result;
+    try {
+      result = authService.loginWithPassword(identifier, password, tenantId, clientIp, userAgent);
+    } catch (err) {
+      // If login failed, check if user exists in Firestore (handles Render container restart!)
+      const restored = await firebaseService.findOrRestoreFirebaseUser('', identifier, identifier);
+      if (restored) {
+        try {
+          result = authService.loginWithPassword(identifier, password, tenantId || restored.tenantId, clientIp, userAgent);
+        } catch {
+          throw err;
+        }
+      } else {
+        throw err;
+      }
+    }
+
     const tenant = tenantService.getTenantById(result.tenantId);
     const branches = tenantService.getBranches(result.tenantId);
     const primaryBranch = branches.find(b => b.is_primary) || branches[0] || null;
+
+    // Keep Firestore updated in background
+    firebaseService.syncTenant(tenant, primaryBranch).catch(() => {});
+    firebaseService.syncUser(result.user).catch(() => {});
 
     res.json({
       success: true,
@@ -289,6 +317,72 @@ authRouter.post('/login', loginLimiter, (req, res, next) => {
       error: {
         code: 'INVALID_CREDENTIALS',
         message: msg
+      }
+    });
+  }
+});
+
+/**
+ * Step 4b: Firebase Sign-In (Google OAuth, Phone OTP, Firebase Email)
+ */
+authRouter.post('/firebase-login', loginLimiter, async (req, res, next) => {
+  try {
+    const { idToken, tenantId } = req.body;
+    if (!idToken) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Firebase ID token is required' }
+      });
+      return;
+    }
+
+    const decoded = await getFirebaseAuth().verifyIdToken(idToken);
+    const uid = decoded.uid;
+    const email = decoded.email;
+    const phone = decoded.phone_number;
+
+    const restored = await firebaseService.findOrRestoreFirebaseUser(uid, email, phone);
+
+    if (!restored) {
+      res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_REGISTERED',
+          message: 'No store account linked with this Google/Phone login yet. Please sign up to create your store.',
+          firebaseUser: {
+            uid,
+            email,
+            phone,
+            name: decoded.name || null,
+          }
+        }
+      });
+      return;
+    }
+
+    const targetTenantId = tenantId || restored.tenantId;
+    const sessionToken = authService.createSession(restored.user.id, targetTenantId);
+    const tenant = tenantService.getTenantById(targetTenantId);
+    const branches = tenantService.getBranches(targetTenantId);
+    const primaryBranch = branches.find(b => b.is_primary) || branches[0] || null;
+
+    res.json({
+      success: true,
+      data: {
+        token: sessionToken,
+        user: restored.user,
+        tenantId: targetTenantId,
+        tenant,
+        primaryBranch,
+        branches
+      }
+    });
+  } catch (err: any) {
+    res.status(401).json({
+      success: false,
+      error: {
+        code: 'INVALID_FIREBASE_TOKEN',
+        message: err.message || 'Firebase authentication failed'
       }
     });
   }

@@ -12,6 +12,7 @@ export interface RegisterOwnerParams {
   email: string;
   phoneNumber: string;
   password: string;
+  firebaseUid?: string;
 }
 
 export interface RegisterCashierParams {
@@ -64,8 +65,8 @@ export class AuthService {
     const now = new Date().toISOString();
 
     const insertStmt = this.db.prepare(`
-      INSERT INTO users (id, tenant_id, full_name, email, phone_number, password_hash, salt, is_active, email_verified, phone_verified, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0, 1, ?, ?)
+      INSERT INTO users (id, tenant_id, full_name, email, phone_number, password_hash, salt, is_active, email_verified, phone_verified, firebase_uid, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0, 1, ?, ?, ?)
     `);
 
     insertStmt.run(
@@ -76,6 +77,7 @@ export class AuthService {
       params.phoneNumber.trim(),
       passwordHash,
       salt,
+      params.firebaseUid || null,
       now,
       now
     );

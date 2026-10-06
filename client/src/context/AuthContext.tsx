@@ -11,6 +11,14 @@ import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api/auth.api';
 import { apiClient } from '../api/client';
 import { setAuthToken as setServiceAuthToken, clearAuthToken as clearServiceAuthToken } from '../services/apiClient';
+import {
+  auth as firebaseAuth,
+  googleProvider,
+  signInWithPopup,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  type ConfirmationResult,
+} from '../lib/firebase';
 import type { User, Tenant, Branch, RegisterPayload, AuthSuccessResponse } from '../types/auth.types';
 
 export interface AuthContextType {
@@ -24,6 +32,19 @@ export interface AuthContextType {
     email: string,
     password: string,
     tenantId?: string
+  ) => Promise<AuthSuccessResponse>;
+  loginWithGoogle: () => Promise<AuthSuccessResponse>;
+  loginWithFirebaseToken: (
+    idToken: string,
+    tenantId?: string
+  ) => Promise<AuthSuccessResponse>;
+  requestFirebasePhoneOtp: (
+    phoneNumber: string,
+    buttonOrDivId: string
+  ) => Promise<ConfirmationResult>;
+  confirmFirebasePhoneOtp: (
+    confirmationResult: ConfirmationResult,
+    code: string
   ) => Promise<AuthSuccessResponse>;
   loginWithPin: (
     tenantId: string,
@@ -198,6 +219,87 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     [syncToken, setUser, setTenant, setPrimaryBranch]
   );
 
+  // Sign In with Google via Firebase Popup
+  const loginWithGoogle = useCallback(async (): Promise<AuthSuccessResponse> => {
+    setIsLoading(true);
+    try {
+      const userCredential = await signInWithPopup(firebaseAuth, googleProvider);
+      const idToken = await userCredential.user.getIdToken();
+      const res = await authApi.firebaseLogin(idToken);
+      if (res.token) {
+        syncToken(res.token);
+      }
+      setUser(res.user);
+      if (res.tenant) {
+        setTenant(res.tenant);
+      }
+      if (res.primaryBranch) {
+        setPrimaryBranch(res.primaryBranch);
+      }
+      return res;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [syncToken, setUser, setTenant, setPrimaryBranch]);
+
+  // Sign In using a Firebase ID token directly
+  const loginWithFirebaseToken = useCallback(
+    async (idToken: string, tenantId?: string): Promise<AuthSuccessResponse> => {
+      setIsLoading(true);
+      try {
+        const res = await authApi.firebaseLogin(idToken, tenantId);
+        if (res.token) {
+          syncToken(res.token);
+        }
+        setUser(res.user);
+        if (res.tenant) {
+          setTenant(res.tenant);
+        }
+        if (res.primaryBranch) {
+          setPrimaryBranch(res.primaryBranch);
+        }
+        return res;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [syncToken, setUser, setTenant, setPrimaryBranch]
+  );
+
+  // Send Firebase Phone Auth SMS OTP
+  const requestFirebasePhoneOtp = useCallback(
+    async (phoneNumber: string, buttonOrDivId: string): Promise<ConfirmationResult> => {
+      setIsLoading(true);
+      try {
+        const appVerifier = new RecaptchaVerifier(firebaseAuth, buttonOrDivId, {
+          size: 'invisible',
+        });
+        return await signInWithPhoneNumber(firebaseAuth, phoneNumber, appVerifier);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  // Confirm Firebase Phone Auth OTP and exchange token with backend
+  const confirmFirebasePhoneOtp = useCallback(
+    async (
+      confirmationResult: ConfirmationResult,
+      code: string
+    ): Promise<AuthSuccessResponse> => {
+      setIsLoading(true);
+      try {
+        const userCredential = await confirmationResult.confirm(code);
+        const idToken = await userCredential.user.getIdToken();
+        return await loginWithFirebaseToken(idToken);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [loginWithFirebaseToken]
+  );
+
   // Fast PIN login for Till Cashiers
   const loginWithPin = useCallback(
     async (
@@ -250,9 +352,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     [syncToken, setUser, setTenant, setPrimaryBranch]
   );
 
-  // Logout and clear active session, wipe local storage user data, and redirect to login page
+  // Logout and clear active session, wipe local storage user data, and redirect
   const logout = useCallback(
-    async (redirectTo: string = '/login'): Promise<void> => {
+    async (redirectTo: string = '/merchant-signup'): Promise<void> => {
       setIsLoading(true);
       try {
         await authApi.logout();
@@ -339,6 +441,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isAuthenticated: Boolean(user && token),
       isLoading,
       loginWithPassword,
+      loginWithGoogle,
+      loginWithFirebaseToken,
+      requestFirebasePhoneOtp,
+      confirmFirebasePhoneOtp,
       loginWithPin,
       registerMerchant,
       logout,
@@ -354,6 +460,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       token,
       isLoading,
       loginWithPassword,
+      loginWithGoogle,
+      loginWithFirebaseToken,
+      requestFirebasePhoneOtp,
+      confirmFirebasePhoneOtp,
       loginWithPin,
       registerMerchant,
       logout,

@@ -58,6 +58,20 @@ export const authApi = {
     return res;
   },
 
+  firebaseLogin: async (
+    idToken: string,
+    tenantId?: string
+  ): Promise<AuthSuccessResponse> => {
+    const res = await apiClient.post<AuthSuccessResponse>('/auth/firebase-login', {
+      idToken,
+      tenantId,
+    });
+    if (res.token) {
+      apiClient.setToken(res.token);
+    }
+    return res;
+  },
+
   getCurrentUser: async (): Promise<{ user: User; tenant: Tenant; primaryBranch?: Branch; branches?: Branch[] }> => {
     return apiClient.get<{ user: User; tenant: Tenant; primaryBranch?: Branch; branches?: Branch[] }>('/auth/me');
   },
