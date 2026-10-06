@@ -156,27 +156,33 @@ function seedDemoMerchant(db: Database.Database): void {
 
   // Seed standard retail products for Mensah Stores Osu
   const insertProductStmt = db.prepare(`
-    INSERT INTO products (id, tenant_id, name, barcode, category, cost_price, selling_price, stock_quantity, low_stock_threshold, is_active)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+    INSERT INTO products (id, tenant_id, name, barcode, base_price, cost_price, is_taxable, status)
+    VALUES (?, ?, ?, ?, ?, ?, 1, 'active')
     ON CONFLICT(id) DO NOTHING
   `);
 
+  const insertInventoryStmt = db.prepare(`
+    INSERT INTO inventory (product_id, branch_id, tenant_id, quantity, low_stock_threshold)
+    VALUES (?, ?, ?, ?, 5)
+    ON CONFLICT(product_id, branch_id) DO NOTHING
+  `);
+
   const demoProducts = [
-    { id: 'prd_01', name: 'Nestle Milo Refill Pack 400g', barcode: '7613035889012', category: 'Provisions', cost: 32.00, price: 38.50, stock: 45 },
-    { id: 'prd_02', name: 'Ideal Evaporated Milk 160g', barcode: '7613032114520', category: 'Provisions', cost: 9.50, price: 12.00, stock: 120 },
-    { id: 'prd_03', name: 'Bel-Aqua Mineral Water 750ml', barcode: '6034000128911', category: 'Beverages', cost: 3.50, price: 5.00, stock: 95 },
-    { id: 'prd_04', name: 'Voltic Natural Mineral Water 500ml', barcode: '6034000234109', category: 'Beverages', cost: 3.00, price: 4.50, stock: 80 },
-    { id: 'prd_05', name: 'Frytol Pure Vegetable Oil 1L', barcode: '6034000554128', category: 'Provisions', cost: 40.00, price: 48.00, stock: 35 },
-    { id: 'prd_06', name: 'Gino Tomato Mix Paste 70g Sachet', barcode: '8901030776512', category: 'Provisions', cost: 4.80, price: 6.50, stock: 150 },
-    { id: 'prd_07', name: 'Geisha Herbal Beauty Soap 200g', barcode: '6034000998231', category: 'Personal Care', cost: 10.50, price: 14.00, stock: 60 },
-    { id: 'prd_08', name: 'Pepsodent Triple Protection 140g', barcode: '8717163612841', category: 'Personal Care', cost: 14.20, price: 18.50, stock: 55 },
-    { id: 'prd_09', name: 'Omo Multi-Active Washing Powder 500g', barcode: '8712561993412', category: 'Household', cost: 12.00, price: 16.00, stock: 40 },
-    { id: 'prd_10', name: 'FanYogo Strawberry Yogurt Pouch 145ml', barcode: '6034000781290', category: 'Beverages', cost: 2.80, price: 4.00, stock: 75 },
-    { id: 'prd_11', name: 'This Way Chocolate Drink 200ml', barcode: '6034000332145', category: 'Beverages', cost: 4.50, price: 6.00, stock: 65 },
-    { id: 'prd_12', name: 'TGI Thai Jasmine Perfumed Rice 5kg', barcode: '8850123984120', category: 'Provisions', cost: 125.00, price: 145.00, stock: 25 },
-    { id: 'prd_13', name: 'Tasty Tom Enriched Tomato Paste 400g', barcode: '6034000445612', category: 'Provisions', cost: 19.50, price: 24.00, stock: 50 },
-    { id: 'prd_14', name: 'Kalyppo Fruit Juice Orange 250ml', barcode: '6034000889123', category: 'Beverages', cost: 4.00, price: 5.50, stock: 85 },
-    { id: 'prd_15', name: 'Kleesoft Detergent Powder 1kg', barcode: '6921345678901', category: 'Household', cost: 17.00, price: 22.00, stock: 38 }
+    { id: 'prd_01', name: 'Nestle Milo Refill Pack 400g', barcode: '7613035889012', cost: 32.00, price: 38.50, stock: 45 },
+    { id: 'prd_02', name: 'Ideal Evaporated Milk 160g', barcode: '7613032114520', cost: 9.50, price: 12.00, stock: 120 },
+    { id: 'prd_03', name: 'Bel-Aqua Mineral Water 750ml', barcode: '6034000128911', cost: 3.50, price: 5.00, stock: 95 },
+    { id: 'prd_04', name: 'Voltic Natural Mineral Water 500ml', barcode: '6034000234109', cost: 3.00, price: 4.50, stock: 80 },
+    { id: 'prd_05', name: 'Frytol Pure Vegetable Oil 1L', barcode: '6034000554128', cost: 40.00, price: 48.00, stock: 35 },
+    { id: 'prd_06', name: 'Gino Tomato Mix Paste 70g Sachet', barcode: '8901030776512', cost: 4.80, price: 6.50, stock: 150 },
+    { id: 'prd_07', name: 'Geisha Herbal Beauty Soap 200g', barcode: '6034000998231', cost: 10.50, price: 14.00, stock: 60 },
+    { id: 'prd_08', name: 'Pepsodent Triple Protection 140g', barcode: '8717163612841', cost: 14.20, price: 18.50, stock: 55 },
+    { id: 'prd_09', name: 'Omo Multi-Active Washing Powder 500g', barcode: '8712561993412', cost: 12.00, price: 16.00, stock: 40 },
+    { id: 'prd_10', name: 'FanYogo Strawberry Yogurt Pouch 145ml', barcode: '6034000781290', cost: 2.80, price: 4.00, stock: 75 },
+    { id: 'prd_11', name: 'This Way Chocolate Drink 200ml', barcode: '6034000332145', cost: 4.50, price: 6.00, stock: 65 },
+    { id: 'prd_12', name: 'TGI Thai Jasmine Perfumed Rice 5kg', barcode: '8850123984120', cost: 125.00, price: 145.00, stock: 25 },
+    { id: 'prd_13', name: 'Tasty Tom Enriched Tomato Paste 400g', barcode: '6034000445612', cost: 19.50, price: 24.00, stock: 50 },
+    { id: 'prd_14', name: 'Kalyppo Fruit Juice Orange 250ml', barcode: '6034000889123', cost: 4.00, price: 5.50, stock: 85 },
+    { id: 'prd_15', name: 'Kleesoft Detergent Powder 1kg', barcode: '6921345678901', cost: 17.00, price: 22.00, stock: 38 }
   ];
 
   for (const prd of demoProducts) {
@@ -185,11 +191,14 @@ function seedDemoMerchant(db: Database.Database): void {
       tenantId,
       prd.name,
       prd.barcode,
-      prd.category,
-      prd.cost,
       prd.price,
-      prd.stock,
-      5
+      prd.cost
+    );
+    insertInventoryStmt.run(
+      prd.id,
+      branchId,
+      tenantId,
+      prd.stock
     );
   }
 }
