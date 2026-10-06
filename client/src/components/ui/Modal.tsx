@@ -52,7 +52,7 @@ export const Modal: React.FC<ModalProps> = ({
           aria-modal="true"
           aria-labelledby={title ? 'modal-title' : undefined}
           aria-describedby={description ? 'modal-description' : undefined}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
         >
           {/* Backdrop */}
           <motion.div
@@ -70,7 +70,7 @@ export const Modal: React.FC<ModalProps> = ({
             animate="animate"
             exit="exit"
             className={cn(
-              'relative w-full bg-white/95 backdrop-blur-xl rounded-3xl shadow-sheet border border-white overflow-hidden z-10 p-6 sm:p-8',
+              'relative w-full max-h-[90vh] overflow-y-auto bg-white/98 backdrop-blur-2xl rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200/60 z-10 p-4 sm:p-6 lg:p-8',
               maxWidths[maxWidth]
             )}
           >

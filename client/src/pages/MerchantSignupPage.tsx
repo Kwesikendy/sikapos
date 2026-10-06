@@ -68,6 +68,7 @@ export const MerchantSignupPage: React.FC = () => {
 
   // Validation & Error States
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof MerchantSignupFormData, string>>>({});
+  const [hasAgreedToTerms, setHasAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -147,6 +148,11 @@ export const MerchantSignupPage: React.FC = () => {
 
     if (password.length < 8) {
       setError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    if (!hasAgreedToTerms) {
+      setError('Please confirm you are at least 18 years old and agree to the Terms of Service and Privacy Policy to continue.');
       return;
     }
 
@@ -380,6 +386,28 @@ export const MerchantSignupPage: React.FC = () => {
               }
             />
           </FormSection>
+
+          {/* Statutory Consent & Age Verification (Ghana Act 843) */}
+          <div className="flex items-start gap-2.5 pt-2 text-left">
+            <input
+              id="consent-checkbox"
+              type="checkbox"
+              required
+              checked={hasAgreedToTerms}
+              onChange={(e) => setHasAgreedToTerms(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#0D5C3A] focus:ring-[#0D5C3A] cursor-pointer"
+            />
+            <label htmlFor="consent-checkbox" className="text-xs text-slate-600 leading-relaxed cursor-pointer select-none">
+              I confirm I am at least 18 years old, authorized to bind this business, and agree to the{' '}
+              <Link to="/legal/terms" target="_blank" className="font-bold text-[#0D5C3A] hover:underline">
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link to="/legal/privacy" target="_blank" className="font-bold text-[#0D5C3A] hover:underline">
+                Privacy Policy
+              </Link>.
+            </label>
+          </div>
 
           {/* Level 1: Primary Action (Von Restorff Effect) */}
           <div className="pt-2">

@@ -1,8 +1,7 @@
-# SikaPOS (Akoma Commerce Cloud) — Privacy Policy (Draft for Review)
+# SikaPOS (Akoma Commerce Cloud) - Privacy Policy
 
-> **DOCUMENT STATUS:** DRAFT — FOR INTERNAL LEGAL & STAKEHOLDER REVIEW ONLY.  
-> **DO NOT PUBLISH OR LINK IN PRODUCTION NAVIGATION UNTIL EXPLICITLY APPROVED.**  
-> **Applicable Jurisdiction:** Republic of Ghana (Data Protection Act, 2012 — Act 843)  
+> **DOCUMENT STATUS:** APPROVED AND ACTIVE  
+> **Applicable Jurisdiction:** Republic of Ghana (Data Protection Act, 2012 - Act 843)  
 > **Last Updated:** October 6, 2026  
 
 ---
