@@ -71,26 +71,30 @@ taxRouter.get('/current', authenticate, enforceTenantContext, (req, res) => {
 
 taxRouter.post('/configure', authenticate, enforceTenantContext, requirePermission('settings.manage'), validateBody([
   { field: 'taxType', required: true }
-]), (req, res) => {
-  const { taxType, customVatRate, customNhilRate, customGetfundRate } = req.body;
+]), (req, res, next) => {
+  try {
+    const { taxType, customVatRate, customNhilRate, customGetfundRate } = req.body;
 
-  if (!['not_registered', 'standard_gra', 'custom'].includes(taxType)) {
-    res.status(400).json({
-      success: false,
-      error: { code: 'INVALID_TAX_TYPE', message: 'taxType must be one of: not_registered, standard_gra, custom' }
+    if (!['not_registered', 'standard_gra', 'custom'].includes(taxType)) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_TAX_TYPE', message: 'taxType must be one of: not_registered, standard_gra, custom' }
+      });
+      return;
+    }
+
+    const profile = taxService.setTaxProfile(req.tenantContext!.tenantId, {
+      taxType,
+      customVatRate: customVatRate ? Number(customVatRate) : undefined,
+      customNhilRate: customNhilRate ? Number(customNhilRate) : undefined,
+      customGetfundRate: customGetfundRate ? Number(customGetfundRate) : undefined,
     });
-    return;
+
+    res.json({
+      success: true,
+      data: profile
+    });
+  } catch (err) {
+    next(err);
   }
-
-  const profile = taxService.setTaxProfile(req.tenantContext!.tenantId, {
-    taxType,
-    customVatRate: customVatRate ? Number(customVatRate) : undefined,
-    customNhilRate: customNhilRate ? Number(customNhilRate) : undefined,
-    customGetfundRate: customGetfundRate ? Number(customGetfundRate) : undefined,
-  });
-
-  res.json({
-    success: true,
-    data: profile
-  });
 });

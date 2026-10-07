@@ -102,10 +102,44 @@ export class AuthService {
       throw new Error('Cashier PIN must be exactly 4 digits');
     }
 
-    const userId = crypto.randomUUID();
     const pinSalt = crypto.randomBytes(16).toString('hex');
     const pinHash = this.hashPin(params.pin, pinSalt);
     const now = new Date().toISOString();
+
+    const cleanPhone = params.phoneNumber.trim();
+    const existingUser = this.db.prepare(`
+      SELECT id FROM users
+      WHERE tenant_id = ? AND phone_number = ?
+    `).get(params.tenantId, cleanPhone) as { id: string } | undefined;
+
+    if (existingUser) {
+      this.db.prepare(`
+        UPDATE users
+        SET pin_hash = ?, pin_salt = ?, is_active = 1, updated_at = ?
+        WHERE id = ?
+      `).run(pinHash, pinSalt, now, existingUser.id);
+
+      this.tenantService.assignUserRole(params.tenantId, existingUser.id, 'Cashier');
+
+      this.db.prepare(`
+        INSERT INTO branch_users (branch_id, user_id, tenant_id, is_default, created_at)
+        VALUES (?, ?, ?, 1, ?)
+        ON CONFLICT(branch_id, user_id) DO NOTHING
+      `).run(params.branchId, existingUser.id, params.tenantId, now);
+
+      this.auditService.record({
+        tenantId: params.tenantId,
+        userId: existingUser.id,
+        action: 'auth.cashier_updated',
+        entityType: 'user',
+        entityId: existingUser.id,
+        details: { branchId: params.branchId, fullName: params.fullName }
+      });
+
+      return this.getUserSummary(existingUser.id)!;
+    }
+
+    const userId = crypto.randomUUID();
     const email = params.email || `cashier_${userId.substring(0, 8)}@sikapos.local`;
 
     const insertStmt = this.db.prepare(`
@@ -118,7 +152,7 @@ export class AuthService {
       params.tenantId,
       params.fullName,
       email,
-      params.phoneNumber.trim(),
+      cleanPhone,
       pinHash,
       pinSalt,
       now,

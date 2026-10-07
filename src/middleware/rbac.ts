@@ -11,7 +11,9 @@ export function requireRole(...allowedRoles: UserRole[]) {
       return;
     }
 
-    const hasRole = req.user.roles.some(role => allowedRoles.includes(role as UserRole));
+    const hasRole = req.user.roles.some(role =>
+      allowedRoles.some(allowed => allowed.toLowerCase() === String(role).toLowerCase())
+    );
     if (!hasRole) {
       res.status(403).json({
         success: false,
@@ -38,7 +40,7 @@ export function requirePermission(requiredPermission: PermissionCode) {
     }
 
     // Owners automatically inherit all tenant permissions
-    if (req.user.roles.includes('Owner')) {
+    if (req.user.roles && req.user.roles.some((r: string) => typeof r === 'string' && r.toLowerCase() === 'owner')) {
       next();
       return;
     }
