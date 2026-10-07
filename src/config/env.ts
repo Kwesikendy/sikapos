@@ -22,9 +22,9 @@ export function loadConfig(): AppConfig {
     process.execArgv.some(a => a.includes('test'));
   const nodeEnv = (process.env.NODE_ENV || (isTestMode ? 'test' : 'development')) as 'development' | 'test' | 'production';
 
-  // In Google Cloud Run containers, NGINX is on 8080 and proxies to the app on port 3003
+  // In Google Cloud Run containers, NGINX is on 8080 and proxies to the app on port 3000
   const envPort = process.env.DEFAULT_APP_PORT || process.env.APP_PORT;
-  let port = 3003;
+  let port = 3000;
   if (envPort) {
     port = parseInt(envPort, 10);
   } else if (process.env.PORT && process.env.PORT !== '8080') {
