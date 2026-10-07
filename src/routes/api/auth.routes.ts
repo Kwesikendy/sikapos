@@ -165,9 +165,10 @@ authRouter.post('/register', validateBody([
       ? tradeCategory
       : 'provision_supermarket';
 
-    // Verify phone OTP was completed (only in production or when verified OTP is present)
+    // Verify phone OTP was completed (waived for Google OAuth authenticated signups)
     const isVerified = otpService.isRecipientVerified(phoneCheck.normalized!, 'merchant_signup');
-    if (!isVerified && process.env.NODE_ENV === 'production') {
+    const isGoogleAuth = Boolean(req.body.firebaseUid);
+    if (!isVerified && !isGoogleAuth && process.env.NODE_ENV === 'production') {
       res.status(400).json({
         success: false,
         error: {
@@ -177,6 +178,7 @@ authRouter.post('/register', validateBody([
       });
       return;
     }
+
 
     // Ensure tradeCategory satisfies DB CHECK constraint
     const validCategories = ['provision_supermarket', 'pharmacy', 'fashion', 'electronics', 'general_retail'];

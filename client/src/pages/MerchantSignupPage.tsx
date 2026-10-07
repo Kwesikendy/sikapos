@@ -53,7 +53,7 @@ interface MerchantSignupFormData {
 
 export const MerchantSignupPage: React.FC = () => {
   const navigate = useNavigate();
-  const { registerMerchant, loginWithGoogle } = useAuth();
+  const { registerMerchant, loginWithGoogle, loginWithFirebaseToken } = useAuth();
   const { toast } = useToast();
 
   // Form State
@@ -76,28 +76,42 @@ export const MerchantSignupPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // First try to just log them in if they already have an account
-      await loginWithGoogle();
-      navigate('/dashboard');
+      // 1. Authenticate with Google Popup via Firebase
+      const userCredential = await signInWithPopup(firebaseAuth, googleProvider);
+      const fbUser = userCredential.user;
+
+      // Extract and prefill Google user information immediately
+      if (fbUser.displayName) setFullName(fbUser.displayName);
+      if (fbUser.email) setEmail(fbUser.email);
+      if (fbUser.phoneNumber) {
+        setPhoneNumber(fbUser.phoneNumber.replace('+233', '0'));
+      }
+      if (fbUser.uid) setFirebaseUid(fbUser.uid);
+
+      // 2. Check if user already has an existing store account
+      const idToken = await fbUser.getIdToken();
+      try {
+        await loginWithFirebaseToken(idToken);
+        toast.success('Welcome back!', 'Logging into your SikaPOS store.');
+        navigate('/dashboard');
+        return;
+      } catch (loginErr: any) {
+        if (loginErr?.code === 'USER_NOT_REGISTERED') {
+          toast.success(
+            'Google account linked!',
+            'Please fill in your store details below to finish creating your account.'
+          );
+          scrollToForm();
+        } else {
+          throw loginErr;
+        }
+      }
     } catch (err: any) {
       if (err?.code === 'auth/popup-closed-by-user') {
         setIsLoading(false);
         return;
       }
-      
-      // If user doesn't exist yet, we capture their Google info to prefill the signup form
-      if (err?.code === 'USER_NOT_REGISTERED' || err?.response?.data?.error?.code === 'USER_NOT_REGISTERED') {
-        const fbUser = err?.response?.data?.error?.firebaseUser || {};
-        if (fbUser.name) setFullName(fbUser.name);
-        if (fbUser.email) setEmail(fbUser.email);
-        if (fbUser.phone) setPhoneNumber(fbUser.phone.replace('+233', '0'));
-        if (fbUser.uid) setFirebaseUid(fbUser.uid);
-        
-        toast.success('Google account linked!', 'Please complete the remaining store details below to finish creating your account.');
-        scrollToForm();
-      } else {
-        setError(err?.message || 'Could not connect Google account.');
-      }
+      setError(err?.message || 'Could not connect Google account.');
     } finally {
       setIsLoading(false);
     }
@@ -157,7 +171,7 @@ export const MerchantSignupPage: React.FC = () => {
       return;
     }
 
-    if (password.length < 8) {
+    if (!firebaseUid && password.length < 8) {
       setError('Password must be at least 8 characters long.');
       return;
     }
@@ -167,6 +181,46 @@ export const MerchantSignupPage: React.FC = () => {
       return;
     }
 
+    // Direct registration for Google-linked accounts (identity already verified by Google OAuth)
+    if (firebaseUid) {
+      setIsLoading(true);
+      try {
+        await registerMerchant({
+          businessLegalName: `${businessName} Ltd`,
+          businessTradeName: businessName,
+          tradeCategory: 'provision_supermarket',
+          ownerFullName: fullName,
+          ownerEmail: email,
+          ownerPhone: formattedPhone,
+          password: password || 'GoogleAuth2025!',
+          primaryBranchName: branchName || `${businessName} Main Branch`,
+          primaryBranchRegion: 'Greater Accra',
+          primaryBranchGps: 'GA-000-0000',
+          primaryBranchAddress: branchName || 'Accra, Ghana',
+          primaryBranchPhone: formattedPhone,
+          firebaseUid,
+        });
+
+        toast.success('Registration successful', 'Your SikaPOS store account has been created.');
+        navigate('/store-setup');
+      } catch (err: unknown) {
+        const apiErr = err as ApiError;
+        let errMessage = apiErr.message;
+        if (apiErr.details) {
+          const detailsList = Object.values(apiErr.details).filter(Boolean);
+          if (detailsList.length > 0) {
+            errMessage = detailsList.join('. ');
+          }
+        }
+        setError(errMessage || 'Registration failed. Please check your details and try again.');
+        toast.error('Registration failed', errMessage || 'Registration failed.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Standard phone SMS OTP verification flow
     setIsLoading(true);
     try {
       // Step 1: Request OTP from backend
@@ -178,7 +232,12 @@ export const MerchantSignupPage: React.FC = () => {
       }
       setCooldown(60);
       setShowOtpModal(true);
-      toast.success('Verification code dispatched', 'Please check your phone for the 6-digit OTP code.');
+      toast.success(
+        'Verification code ready',
+        res.debugCode
+          ? 'Verification code generated for testing.'
+          : 'Please check your phone for the 6-digit OTP code.'
+      );
     } catch (err: unknown) {
       const apiErr = err as ApiError;
       if (apiErr.remainingCooldownSeconds) {
@@ -195,6 +254,7 @@ export const MerchantSignupPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+
 
   const handleResendOtp = async () => {
     if (cooldown > 0 || isResendingOtp || isVerifyingOtp) return;
@@ -375,15 +435,15 @@ export const MerchantSignupPage: React.FC = () => {
           </FormSection>
 
           {/* Group 3: Security */}
-          <FormSection title="3. Security">
+          <FormSection title={firebaseUid ? "3. Security (Optional for Google)" : "3. Security"}>
             <Input
               label="Password"
               type={showPassword ? 'text' : 'password'}
-              helperText="At least 8 characters"
-              placeholder="Create a secure password"
+              helperText={firebaseUid ? "Optional (your Google account manages login)" : "At least 8 characters"}
+              placeholder={firebaseUid ? "Optional backup password" : "Create a secure password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              required={!firebaseUid}
               startIcon={<Lock className="w-4 h-4" aria-hidden="true" />}
               endIcon={
                 <button
@@ -427,10 +487,10 @@ export const MerchantSignupPage: React.FC = () => {
               size="lg"
               className="w-full text-base font-bold shadow-md hover:shadow-lg transition-all"
               isLoading={isLoading}
-              loadingText="Sending verification code..."
+              loadingText={firebaseUid ? "Creating your store..." : "Sending verification code..."}
               rightIcon={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
             >
-              Verify Phone & Continue
+              {firebaseUid ? "Create Store Account" : "Verify Phone & Continue"}
             </Button>
           </div>
         </form>

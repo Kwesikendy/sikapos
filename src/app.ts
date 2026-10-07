@@ -43,6 +43,18 @@ export function createApp(): express.Application {
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
+  // Request logger for API calls
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      const start = Date.now();
+      res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.log(`[HTTP] ${req.method} ${req.originalUrl} ${res.statusCode} (${duration}ms)`);
+      });
+    }
+    next();
+  });
+
 
   // Serve compiled React client assets
   const clientDist = path.join(rootDir, 'dist', 'client');

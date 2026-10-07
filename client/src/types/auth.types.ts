@@ -85,4 +85,11 @@ export interface ApiError {
   remainingCooldownSeconds?: number;
   tenants?: TenantOption[];
   details?: Record<string, string>;
+  firebaseUser?: {
+    uid?: string;
+    email?: string | null;
+    phone?: string | null;
+    name?: string | null;
+  };
 }
+

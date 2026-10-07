@@ -25,8 +25,12 @@ export class FirebaseService {
         },
         { merge: true }
       );
-    } catch (err) {
-      console.warn('[FirebaseService] Failed to sync tenant to Firestore:', err);
+    } catch (err: any) {
+      if (err?.code === 7 || err?.message?.includes('Cloud Firestore API has not been used')) {
+        // Silently skip if Firestore API is disabled in GCP
+        return;
+      }
+      console.warn('[FirebaseService] Failed to sync tenant to Firestore:', err?.message || err);
     }
   }
 
@@ -66,8 +70,11 @@ export class FirebaseService {
           { merge: true }
         );
       }
-    } catch (err) {
-      console.warn('[FirebaseService] Failed to sync user to Firestore:', err);
+    } catch (err: any) {
+      if (err?.code === 7 || err?.message?.includes('Cloud Firestore API has not been used')) {
+        return;
+      }
+      console.warn('[FirebaseService] Failed to sync user to Firestore:', err?.message || err);
     }
   }
 
@@ -214,11 +221,16 @@ export class FirebaseService {
       if (summary) {
         return { user: summary, tenantId };
       }
-    } catch (err) {
-      console.error('[FirebaseService] Error restoring user from Firestore:', err);
+    } catch (err: any) {
+      if (err?.code === 7 || err?.message?.includes('Cloud Firestore API has not been used')) {
+        // Firestore not enabled in GCP project; gracefully continue with local database
+        return null;
+      }
+      console.error('[FirebaseService] Error restoring user from Firestore:', err?.message || err);
     }
 
     return null;
+
   }
 
   private getUserSummary(userId: string): UserSummary | null {
