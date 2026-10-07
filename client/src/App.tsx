@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
@@ -22,6 +22,11 @@ import { CookieConsentBanner } from './components/legal/CookieConsentBanner';
 const PosTerminalPage = POSPage;
 
 export const App: React.FC = () => {
+  useEffect(() => {
+    // Proactively ping health endpoint on load to ensure backend is warm
+    fetch('/api/v1/health').catch(() => {});
+  }, []);
+
   return (
     <BrowserRouter>
       <AuthProvider>

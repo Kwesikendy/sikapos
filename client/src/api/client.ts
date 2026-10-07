@@ -4,9 +4,6 @@ const getDefaultApiBase = () => {
   if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) {
     return `${import.meta.env.VITE_API_URL}/api/v1`;
   }
-  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-    return 'https://sikapos.onrender.com/api/v1';
-  }
   return '/api/v1';
 };
 
@@ -38,7 +35,7 @@ class HttpClient {
     return this.token;
   }
 
-  async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  async request<T>(endpoint: string, options: RequestInit = {}, isRetry = false): Promise<T> {
     const url = `${API_BASE}${endpoint}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -106,6 +103,16 @@ class HttpClient {
 
       return json as T;
     } catch (err: unknown) {
+      if ((err as ApiError).code) {
+        throw err;
+      }
+
+      // Auto-retry once after 2.5s for cold start wakeups
+      if (!isRetry) {
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        return this.request<T>(endpoint, options, true);
+      }
+
       console.error('[SikaPOS API Error]', {
         endpoint,
         targetUrl: url,
@@ -113,22 +120,12 @@ class HttpClient {
         timestamp: new Date().toISOString(),
       });
 
-      if ((err as ApiError).code) {
-        throw err;
-      }
-
-      const host = url.startsWith('http')
-        ? new URL(url).host
-        : (typeof window !== 'undefined' ? window.location.host : 'backend');
-
       throw {
         status: 0,
         code: 'NETWORK_ERROR',
-        message: `Cannot connect to server (${host}). The backend may be offline or starting up — please wait a moment and try again.`,
+        message: 'Connecting to cloud server... The backend is starting up. Please wait a moment and tap again.',
       } as ApiError;
     }
-
-
   }
 
   get<T>(endpoint: string, headers?: Record<string, string>): Promise<T> {

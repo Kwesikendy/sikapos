@@ -158,9 +158,13 @@ export const MerchantSignupPage: React.FC = () => {
 
     const cleanPhone = phoneNumber.replace(/[\s\-()]/g, '');
 
-    // Allow 10 digits starting with 0, or 9 digits without 0 (e.g. 599295290)
+    // Allow +233/233 prefix, 10 digits starting with 0, or 9 digits without 0 (e.g. 599295290)
     let formattedPhone = cleanPhone;
-    if (/^[25]\d{8}$/.test(cleanPhone)) {
+    if (cleanPhone.startsWith('+233') && cleanPhone.length === 13) {
+      formattedPhone = '0' + cleanPhone.substring(4);
+    } else if (cleanPhone.startsWith('233') && cleanPhone.length === 12) {
+      formattedPhone = '0' + cleanPhone.substring(3);
+    } else if (/^[25]\d{8}$/.test(cleanPhone)) {
       formattedPhone = '0' + cleanPhone;
     }
 
@@ -291,7 +295,11 @@ export const MerchantSignupPage: React.FC = () => {
 
     const cleanPhone = phoneNumber.replace(/[\s\-()]/g, '');
     let formattedPhone = cleanPhone;
-    if (/^[25]\d{8}$/.test(cleanPhone)) {
+    if (cleanPhone.startsWith('+233') && cleanPhone.length === 13) {
+      formattedPhone = '0' + cleanPhone.substring(4);
+    } else if (cleanPhone.startsWith('233') && cleanPhone.length === 12) {
+      formattedPhone = '0' + cleanPhone.substring(3);
+    } else if (/^[25]\d{8}$/.test(cleanPhone)) {
       formattedPhone = '0' + cleanPhone;
     }
 

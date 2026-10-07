@@ -210,8 +210,12 @@ export class SaleService {
       SELECT * FROM sale_items WHERE sale_id = ? ORDER BY rowid ASC
     `).all(saleId) as SaleRecord['items'];
 
+    const taxVal = Number((sale as any).tax_total ?? (sale as any).tax_amount ?? 0);
+
     return {
       ...sale,
+      tax_amount: taxVal,
+      tax_total: taxVal,
       items
     };
   }
@@ -226,7 +230,14 @@ export class SaleService {
       LIMIT ?
     `).all(tenantId, limit) as SaleRecord[];
 
-    return sales;
+    return sales.map(s => {
+      const taxVal = Number((s as any).tax_total ?? (s as any).tax_amount ?? 0);
+      return {
+        ...s,
+        tax_amount: taxVal,
+        tax_total: taxVal,
+      };
+    });
   }
 
   public getTodaySummary(tenantId: string): {

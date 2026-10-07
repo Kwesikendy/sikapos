@@ -910,14 +910,17 @@ export const PosTerminalPage: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden text-left animate-in fade-in zoom-in-95 duration-150">
             {/* Thermal Receipt Visual */}
-            <div className="p-6 font-mono text-xs text-slate-800 space-y-4">
+            <div className="printable-receipt p-6 font-mono text-xs text-slate-800 space-y-4 bg-white">
               <div className="text-center space-y-1 pb-3 border-b border-dashed border-slate-300">
                 <h3 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider">
-                  {currentTenant?.business_name || 'Mensah Stores Osu'}
+                  {currentTenant?.business_name || 'SikaPOS Store'}
                 </h3>
-                <p className="text-[11px] text-slate-500">Oxford Street, Osu, Accra</p>
-                <p className="text-[10px] text-slate-400">GPS: GA-183-9024 · Tel: 0244123456</p>
-                <p className="text-[10px] text-slate-400">TIN: P0012345678</p>
+                {currentBranch && (
+                  <p className="text-[11px] text-slate-500">{currentBranch.name} • {currentBranch.region}</p>
+                )}
+                {currentBranch?.physical_address && (
+                  <p className="text-[10px] text-slate-400">{currentBranch.physical_address}</p>
+                )}
               </div>
 
               <div className="space-y-1 text-[11px] text-slate-500 pb-2 border-b border-dashed border-slate-300">
@@ -993,7 +996,7 @@ export const PosTerminalPage: React.FC = () => {
             </div>
 
             {/* Modal Actions */}
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+            <div className="no-print p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => window.print()}

@@ -129,9 +129,13 @@ export const LoginPage: React.FC = () => {
     }
 
     let cleanPhone = phoneInput.replace(/[\s\-()]/g, '');
-    if (cleanPhone.startsWith('0')) {
+    if (cleanPhone.startsWith('+233')) {
+      // already normalized
+    } else if (cleanPhone.startsWith('233')) {
+      cleanPhone = '+' + cleanPhone;
+    } else if (cleanPhone.startsWith('0')) {
       cleanPhone = '+233' + cleanPhone.substring(1);
-    } else if (!cleanPhone.startsWith('+')) {
+    } else if (/^[25]\d{8}$/.test(cleanPhone)) {
       cleanPhone = '+233' + cleanPhone;
     }
 
@@ -166,9 +170,13 @@ export const LoginPage: React.FC = () => {
     }
 
     let cleanPhone = phoneInput.replace(/[\s\-()]/g, '');
-    if (cleanPhone.startsWith('0')) {
+    if (cleanPhone.startsWith('+233')) {
+      // already normalized
+    } else if (cleanPhone.startsWith('233')) {
+      cleanPhone = '+' + cleanPhone;
+    } else if (cleanPhone.startsWith('0')) {
       cleanPhone = '+233' + cleanPhone.substring(1);
-    } else if (!cleanPhone.startsWith('+')) {
+    } else if (/^[25]\d{8}$/.test(cleanPhone)) {
       cleanPhone = '+233' + cleanPhone;
     }
 
