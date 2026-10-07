@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 import { getDb } from '../db/connection.ts';
-import { getFirestoreDb } from '../lib/firebase-admin.ts';
+import { getFirestoreDb, isFirebaseAdminConfigured } from '../lib/firebase-admin.ts';
 import type { UserSummary, Tenant, Branch } from '../types/index.ts';
 
 export class FirebaseService {
@@ -14,6 +14,7 @@ export class FirebaseService {
    * Sync a Tenant and primary Branch to Firestore
    */
   public async syncTenant(tenant: Partial<Tenant> | null, branch?: Partial<Branch> | null): Promise<void> {
+    if (!isFirebaseAdminConfigured()) return;
     try {
       if (!tenant || !tenant.id) return;
       const firestore = getFirestoreDb();
@@ -38,6 +39,7 @@ export class FirebaseService {
    * Sync a User to Firestore
    */
   public async syncUser(user: UserSummary, firebaseUid?: string): Promise<void> {
+    if (!isFirebaseAdminConfigured()) return;
     try {
       if (!user || !user.id) return;
       const firestore = getFirestoreDb();
@@ -116,6 +118,10 @@ export class FirebaseService {
     }
 
     // 2. Not in local SQLite -> Query Firestore (handles Render ephemeral disk reset!)
+    if (!isFirebaseAdminConfigured()) {
+      return null;
+    }
+
     try {
       const firestore = getFirestoreDb();
 

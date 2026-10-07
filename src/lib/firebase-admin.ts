@@ -6,6 +6,24 @@ import { getAuth, type Auth } from 'firebase-admin/auth';
 
 let app: App | null = null;
 
+export function isFirebaseAdminConfigured(): boolean {
+  const candidateKeyPaths = [
+    process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    '/etc/secrets/serviceAccountKey.json',
+    path.resolve(process.cwd(), 'serviceAccountKey.json'),
+    path.resolve(process.cwd(), 'sikapos-27544-firebase-adminsdk-fbsvc-a39353bf94.json'),
+  ].filter(Boolean) as string[];
+
+  for (const candidatePath of candidateKeyPaths) {
+    if (fs.existsSync(candidatePath)) return true;
+  }
+
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) return true;
+  if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) return true;
+
+  return false;
+}
+
 export function getFirebaseAdmin(): App {
   if (app) return app;
 
