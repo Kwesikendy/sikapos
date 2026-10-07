@@ -11,9 +11,16 @@ SikaPOS (*Sika* = Gold / Money in Akan) is developed by **Mastermade Solutions**
 
 ## 2. Tech Stack
 - **Frontend**: React 19, React Router v7, Vite, Tailwind CSS v4, Framer Motion, Lucide React, TypeScript.
-- **Backend**: Express, Better-SQLite3 (SQLite), TypeScript.
+- **Backend**: Express, Better-SQLite3 (SQLite), TypeScript. Runs on **port 3003** (`http://localhost:3003`).
+- **Frontend Dev**: Vite on **port 5173** (`http://localhost:5173`), proxying `/api` -> `http://localhost:3003`. Production SPA served directly by Express from `dist/client/`.
 - **Styling**: Vanilla CSS / Tailwind with a custom design system based on `sikapos_design_system` and `sikapos_design_system_specification_stage_1_lock.txt`.
 - **Monorepo Structure**: The frontend is in the `client/` directory and backend scripts (`server.ts`, `src/`) at the root.
+- **Root Context File**: See [PROJECT_CONTEXT.md](file:///d:/stitch_multi_tenant_saas_pos_system/PROJECT_CONTEXT.md) for full endpoint references, schemas, and architecture.
+
+### Quick Test Credentials
+- **Store Owner**: `kwabena@mensahstores.com` / `OsuPass2025#` (PIN: `1234`)
+- **Cashier 1**: Abena Osei (`usr_cashier_001`, Tenant: `ten_default_osu`, PIN: `1234`)
+- **Cashier 2**: Kofi Boateng (`usr_cashier_002`, Tenant: `ten_default_osu`, PIN: `1234`)
 
 ## 3. Directory Structure & Key Files
 - `client/src/pages/`: Contains the main application views.

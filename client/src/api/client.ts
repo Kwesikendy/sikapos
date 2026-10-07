@@ -84,7 +84,7 @@ class HttpClient {
         code: 'NETWORK_ERROR',
         message: import.meta.env.PROD
           ? 'Cannot connect to server. The backend may be starting up — please wait 30 seconds and try again.'
-          : 'Could not connect to the server. Is your local backend running on port 3000?',
+          : 'Could not connect to the server. Is your local backend running on port 3003?',
       } as ApiError;
     }
   }

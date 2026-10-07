@@ -68,13 +68,27 @@ export function createApp(): express.Application {
     }
   };
 
+  app.get('/login', serveSpaOrFallback('index.html'));
   app.get('/merchant-signup', serveSpaOrFallback(path.join('merchant_signup_welcome', 'code.html')));
   app.get('/store-setup', serveSpaOrFallback(path.join('business_store_setup_wizard', 'code.html')));
   app.get('/launch-readiness', serveSpaOrFallback(path.join('cashier_pin_launch_readiness', 'code.html')));
   app.get('/cashier-login', serveSpaOrFallback(path.join('cashier_pin_login_otp_verification', 'code.html')));
   app.get('/terminal', serveSpaOrFallback('index.html'));
   app.get('/pos', serveSpaOrFallback('index.html'));
+  app.get(['/dashboard', '/dashboard/*'], serveSpaOrFallback('index.html'));
+  app.get(['/legal', '/legal/*'], serveSpaOrFallback('index.html'));
   app.get('/', serveSpaOrFallback('index.html'));
+
+  // Catch-all SPA route for any other client route when React bundle exists
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      return next();
+    }
+    if (fs.existsSync(clientIndexHtml)) {
+      return res.sendFile(clientIndexHtml);
+    }
+    next();
+  });
 
 
   // Legacy reference routes preserving original Stitch screens
