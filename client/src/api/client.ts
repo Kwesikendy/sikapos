@@ -36,6 +36,7 @@ class HttpClient {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      'ngrok-skip-browser-warning': 'true', // Bypass ngrok warning for API requests
       ...((options.headers as Record<string, string>) || {}),
     };
 

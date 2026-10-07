@@ -19,7 +19,8 @@ import {
   PackageSearch,
   AlertCircle,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn, formatGHS } from '../lib/utils';
