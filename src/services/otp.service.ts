@@ -187,9 +187,15 @@ export class OtpService {
     `).run(id, recipient, otpHash, salt, purpose, expiresAt, now.toISOString());
 
     // Dispatch via configured decoupled provider
-    const sendResult = await this.provider.sendOtp(recipient, rawCode, purpose);
-    if (!sendResult.success) {
-      throw new Error(`Failed to dispatch OTP: ${sendResult.error || 'Provider delivery error'}`);
+    try {
+      const sendResult = await this.provider.sendOtp(recipient, rawCode, purpose);
+      if (!sendResult.success) {
+        throw new Error(`Failed to dispatch OTP: ${sendResult.error || 'Provider delivery error'}`);
+      }
+    } catch (err) {
+      // If dispatch fails, rollback the OTP record so the user isn't stuck in cooldown
+      this.db.prepare('DELETE FROM otp_verifications WHERE id = ?').run(id);
+      throw err;
     }
 
     this.auditService.record({
