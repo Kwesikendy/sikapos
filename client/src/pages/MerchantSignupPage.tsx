@@ -57,12 +57,12 @@ export const MerchantSignupPage: React.FC = () => {
   const { toast } = useToast();
 
   // Form State
-  const [fullName, setFullName] = useState('Kwabena Mensah');
-  const [phoneNumber, setPhoneNumber] = useState('0244123456');
-  const [email, setEmail] = useState('kwabena@mensahstores.com');
-  const [businessName, setBusinessName] = useState('Mensah Provision Store');
-  const [branchName, setBranchName] = useState('Osu Oxford St. Branch');
-  const [password, setPassword] = useState('OsuPass2025#');
+  const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [branchName, setBranchName] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [firebaseUid, setFirebaseUid] = useState<string | null>(null);
 
