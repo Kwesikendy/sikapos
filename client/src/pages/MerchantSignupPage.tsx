@@ -53,7 +53,7 @@ interface MerchantSignupFormData {
 
 export const MerchantSignupPage: React.FC = () => {
   const navigate = useNavigate();
-  const { registerMerchant } = useAuth();
+  const { registerMerchant, loginWithGoogle } = useAuth();
   const { toast } = useToast();
 
   // Form State
@@ -76,15 +76,26 @@ export const MerchantSignupPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await signInWithPopup(firebaseAuth, googleProvider);
-      if (result.user) {
-        if (result.user.displayName) setFullName(result.user.displayName);
-        if (result.user.email) setEmail(result.user.email);
-        if (result.user.phoneNumber) setPhoneNumber(result.user.phoneNumber.replace('+233', '0'));
-        setFirebaseUid(result.user.uid);
-      }
+      // First try to just log them in if they already have an account
+      await loginWithGoogle();
+      navigate('/dashboard');
     } catch (err: any) {
-      if (err?.code !== 'auth/popup-closed-by-user') {
+      if (err?.code === 'auth/popup-closed-by-user') {
+        setIsLoading(false);
+        return;
+      }
+      
+      // If user doesn't exist yet, we capture their Google info to prefill the signup form
+      if (err?.code === 'USER_NOT_REGISTERED' || err?.response?.data?.error?.code === 'USER_NOT_REGISTERED') {
+        const fbUser = err?.response?.data?.error?.firebaseUser || {};
+        if (fbUser.name) setFullName(fbUser.name);
+        if (fbUser.email) setEmail(fbUser.email);
+        if (fbUser.phone) setPhoneNumber(fbUser.phone.replace('+233', '0'));
+        if (fbUser.uid) setFirebaseUid(fbUser.uid);
+        
+        toast.success('Google account linked!', 'Please complete the remaining store details below to finish creating your account.');
+        scrollToForm();
+      } else {
         setError(err?.message || 'Could not connect Google account.');
       }
     } finally {
