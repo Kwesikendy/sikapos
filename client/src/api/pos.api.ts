@@ -39,6 +39,7 @@ export interface SaleReceipt {
   cashier_name?: string;
   subtotal: number;
   tax_amount: number;
+  tax_total?: number;
   grand_total: number;
   payment_method: string;
   amount_tendered: number | null;

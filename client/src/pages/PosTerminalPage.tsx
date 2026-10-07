@@ -39,7 +39,7 @@ interface CartItem {
 
 export const PosTerminalPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user: authUser, tenant: authTenant, logout: authLogout, loginWithPin } = useAuth();
+  const { user: authUser, tenant: authTenant, primaryBranch: authBranch, logout: authLogout, loginWithPin } = useAuth();
 
   // Active cashier & user context
   const [currentUser, setCurrentUser] = useState<any>(authUser);
@@ -915,11 +915,11 @@ export const PosTerminalPage: React.FC = () => {
                 <h3 className="font-extrabold text-sm text-slate-900 uppercase tracking-wider">
                   {currentTenant?.business_name || 'SikaPOS Store'}
                 </h3>
-                {currentBranch && (
-                  <p className="text-[11px] text-slate-500">{currentBranch.name} • {currentBranch.region}</p>
+                {authBranch && (
+                  <p className="text-[11px] text-slate-500">{authBranch.name} • {authBranch.region}</p>
                 )}
-                {currentBranch?.physical_address && (
-                  <p className="text-[10px] text-slate-400">{currentBranch.physical_address}</p>
+                {authBranch?.physical_address && (
+                  <p className="text-[10px] text-slate-400">{authBranch.physical_address}</p>
                 )}
               </div>
 
