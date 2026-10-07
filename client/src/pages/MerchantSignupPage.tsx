@@ -150,34 +150,50 @@ export const MerchantSignupPage: React.FC = () => {
     formRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const normalizeGhanaPhone = (raw: string): string => {
+    let cleaned = raw.replace(/[\s\-().]/g, '');
+    if (cleaned.startsWith('+233')) {
+      cleaned = cleaned.substring(4);
+    } else if (cleaned.startsWith('233')) {
+      cleaned = cleaned.substring(3);
+    }
+    if (cleaned.startsWith('0')) {
+      cleaned = cleaned.substring(1);
+    }
+    if (/^[25]\d{8}$/.test(cleaned)) {
+      return '0' + cleaned;
+    }
+    return raw.replace(/[\s\-().]/g, '');
+  };
+
   const handleInitialSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
     setError(null);
     setFieldErrors({});
 
-    const cleanPhone = phoneNumber.replace(/[\s\-()]/g, '');
+    const formattedPhone = normalizeGhanaPhone(phoneNumber);
 
-    // Allow +233/233 prefix, 10 digits starting with 0, or 9 digits without 0 (e.g. 599295290)
-    let formattedPhone = cleanPhone;
-    if (cleanPhone.startsWith('+233') && cleanPhone.length === 13) {
-      formattedPhone = '0' + cleanPhone.substring(4);
-    } else if (cleanPhone.startsWith('233') && cleanPhone.length === 12) {
-      formattedPhone = '0' + cleanPhone.substring(3);
-    } else if (/^[25]\d{8}$/.test(cleanPhone)) {
-      formattedPhone = '0' + cleanPhone;
-    }
-
-    if (formattedPhone.length < 10) {
+    if (!/^0[25]\d{8}$/.test(formattedPhone)) {
       setError(
-        `Mobile phone has only ${formattedPhone.length} digits. A valid Ghanaian phone number must have 10 digits (e.g. 059 929 5290).`
+        'Please enter a valid 10-digit Ghanaian mobile number (e.g. 059 929 5290 or 024 123 4567).'
       );
       return;
     }
 
-    if (!firebaseUid && password.length < 8) {
-      setError('Password must be at least 8 characters long.');
-      return;
+    if (!firebaseUid) {
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters long.');
+        return;
+      }
+      if (!/\d/.test(password)) {
+        setError('Password must include at least one number.');
+        return;
+      }
+      if (!/[A-Z]/.test(password)) {
+        setError('Password must include at least one uppercase letter (e.g. A-Z).');
+        return;
+      }
     }
 
     if (!hasAgreedToTerms) {
@@ -190,17 +206,17 @@ export const MerchantSignupPage: React.FC = () => {
       setIsLoading(true);
       try {
         await registerMerchant({
-          businessLegalName: `${businessName} Ltd`,
-          businessTradeName: businessName,
+          businessLegalName: `${businessName.trim() || 'My Store'} Ltd`,
+          businessTradeName: businessName.trim() || 'My Store',
           tradeCategory: 'provision_supermarket',
-          ownerFullName: fullName,
-          ownerEmail: email,
+          ownerFullName: fullName.trim() || 'Store Owner',
+          ownerEmail: email.trim(),
           ownerPhone: formattedPhone,
           password: password || 'GoogleAuth2025!',
-          primaryBranchName: branchName || `${businessName} Main Branch`,
+          primaryBranchName: branchName.trim() || `${businessName.trim() || 'My Store'} Main Branch`,
           primaryBranchRegion: 'Greater Accra',
           primaryBranchGps: 'GA-000-0000',
-          primaryBranchAddress: branchName || 'Accra, Ghana',
+          primaryBranchAddress: branchName.trim() || `${businessName.trim() || 'My Store'}, Accra`,
           primaryBranchPhone: formattedPhone,
           firebaseUid,
         });
@@ -265,7 +281,8 @@ export const MerchantSignupPage: React.FC = () => {
     setIsResendingOtp(true);
     setOtpError(null);
     try {
-      const res = await authApi.requestSignupOtp(phoneNumber);
+      const formattedPhone = normalizeGhanaPhone(phoneNumber);
+      const res = await authApi.requestSignupOtp(formattedPhone);
       if (res.debugCode) {
         setDebugOtp(res.debugCode);
         setOtpCode(res.debugCode);
@@ -293,15 +310,7 @@ export const MerchantSignupPage: React.FC = () => {
     setIsVerifyingOtp(true);
     setOtpError(null);
 
-    const cleanPhone = phoneNumber.replace(/[\s\-()]/g, '');
-    let formattedPhone = cleanPhone;
-    if (cleanPhone.startsWith('+233') && cleanPhone.length === 13) {
-      formattedPhone = '0' + cleanPhone.substring(4);
-    } else if (cleanPhone.startsWith('233') && cleanPhone.length === 12) {
-      formattedPhone = '0' + cleanPhone.substring(3);
-    } else if (/^[25]\d{8}$/.test(cleanPhone)) {
-      formattedPhone = '0' + cleanPhone;
-    }
+    const formattedPhone = normalizeGhanaPhone(phoneNumber);
 
     try {
       // Step 2: Verify OTP
@@ -309,17 +318,17 @@ export const MerchantSignupPage: React.FC = () => {
 
       // Step 3: Register Merchant Tenant
       await registerMerchant({
-        businessLegalName: `${businessName} Ltd`,
-        businessTradeName: businessName,
+        businessLegalName: `${businessName.trim() || 'My Store'} Ltd`,
+        businessTradeName: businessName.trim() || 'My Store',
         tradeCategory: 'provision_supermarket',
-        ownerFullName: fullName,
-        ownerEmail: email,
+        ownerFullName: fullName.trim() || 'Store Owner',
+        ownerEmail: email.trim(),
         ownerPhone: formattedPhone,
         password,
-        primaryBranchName: branchName,
+        primaryBranchName: branchName.trim() || `${businessName.trim() || 'My Store'} Main Branch`,
         primaryBranchRegion: 'Greater Accra',
         primaryBranchGps: 'GA-000-0000',
-        primaryBranchAddress: branchName || 'Accra, Ghana',
+        primaryBranchAddress: branchName.trim() || `${businessName.trim() || 'My Store'}, Accra`,
         primaryBranchPhone: formattedPhone,
         firebaseUid: firebaseUid || undefined,
       });
@@ -447,7 +456,7 @@ export const MerchantSignupPage: React.FC = () => {
             <Input
               label="Password"
               type={showPassword ? 'text' : 'password'}
-              helperText={firebaseUid ? "Optional (your Google account manages login)" : "At least 8 characters"}
+              helperText={firebaseUid ? "Optional (your Google account manages login)" : "At least 8 characters, 1 number, and 1 uppercase letter"}
               placeholder={firebaseUid ? "Optional backup password" : "Create a secure password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
