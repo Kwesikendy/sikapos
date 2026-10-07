@@ -78,17 +78,28 @@ class HttpClient {
 
       return json.data as T;
     } catch (err: unknown) {
+      console.error('[SikaPOS API Error]', {
+        endpoint,
+        targetUrl: url,
+        error: err,
+        timestamp: new Date().toISOString(),
+      });
+
       if ((err as ApiError).code) {
         throw err;
       }
+
+      const host = url.startsWith('http')
+        ? new URL(url).host
+        : (typeof window !== 'undefined' ? window.location.host : 'backend');
+
       throw {
         status: 0,
         code: 'NETWORK_ERROR',
-        message: import.meta.env.PROD
-          ? 'Cannot connect to server. The backend may be starting up — please wait a moment and try again.'
-          : 'Could not connect to the backend server. Please check your backend connection.',
+        message: `Cannot connect to server (${host}). The backend may be offline or starting up — please wait a moment and try again.`,
       } as ApiError;
     }
+
 
   }
 

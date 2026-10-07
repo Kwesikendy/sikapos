@@ -32,10 +32,12 @@ export function createApp(): express.Application {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Max-Age', '86400');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
     if (req.method === 'OPTIONS') {
       res.sendStatus(204);
       return;
     }
+
     next();
   });
 
