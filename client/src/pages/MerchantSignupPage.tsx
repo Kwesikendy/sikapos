@@ -108,7 +108,7 @@ export const MerchantSignupPage: React.FC = () => {
   const [otpCode, setOtpCode] = useState('');
   const [otpCarrier, setOtpCarrier] = useState('');
   const [debugOtp, setDebugOtp] = useState<string | null>(null);
-  const formRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isResendingOtp, setIsResendingOtp] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
@@ -322,7 +322,7 @@ export const MerchantSignupPage: React.FC = () => {
         </div>
 
         {/* Clean, Grouped Form applying Proximity Law */}
-        <form onSubmit={handleInitialSubmit} className="space-y-6">
+        <form ref={formRef} onSubmit={handleInitialSubmit} className="space-y-6">
           
           {/* Group 1: Your Details */}
           <FormSection title="1. Your Details">
