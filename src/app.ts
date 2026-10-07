@@ -29,10 +29,15 @@ export function createApp(): express.Application {
       res.setHeader('Access-Control-Allow-Origin', origin ?? '*');
     }
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With');
+    const reqHeaders = req.headers['access-control-request-headers'] as string | undefined;
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      reqHeaders || 'Content-Type,Authorization,Accept,X-Requested-With,ngrok-skip-browser-warning'
+    );
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Max-Age', '86400');
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+
     if (req.method === 'OPTIONS') {
       res.sendStatus(204);
       return;
