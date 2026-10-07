@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ProductService } from '../../services/product.service.ts';
 import { AuthService } from '../../services/auth.service.ts';
+import { TenantService } from '../../services/tenant.service.ts';
 import { createAuthMiddleware } from '../../middleware/auth.ts';
 import { enforceTenantContext } from '../../middleware/tenant.ts';
 import { requirePermission } from '../../middleware/rbac.ts';
@@ -10,35 +11,44 @@ export const productRouter = Router();
 
 const productService = new ProductService();
 const authService = new AuthService();
+const tenantService = new TenantService();
 const authenticate = createAuthMiddleware(authService);
 
 // GET /api/v1/products
-productRouter.get('/', authenticate, enforceTenantContext, (req, res) => {
-  const tenantId = req.tenantContext!.tenantId;
-  const search = req.query.search ? String(req.query.search) : undefined;
-  const categoryId = req.query.categoryId ? String(req.query.categoryId) : undefined;
+productRouter.get('/', authenticate, enforceTenantContext, (req, res, next) => {
+  try {
+    const tenantId = req.tenantContext!.tenantId;
+    const search = req.query.search ? String(req.query.search) : undefined;
+    const categoryId = req.query.categoryId ? String(req.query.categoryId) : undefined;
 
-  const products = productService.getProducts(tenantId, { search, categoryId });
-  const categories = productService.getCategories(tenantId);
+    const products = productService.getProducts(tenantId, { search, categoryId });
+    const categories = productService.getCategories(tenantId);
 
-  res.json({
-    success: true,
-    data: {
-      products,
-      categories
-    }
-  });
+    res.json({
+      success: true,
+      data: {
+        products,
+        categories
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // GET /api/v1/products/categories
-productRouter.get('/categories', authenticate, enforceTenantContext, (req, res) => {
-  const tenantId = req.tenantContext!.tenantId;
-  const categories = productService.getCategories(tenantId);
+productRouter.get('/categories', authenticate, enforceTenantContext, (req, res, next) => {
+  try {
+    const tenantId = req.tenantContext!.tenantId;
+    const categories = productService.getCategories(tenantId);
 
-  res.json({
-    success: true,
-    data: categories
-  });
+    res.json({
+      success: true,
+      data: categories
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // POST /api/v1/products/categories
@@ -80,12 +90,15 @@ productRouter.post('/', authenticate, enforceTenantContext, requirePermission('p
       isTaxable
     });
 
-    if (initialStock && initialStock > 0 && branchId) {
-      productService.adjustStock(tenantId, branchId, product.id, initialStock);
-      // Reload product to get stock
-      const productWithStock = productService.getProductById(tenantId, product.id);
-      res.status(201).json({ success: true, data: productWithStock });
-      return;
+    if (initialStock && initialStock > 0) {
+      const targetBranchId = branchId || req.tenantContext?.branchId || tenantService.getBranches(tenantId).find(b => b.is_primary)?.id;
+      if (targetBranchId) {
+        productService.adjustStock(tenantId, targetBranchId, product.id, initialStock);
+        // Reload product to get stock
+        const productWithStock = productService.getProductById(tenantId, product.id);
+        res.status(201).json({ success: true, data: productWithStock });
+        return;
+      }
     }
 
     res.status(201).json({

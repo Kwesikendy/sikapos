@@ -14,7 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import { Package, Plus, Search, RefreshCw, Barcode, Tag, CheckCircle2 } from 'lucide-react';
 
 export const InventoryPage: React.FC = () => {
-  const { tenant } = useAuth();
+  const { tenant, primaryBranch } = useAuth();
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,7 +37,7 @@ export const InventoryPage: React.FC = () => {
       const res = await posApi.getProducts();
       setProducts(res.products || []);
     } catch (err: any) {
-      setError('Failed to load store inventory.');
+      setError(err?.message || 'Failed to load store inventory.');
     } finally {
       setIsLoading(false);
     }
@@ -68,6 +68,7 @@ export const InventoryPage: React.FC = () => {
         sellingPrice: priceNum,
         costPrice: parseFloat(formCostPrice) || priceNum * 0.7,
         initialStock: parseInt(formStock, 10) || 0,
+        branchId: primaryBranch?.id,
         barcode: formBarcode.trim() || undefined,
       });
 

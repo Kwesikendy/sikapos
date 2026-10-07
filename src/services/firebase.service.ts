@@ -211,10 +211,10 @@ export class FirebaseService {
       const roleRow = this.db.prepare('SELECT id FROM roles WHERE name = ?').get(roleName) as any;
       if (roleRow) {
         this.db.prepare(`
-          INSERT INTO user_roles (id, user_id, role_id)
+          INSERT INTO user_roles (user_id, role_id, tenant_id)
           VALUES (?, ?, ?)
           ON CONFLICT(user_id, role_id) DO NOTHING
-        `).run(`ur_${firestoreUserData.id}_${roleName}`, firestoreUserData.id, roleRow.id);
+        `).run(firestoreUserData.id, roleRow.id, tenantId);
       }
 
       const summary = this.getUserSummary(firestoreUserData.id);

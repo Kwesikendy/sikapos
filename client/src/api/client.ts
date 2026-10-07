@@ -1,9 +1,16 @@
 import { ApiError } from '../types/auth.types';
 
-const API_BASE = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api/v1`
-  : '/api/v1';
+const getDefaultApiBase = () => {
+  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) {
+    return `${import.meta.env.VITE_API_URL}/api/v1`;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    return 'https://sikapos.onrender.com/api/v1';
+  }
+  return '/api/v1';
+};
 
+const API_BASE = getDefaultApiBase();
 
 class HttpClient {
   private token: string | null = null;
@@ -43,7 +50,6 @@ class HttpClient {
       headers['ngrok-skip-browser-warning'] = 'true';
     }
 
-
     if (this.token) {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
@@ -54,7 +60,13 @@ class HttpClient {
         headers,
       });
 
-      const json = await response.json().catch(() => null);
+      const text = await response.text();
+      let json: any = null;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        json = null;
+      }
 
       if (!response.ok) {
         const errorData = json?.error || {};
@@ -80,7 +92,19 @@ class HttpClient {
         throw error;
       }
 
-      return json.data as T;
+      if (json === null || json === undefined) {
+        throw {
+          status: response.status,
+          code: 'INVALID_RESPONSE',
+          message: 'Received invalid non-JSON response from server.',
+        } as ApiError;
+      }
+
+      if (typeof json === 'object' && 'data' in json) {
+        return json.data as T;
+      }
+
+      return json as T;
     } catch (err: unknown) {
       console.error('[SikaPOS API Error]', {
         endpoint,

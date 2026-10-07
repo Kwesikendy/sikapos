@@ -45,11 +45,20 @@ export function initializeDatabase(db?: Database.Database): Database.Database {
   safeAddColumn('sales', 'customer_phone',    'TEXT');
   safeAddColumn('sales', 'tax_breakdown_json', 'TEXT');
 
-  // products: reconcile base_price, is_taxable, status, selling_price
+  // products: reconcile base_price, is_taxable, status, selling_price, category_id, sku, description
+  safeAddColumn('products', 'category_id', 'TEXT');
+  safeAddColumn('products', 'sku', 'TEXT');
+  safeAddColumn('products', 'description', 'TEXT');
   safeAddColumn('products', 'base_price', 'REAL NOT NULL DEFAULT 0');
   safeAddColumn('products', 'is_taxable', 'INTEGER NOT NULL DEFAULT 1');
   safeAddColumn('products', 'status', 'TEXT NOT NULL DEFAULT "active"');
   safeAddColumn('products', 'selling_price', 'REAL NOT NULL DEFAULT 0');
+  try {
+    database.exec('CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id)');
+    database.exec('CREATE INDEX IF NOT EXISTS idx_products_sku ON products(sku)');
+  } catch {
+    // Ignore index creation error
+  }
   // users: firebase_uid for Firebase Auth integration
   safeAddColumn('users', 'firebase_uid', 'TEXT');
   try {
