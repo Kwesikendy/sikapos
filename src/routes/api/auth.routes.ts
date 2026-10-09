@@ -27,6 +27,37 @@ const authenticate = createAuthMiddleware(authService);
 const otpLimiter = createRateLimiter({ keyPrefix: 'rl_otp' });
 const loginLimiter = createRateLimiter({ keyPrefix: 'rl_login' });
 
+// Common Mappers to standardize backend SQLite fields to Frontend camelCase contracts
+const mapTenant = (t: any) => t ? {
+  id: t.id,
+  slug: t.slug,
+  businessName: t.business_name,
+  legalName: t.legal_name,
+  tradeCategory: t.trade_category,
+  currency: t.currency_code,
+  taxRegistrationNumber: t.tax_registration_number || null,
+  taxProfile: t.tax_profile || 'none',
+  status: t.status,
+  logo_url: t.logo_url
+} : null;
+
+const mapUser = (u: any) => u ? {
+  id: u.id,
+  tenantId: u.tenant_id,
+  email: u.email,
+  phone: u.phone_number,
+  fullName: u.full_name,
+  role: u.roles?.[0] || 'cashier',
+  isActive: u.is_active,
+  avatarUrl: null
+} : null;
+
+const mapBranch = (b: any) => b ? {
+  ...b,
+  tenantId: b.tenant_id,
+  isPrimary: b.is_primary === 1 || b.is_primary === true,
+} : null;
+
 /**
  * Step 1: Send OTP for merchant phone verification
  */
@@ -296,10 +327,12 @@ authRouter.post('/login', loginLimiter, async (req, res, next) => {
     res.json({
       success: true,
       data: {
-        ...result,
-        tenant,
-        primaryBranch,
-        branches
+        token: result.token,
+        user: mapUser(result.user),
+        tenantId: result.tenantId,
+        tenant: mapTenant(tenant),
+        primaryBranch: mapBranch(primaryBranch),
+        branches: branches.map(mapBranch)
       }
     });
   } catch (err: unknown) {
@@ -374,11 +407,11 @@ authRouter.post('/firebase-login', loginLimiter, async (req, res, next) => {
       success: true,
       data: {
         token: sessionToken,
-        user: restored.user,
+        user: mapUser(restored.user),
         tenantId: targetTenantId,
-        tenant,
-        primaryBranch,
-        branches
+        tenant: mapTenant(tenant),
+        primaryBranch: mapBranch(primaryBranch),
+        branches: branches.map(mapBranch)
       }
     });
   } catch (err: any) {
@@ -539,11 +572,11 @@ authRouter.post('/login-otp/verify', otpLimiter, validateBody([
     success: true,
     data: {
       token: sessionToken,
-      user: userSummary,
+      user: mapUser(userSummary),
       tenantId: targetUser.tenant_id,
-      tenant,
-      primaryBranch,
-      branches
+      tenant: mapTenant(tenant),
+      primaryBranch: mapBranch(primaryBranch),
+      branches: branches.map(mapBranch)
     }
   });
 });
@@ -573,10 +606,12 @@ authRouter.post('/login-pin', loginLimiter, validateBody([
     res.json({
       success: true,
       data: {
-        ...result,
-        tenant,
-        primaryBranch,
-        branches
+        token: result.token,
+        user: mapUser(result.user),
+        tenantId: result.tenantId,
+        tenant: mapTenant(tenant),
+        primaryBranch: mapBranch(primaryBranch),
+        branches: branches.map(mapBranch)
       }
     });
   } catch (err: unknown) {
@@ -599,23 +634,13 @@ authRouter.get('/me', authenticate, (req, res) => {
   const branches = tenantService.getBranches(req.tenantId!);
   const primaryBranch = branches.find(b => b.is_primary) || branches[0] || null;
 
-  const tenant = tenantRaw ? {
-    id: tenantRaw.id,
-    businessName: tenantRaw.business_name,
-    legalName: tenantRaw.legal_name,
-    tradeCategory: tenantRaw.trade_category,
-    currency: tenantRaw.currency_code,
-    status: tenantRaw.status,
-    logo_url: tenantRaw.logo_url
-  } : null;
-
   res.json({
     success: true,
     data: {
-      user: req.user,
-      tenant,
-      primaryBranch,
-      branches
+      user: mapUser(req.user),
+      tenant: mapTenant(tenantRaw),
+      primaryBranch: mapBranch(primaryBranch),
+      branches: branches.map(mapBranch)
     }
   });
 });

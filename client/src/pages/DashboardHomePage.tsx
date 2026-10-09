@@ -161,7 +161,7 @@ export const DashboardHomePage: React.FC = () => {
               transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
               className="text-2xl sm:text-3xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-emerald-600 to-slate-900 bg-[length:200%_auto]"
             >
-              {tenant?.businessName || 'SikaPOS Store Overview'}
+              {tenant?.businessName || (tenant as any)?.business_name || 'SikaPOS Store Overview'}
             </motion.h1>
           </div>
 

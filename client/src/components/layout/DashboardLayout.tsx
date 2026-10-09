@@ -47,18 +47,18 @@ export const DashboardLayout: React.FC = () => {
   const location = useLocation();
   const { user, tenant, primaryBranch, logout } = useAuth();
 
-  const displayName = user?.fullName || 'Store Owner';
+  const displayName: string = user?.fullName || (user as any)?.full_name || user?.email || user?.phone || (user as any)?.phone_number || 'Store Owner';
   const firstName = displayName.split(' ')[0] || 'Merchant';
-  const storeName = tenant?.businessName || 'SikaPOS Store';
+  const storeName = tenant?.businessName || (tenant as any)?.business_name || 'SikaPOS Store';
   const branchName = primaryBranch?.name || 'Main Branch';
   const initials = displayName
     .split(' ')
     .filter(Boolean)
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2) || 'SO';
-  const roleLabel = user?.role === 'owner' ? 'Owner / Admin' : user?.role ? user.role.toUpperCase() : 'Owner / Admin';
+  const roleLabel = user?.role === 'owner' || (user as any)?.roles?.includes('Owner') ? 'Owner / Admin' : user?.role ? user.role.toUpperCase() : 'Owner / Admin';
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex overflow-hidden font-sans text-slate-900 selection:bg-emerald-100 selection:text-emerald-900 relative">

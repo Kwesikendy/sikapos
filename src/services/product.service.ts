@@ -51,8 +51,12 @@ export class ProductService {
     const params: (string | number)[] = [tenantId, tenantId];
 
     if (options?.categoryId && options.categoryId !== 'all') {
-      sql += ` AND p.category_id = ?`;
-      params.push(options.categoryId);
+      if (options.categoryId === 'General') {
+        sql += ` AND (p.category_id IS NULL OR c.name = 'General')`;
+      } else {
+        sql += ` AND (p.category_id = ? OR c.name = ?)`;
+        params.push(options.categoryId, options.categoryId);
+      }
     }
 
     if (options?.search && options.search.trim().length > 0) {
