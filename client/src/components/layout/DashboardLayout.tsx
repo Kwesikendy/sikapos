@@ -78,32 +78,32 @@ export const DashboardLayout: React.FC = () => {
         transition={{ type: 'spring', stiffness: 350, damping: 30 }}
         className="hidden lg:flex relative z-30 h-screen flex-col bg-white/75 backdrop-blur-2xl border-r border-slate-200/50 shadow-[4px_0_30px_rgba(0,0,0,0.02)]"
       >
-        {/* Brand / Store Logo Surface with Official SikaPOS Logo */}
         <div className="h-20 flex items-center px-4 sm:px-5 border-b border-slate-100/80 shrink-0">
-          <NavLink to="/dashboard" className="flex items-center gap-3 shrink-0 focus:outline-none">
+          <NavLink to="/dashboard" className="flex items-center gap-3 shrink-0 focus:outline-none w-full">
             <img
-              src="/logo.png"
-              alt="SikaPOS"
-              className="h-10 w-auto object-contain rounded-xl drop-shadow-xs transition-transform hover:scale-105"
+              src={tenant?.logo_url || '/logo.png'}
+              alt={storeName}
+              className="h-10 w-10 object-cover rounded-lg drop-shadow-xs transition-transform hover:scale-105 shrink-0 bg-white"
             />
+            <AnimatePresence>
+              {!isSidebarCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8, transition: { duration: 0.1 } }}
+                  className="min-w-0 flex flex-col justify-center"
+                >
+                  <h1 className="text-sm font-extrabold text-slate-900 tracking-tight truncate leading-tight">
+                    {storeName}
+                  </h1>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Powered by</span>
+                    <img src="/logo.png" alt="SikaPOS" className="h-2.5 w-auto object-contain opacity-80" />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </NavLink>
-          <AnimatePresence>
-            {!isSidebarCollapsed && (
-              <motion.div
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8, transition: { duration: 0.1 } }}
-                className="ml-2.5 min-w-0"
-              >
-                <h1 className="text-[13px] font-extrabold text-slate-900 tracking-tight truncate leading-tight">
-                  {storeName}
-                </h1>
-                <p className="text-[9px] uppercase tracking-widest text-[#0D5C3A] font-extrabold truncate">
-                  {branchName}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
 
         {/* Navigation Items */}
@@ -192,13 +192,16 @@ export const DashboardLayout: React.FC = () => {
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <NavLink to="/dashboard" className="lg:hidden flex items-center gap-2.5 shrink-0 focus:outline-none">
               <img
-                src="/logo.png"
-                alt="SikaPOS"
-                className="h-8 w-auto object-contain rounded-lg drop-shadow-xs"
+                src={tenant?.logo_url || '/logo.png'}
+                alt={storeName}
+                className="h-8 w-8 object-cover rounded-md drop-shadow-xs bg-white"
               />
               <div className="min-w-0">
                 <h1 className="text-xs font-black text-slate-900 truncate leading-tight">{storeName}</h1>
-                <span className="text-[9px] font-bold text-[#0D5C3A] uppercase tracking-wider block truncate">{branchName}</span>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Powered by</span>
+                  <img src="/logo.png" alt="SikaPOS" className="h-2 w-auto object-contain opacity-70" />
+                </div>
               </div>
             </NavLink>
 
@@ -341,10 +344,13 @@ export const DashboardLayout: React.FC = () => {
               {/* Drawer Header */}
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
-                  <img src="/logo.png" alt="SikaPOS" className="h-8 w-auto object-contain rounded-lg" />
-                  <div>
-                    <h2 className="text-sm font-black text-slate-900 leading-tight">{storeName}</h2>
-                    <span className="text-[10px] font-bold text-[#0D5C3A] uppercase tracking-wide">{branchName}</span>
+                  <img src={tenant?.logo_url || '/logo.png'} alt={storeName} className="h-8 w-8 object-cover rounded-md bg-white" />
+                  <div className="min-w-0">
+                    <h2 className="text-sm font-black text-slate-900 leading-tight truncate">{storeName}</h2>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Powered by</span>
+                      <img src="/logo.png" alt="SikaPOS" className="h-2.5 w-auto object-contain opacity-70" />
+                    </div>
                   </div>
                 </div>
                 <button
