@@ -28,6 +28,7 @@ app.listen(primaryPort, config.host, () => {
 // Dual-listener support: ensure both port 3000 and 3003 are reachable locally
 // so PWA service worker caches, previous browser tabs, and Render/Vite work interchangeably
 const secondaryPort = primaryPort === 3000 ? 3003 : (primaryPort === 3003 ? 3000 : null);
+/* 
 if (secondaryPort) {
   try {
     const secondaryServer = app.listen(secondaryPort, config.host, () => {
@@ -42,4 +43,5 @@ if (secondaryPort) {
     // Port in use or disallowed, ignore safely
   }
 }
+*/
 

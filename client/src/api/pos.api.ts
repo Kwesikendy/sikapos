@@ -124,6 +124,23 @@ export const posApi = {
     return apiClient.post<ProductItem>('/products', product);
   },
 
+  updateProduct: async (id: string, product: {
+    name?: string;
+    barcode?: string;
+    sku?: string;
+    categoryId?: string;
+    costPrice?: number;
+    sellingPrice?: number;
+    isTaxable?: boolean;
+    status?: string;
+  }): Promise<ProductItem> => {
+    return apiClient.put<ProductItem>(`/products/${id}`, product);
+  },
+
+  adjustStock: async (id: string, branchId: string, quantity: number): Promise<ProductItem> => {
+    return apiClient.post<ProductItem>(`/products/${id}/stock`, { branchId, quantity });
+  },
+
   // Sales
   createSale: async (payload: CreateSalePayload): Promise<SaleReceipt> => {
     return apiClient.post<SaleReceipt>('/sales', payload);

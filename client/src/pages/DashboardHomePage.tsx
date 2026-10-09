@@ -8,6 +8,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { posApi, SaleReceipt, ProductItem } from '../api/pos.api';
 import { formatGHS, cn } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/ui/Toast';
 import { 
   TrendingUp, 
   ArrowRight, 
@@ -33,6 +34,8 @@ export const DashboardHomePage: React.FC = () => {
   const [productsData, setProductsData] = useState<{ products: ProductItem[] } | null>(null);
   const [dateRange, setDateRange] = useState<'today' | '7days' | 'month'>('today');
   const [activeChartHover, setActiveChartHover] = useState<{ x: number; y: number; label: string; val: number } | null>(null);
+  const { toast } = useToast();
+  const [hasNotified, setHasNotified] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,8 +61,15 @@ export const DashboardHomePage: React.FC = () => {
   const momoTotal = salesData?.summary?.momoTotal || 0;
   const avgOrderValue = transactionCount > 0 ? totalRevenue / transactionCount : 0;
   const allProducts = productsData?.products || [];
-  const lowStockItems = allProducts.filter(p => (p.total_stock ?? 50) < 10);
+  const lowStockItems = allProducts.filter(p => (p.total_stock ?? 50) <= 20);
   const recentSales = salesData?.sales || [];
+
+  useEffect(() => {
+    if (!isLoading && !hasNotified && lowStockItems.length > 0) {
+      toast.warning('Low Stock Alert', `You have ${lowStockItems.length} item(s) running low on stock.`);
+      setHasNotified(true);
+    }
+  }, [isLoading, lowStockItems, hasNotified, toast]);
 
   // Chart data simulation points for the primary revenue visual anchor
   const chartPoints = dateRange === 'today'
@@ -437,7 +447,7 @@ export const DashboardHomePage: React.FC = () => {
               <div className="p-6 bg-emerald-50/50 rounded-2xl border border-emerald-200/60 text-center space-y-2 my-4">
                 <CheckCircle2 className="w-8 h-8 text-[#0D5C3A] mx-auto" />
                 <p className="text-sm font-extrabold text-slate-900">All Items Well Stocked</p>
-                <p className="text-xs text-slate-500">No items are currently below the safety threshold of 10 units.</p>
+                <p className="text-xs text-slate-500">No items are currently below the safety threshold of 20 units.</p>
               </div>
             ) : (
               <div className="space-y-3">

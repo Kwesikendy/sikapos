@@ -11,10 +11,12 @@ import { TableSkeleton } from '../components/ui/Skeletons';
 import { posApi, ProductItem } from '../api/pos.api';
 import { formatGHS } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
-import { Package, Plus, Search, RefreshCw, Barcode, Tag, CheckCircle2 } from 'lucide-react';
+import { useToast } from '../components/ui/Toast';
+import { Package, Plus, Search, RefreshCw, Barcode, Tag, CheckCircle2, Edit3 } from 'lucide-react';
 
 export const InventoryPage: React.FC = () => {
   const { tenant, primaryBranch } = useAuth();
+  const { toast } = useToast();
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,6 +24,11 @@ export const InventoryPage: React.FC = () => {
 
   // Add Product Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Edit Product Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
+  const [formRestockAmount, setFormRestockAmount] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [formName, setFormName] = useState('');
   const [formBasePrice, setFormBasePrice] = useState('');
@@ -46,6 +53,58 @@ export const InventoryPage: React.FC = () => {
   useEffect(() => {
     fetchInventory();
   }, []);
+
+  const openEditModal = (p: ProductItem) => {
+    setSelectedProduct(p);
+    setFormName(p.name);
+    setFormBasePrice(p.base_price.toString());
+    setFormCostPrice((p.cost_price || 0).toString());
+    setFormBarcode(p.barcode || '');
+    setFormIsTaxable(p.is_taxable === 1);
+    setFormRestockAmount('0');
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProduct) return;
+    if (!formName.trim()) {
+      setError('Product name is required.');
+      return;
+    }
+    const priceNum = parseFloat(formBasePrice);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      setError('Please enter a valid selling price.');
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      await posApi.updateProduct(selectedProduct.id, {
+        name: formName.trim(),
+        sellingPrice: priceNum,
+        costPrice: parseFloat(formCostPrice) || priceNum * 0.7,
+        barcode: formBarcode.trim() || undefined,
+        isTaxable: formIsTaxable,
+      });
+
+      const restockNum = parseInt(formRestockAmount, 10);
+      if (restockNum > 0 && primaryBranch?.id) {
+        await posApi.adjustStock(selectedProduct.id, primaryBranch.id, restockNum);
+      }
+
+      toast.success('Product Updated', `${formName} has been successfully updated.`);
+      
+      setIsEditModalOpen(false);
+      await fetchInventory();
+    } catch (err: any) {
+      setError(err.message || 'Failed to update product.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,6 +242,7 @@ export const InventoryPage: React.FC = () => {
                     <th className="py-3.5 px-4 text-right">Selling Price</th>
                     <th className="py-3.5 px-4 text-center">Stock Level</th>
                     <th className="py-3.5 px-6 text-center">Tax Status</th>
+                    <th className="py-3.5 px-6 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
@@ -219,6 +279,17 @@ export const InventoryPage: React.FC = () => {
                           ) : (
                             <span className="text-xs text-slate-400">Tax Exempt</span>
                           )}
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 text-xs font-bold px-3 border-slate-200 text-slate-600 hover:text-[#0D5C3A]" 
+                            leftIcon={<Edit3 className="w-3 h-3" />}
+                            onClick={() => openEditModal(p)}
+                          >
+                            Edit
+                          </Button>
                         </td>
                       </tr>
                     );
@@ -302,6 +373,83 @@ export const InventoryPage: React.FC = () => {
             </Button>
             <Button type="submit" isLoading={isSaving} loadingText="Adding Product...">
               Add Product
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Product Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Inventory Product"
+        description="Update pricing, barcode, or restock items."
+      >
+        <form onSubmit={handleEditProduct} className="space-y-4 pt-2">
+          <Input
+            label="Product Name"
+            placeholder="e.g. Milo Choc Malt 400g"
+            value={formName}
+            onChange={(e) => setFormName(e.target.value)}
+            required
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <Input
+              label="Selling Price (GH₵)"
+              type="number"
+              step="0.01"
+              placeholder="48.00"
+              value={formBasePrice}
+              onChange={(e) => setFormBasePrice(e.target.value)}
+              required
+            />
+            <Input
+              label="Cost Price (GH₵)"
+              type="number"
+              step="0.01"
+              placeholder="35.00"
+              value={formCostPrice}
+              onChange={(e) => setFormCostPrice(e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <Input
+              label="Restock Quantity (Add to existing)"
+              type="number"
+              placeholder="0"
+              value={formRestockAmount}
+              onChange={(e) => setFormRestockAmount(e.target.value)}
+            />
+            <Input
+              label="Barcode / EAN (Optional)"
+              placeholder="e.g. 600123456789"
+              value={formBarcode}
+              onChange={(e) => setFormBarcode(e.target.value)}
+              startIcon={<Barcode className="w-4 h-4 text-slate-400" />}
+            />
+          </div>
+
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              type="checkbox"
+              id="isTaxableEdit"
+              checked={formIsTaxable}
+              onChange={(e) => setFormIsTaxable(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-[#0D5C3A] focus:ring-[#0D5C3A]"
+            />
+            <label htmlFor="isTaxableEdit" className="text-xs font-bold text-slate-700 cursor-pointer">
+              Apply Standard GRA Taxes (VAT + NHIL + GETFund) on checkout
+            </label>
+          </div>
+
+          <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+            <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={isSaving} loadingText="Saving...">
+              Save Changes
             </Button>
           </div>
         </form>
