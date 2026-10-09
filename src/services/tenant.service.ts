@@ -263,6 +263,7 @@ export class TenantService {
     legalName?: string;
     businessName?: string;
     tradeCategory?: string;
+    logoUrl?: string;
     primaryBranch?: {
       name?: string;
       region?: string;
@@ -272,12 +273,13 @@ export class TenantService {
     };
   }): { tenant: Tenant; primaryBranch: Branch | null } {
     const now = new Date().toISOString();
-    if (params.legalName || params.businessName || params.tradeCategory) {
+    if (params.legalName || params.businessName || params.tradeCategory || params.logoUrl !== undefined) {
       const updates: string[] = [];
-      const values: (string | number)[] = [];
+      const values: (string | number | null)[] = [];
       if (params.legalName) { updates.push('legal_name = ?'); values.push(params.legalName); }
       if (params.businessName) { updates.push('business_name = ?'); values.push(params.businessName); }
       if (params.tradeCategory) { updates.push('trade_category = ?'); values.push(params.tradeCategory); }
+      if (params.logoUrl !== undefined) { updates.push('logo_url = ?'); values.push(params.logoUrl || null); }
       updates.push('updated_at = ?'); values.push(now);
       values.push(tenantId);
       this.db.prepare(`UPDATE tenants SET ${updates.join(', ')} WHERE id = ?`).run(...values);

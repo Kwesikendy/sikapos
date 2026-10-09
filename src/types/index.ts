@@ -29,6 +29,7 @@ export interface Tenant {
   trade_category: 'provision_supermarket' | 'pharmacy' | 'fashion' | 'electronics' | 'general_retail';
   currency_code: string; // Default 'GHS'
   status: 'active' | 'suspended' | 'trial';
+  logo_url?: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -19,6 +19,7 @@ export interface Tenant {
   taxRegistrationNumber?: string | null;
   taxProfile: 'vat_standard' | 'vat_flat' | 'none';
   status: 'active' | 'suspended' | 'trial';
+  logo_url?: string | null;
 }
 
 export interface Branch {

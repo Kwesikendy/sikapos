@@ -768,6 +768,9 @@ export const POSPage: React.FC = () => {
               {/* Printable Receipt Card */}
               <div id="printable-pos-receipt" className="printable-receipt bg-white border border-slate-200 rounded-2xl p-5 space-y-4 text-slate-900 shadow-xs">
                 <div className="text-center pb-3 border-b border-dashed border-slate-300 space-y-1">
+                  {tenant?.logo_url && (
+                    <img src={tenant.logo_url} alt="Store Logo" className="mx-auto h-12 object-contain mb-2" />
+                  )}
                   <h3 className="text-lg font-black tracking-tight text-slate-900 uppercase">
                     {tenant?.businessName || 'SikaPOS Store'}
                   </h3>

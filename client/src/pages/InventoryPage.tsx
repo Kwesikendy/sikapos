@@ -36,6 +36,7 @@ export const InventoryPage: React.FC = () => {
   const [formStock, setFormStock] = useState('50');
   const [formBarcode, setFormBarcode] = useState('');
   const [formIsTaxable, setFormIsTaxable] = useState(true);
+  const [formImageUrl, setFormImageUrl] = useState('');
 
   const fetchInventory = async () => {
     setIsLoading(true);
@@ -61,6 +62,7 @@ export const InventoryPage: React.FC = () => {
     setFormCostPrice((p.cost_price || 0).toString());
     setFormBarcode(p.barcode || '');
     setFormIsTaxable(p.is_taxable === 1);
+    setFormImageUrl(p.image_url || '');
     setFormRestockAmount('0');
     setIsEditModalOpen(true);
   };
@@ -87,6 +89,7 @@ export const InventoryPage: React.FC = () => {
         sellingPrice: priceNum,
         costPrice: parseFloat(formCostPrice) || priceNum * 0.7,
         barcode: formBarcode.trim() || undefined,
+        imageUrl: formImageUrl || undefined,
         isTaxable: formIsTaxable,
       });
 
@@ -129,6 +132,7 @@ export const InventoryPage: React.FC = () => {
         initialStock: parseInt(formStock, 10) || 0,
         branchId: primaryBranch?.id,
         barcode: formBarcode.trim() || undefined,
+        imageUrl: formImageUrl || undefined,
       });
 
       // Reset form & reload
@@ -137,6 +141,7 @@ export const InventoryPage: React.FC = () => {
       setFormCostPrice('');
       setFormStock('50');
       setFormBarcode('');
+      setFormImageUrl('');
       setIsAddModalOpen(false);
       await fetchInventory();
     } catch (err: any) {
@@ -254,10 +259,21 @@ export const InventoryPage: React.FC = () => {
                     return (
                       <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="py-4 px-6">
-                          <div className="font-bold text-slate-900">{p.name}</div>
-                          {p.category_name && (
-                            <div className="text-xs text-slate-400 mt-0.5">{p.category_name}</div>
-                          )}
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
+                              {p.image_url ? (
+                                <img src={p.image_url} alt={p.name} className="w-full h-full object-cover bg-white" />
+                              ) : (
+                                <Package className="w-5 h-5 text-slate-300" />
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-bold text-slate-900">{p.name}</div>
+                              {p.category_name && (
+                                <div className="text-xs text-slate-400 mt-0.5">{p.category_name}</div>
+                              )}
+                            </div>
+                          </div>
                         </td>
                         <td className="py-4 px-4 text-slate-500 font-mono text-xs">
                           {p.barcode || p.sku || 'No Barcode'}
@@ -309,6 +325,34 @@ export const InventoryPage: React.FC = () => {
         description="Enter product pricing, barcode, and initial stock level."
       >
         <form onSubmit={handleCreateProduct} className="space-y-4 pt-2">
+          <div className="flex items-start gap-4 mb-4">
+            <div className="w-20 h-20 bg-slate-100 rounded-xl border border-dashed border-slate-300 flex items-center justify-center shrink-0 overflow-hidden relative">
+              {formImageUrl ? (
+                <img src={formImageUrl} alt="Product" className="w-full h-full object-cover bg-white" />
+              ) : (
+                <Package className="w-8 h-8 text-slate-300" />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                title="Upload Product Image"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => setFormImageUrl(reader.result as string);
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+            </div>
+            <div className="flex-1 space-y-1 mt-2">
+              <label className="text-sm font-bold text-slate-700">Product Image <span className="text-slate-400 font-normal">(Optional)</span></label>
+              <p className="text-xs text-slate-500">Upload an image of the product to make it easier for cashiers to identify on the POS terminal.</p>
+            </div>
+          </div>
+
           <Input
             label="Product Name"
             placeholder="e.g. Milo Choc Malt 400g"
@@ -386,6 +430,34 @@ export const InventoryPage: React.FC = () => {
         description="Update pricing, barcode, or restock items."
       >
         <form onSubmit={handleEditProduct} className="space-y-4 pt-2">
+          <div className="flex items-start gap-4 mb-4">
+            <div className="w-20 h-20 bg-slate-100 rounded-xl border border-dashed border-slate-300 flex items-center justify-center shrink-0 overflow-hidden relative">
+              {formImageUrl ? (
+                <img src={formImageUrl} alt="Product" className="w-full h-full object-cover bg-white" />
+              ) : (
+                <Package className="w-8 h-8 text-slate-300" />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                title="Upload Product Image"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => setFormImageUrl(reader.result as string);
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+            </div>
+            <div className="flex-1 space-y-1 mt-2">
+              <label className="text-sm font-bold text-slate-700">Product Image <span className="text-slate-400 font-normal">(Optional)</span></label>
+              <p className="text-xs text-slate-500">Update the product image.</p>
+            </div>
+          </div>
+
           <Input
             label="Product Name"
             placeholder="e.g. Milo Choc Malt 400g"

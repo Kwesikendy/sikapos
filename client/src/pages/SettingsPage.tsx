@@ -12,6 +12,7 @@ import { Settings, Store, MapPin, ShieldCheck, CheckCircle2 } from 'lucide-react
 export const SettingsPage: React.FC = () => {
   const { tenant, primaryBranch, setTenant, setPrimaryBranch, checkAuth } = useAuth();
   const [businessName, setBusinessName] = useState(tenant?.businessName || '');
+  const [logoUrl, setLogoUrl] = useState(tenant?.logo_url || '');
   const [branchName, setBranchName] = useState(primaryBranch?.name || '');
   const [region, setRegion] = useState(primaryBranch?.region || 'Greater Accra');
   const [gps, setGps] = useState(primaryBranch?.gps_digital_address || 'GA-000-0000');
@@ -23,7 +24,10 @@ export const SettingsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (tenant) setBusinessName(tenant.businessName);
+    if (tenant) {
+      setBusinessName(tenant.businessName);
+      if (tenant.logo_url) setLogoUrl(tenant.logo_url);
+    }
     if (primaryBranch) {
       setBranchName(primaryBranch.name);
       if (primaryBranch.region) setRegion(primaryBranch.region);
@@ -48,6 +52,7 @@ export const SettingsPage: React.FC = () => {
       await posApi.updateStoreSetup({
         businessName: businessName.trim(),
         tradeCategory: tenant?.tradeCategory || 'provision_supermarket',
+        logoUrl,
         primaryBranch: {
           name: branchName.trim() || 'Main Branch',
           region,
@@ -106,13 +111,39 @@ export const SettingsPage: React.FC = () => {
                 <Store className="w-5 h-5 text-[#0D5C3A]" /> Store Identity
               </h3>
 
-              <Input
-                label="Business / Store Name"
-                placeholder="e.g. Mastermade Solutions Mart"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                required
-              />
+              <div className="flex flex-col sm:flex-row gap-6 items-start">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 bg-slate-100 rounded-2xl border-2 border-dashed border-slate-300 flex items-center justify-center shrink-0 overflow-hidden relative">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Store Logo" className="w-full h-full object-contain bg-white" />
+                  ) : (
+                    <Store className="w-10 h-10 text-slate-300" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    title="Upload Logo"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => setLogoUrl(reader.result as string);
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </div>
+                <div className="flex-1 space-y-4 w-full">
+                  <Input
+                    label="Business / Store Name"
+                    placeholder="e.g. Mastermade Solutions Mart"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    required
+                  />
+                  <p className="text-xs text-slate-500 font-medium">Click the image placeholder to upload your store logo (PNG, JPG). This logo will appear on your customer receipts and terminal screens.</p>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-4 pt-2">
@@ -157,6 +188,33 @@ export const SettingsPage: React.FC = () => {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
               />
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <h3 className="text-base font-bold text-slate-900 pb-2 flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#0D5C3A]" /> Terminal Access Link
+              </h3>
+              <p className="text-sm text-slate-600">Share this link with your cashiers so they can log directly into this specific store terminal.</p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={tenant ? `${window.location.origin}/cashier-login?storeId=${tenant.id}` : ''}
+                  className="flex-1 h-11 px-4 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-700 outline-none"
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    navigator.clipboard.writeText(tenant ? `${window.location.origin}/cashier-login?storeId=${tenant.id}` : '');
+                    setSuccessMsg('Terminal link copied to clipboard!');
+                    setTimeout(() => setSuccessMsg(null), 3000);
+                  }}
+                >
+                  Copy
+                </Button>
+              </div>
             </div>
 
             <div className="pt-4 border-t border-slate-100 flex items-center justify-between">

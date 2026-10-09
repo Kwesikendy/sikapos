@@ -78,12 +78,13 @@ tenantRouter.get('/current', (req, res) => {
 tenantRouter.put('/current', requirePermission('settings.manage'), (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
-    const { legalName, businessName, tradeCategory, primaryBranch } = req.body;
+    const { legalName, businessName, tradeCategory, logoUrl, primaryBranch } = req.body;
 
     const result = tenantService.updateTenantProfile(tenantId, {
       legalName,
       businessName,
       tradeCategory,
+      logoUrl,
       primaryBranch
     });
 

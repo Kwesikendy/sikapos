@@ -37,8 +37,11 @@ export const CashierLoginPage: React.FC = () => {
   const { loginWithPin, loginWithPassword } = useAuth();
   const initialMode = searchParams.get('tab') === 'admin' ? 'admin' : 'pin';
   const redirectTarget = searchParams.get('redirect') || '/terminal';
+  const queryStoreId = searchParams.get('storeId') || '';
 
   const [mode, setMode] = useState<'pin' | 'admin'>(initialMode);
+  const [storeIdInput, setStoreIdInput] = useState(queryStoreId);
+  const [isStoreLoaded, setIsStoreLoaded] = useState(!!queryStoreId);
   const [cashierProfiles, setCashierProfiles] = useState<CashierProfile[]>(DEFAULT_CASHIERS);
   const [selectedCashier, setSelectedCashier] = useState<CashierProfile>(DEFAULT_CASHIERS[0]);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,27 +53,40 @@ export const CashierLoginPage: React.FC = () => {
   const [tenantOptions, setTenantOptions] = useState<TenantOption[] | null>(null);
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
 
+  const loadStoreStaff = async (tenantId: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const staff = await posApi.getPublicStaff(tenantId);
+      if (staff && staff.length > 0) {
+        const profiles: CashierProfile[] = staff.map((s) => ({
+          id: s.id,
+          name: s.name,
+          role: s.role,
+          initials: s.initials,
+          tenantId: s.tenantId,
+        }));
+        setCashierProfiles(profiles);
+        setSelectedCashier(profiles[0]);
+        setIsStoreLoaded(true);
+        if (!searchParams.get('storeId')) {
+          navigate(`/cashier-login?storeId=${tenantId}`, { replace: true });
+        }
+      } else {
+        setError('No cashiers found for this Store Code.');
+      }
+    } catch (err) {
+      setError('Invalid Store Code or failed to load store details.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Fetch real staff from database
   useEffect(() => {
-    const fetchStaff = async () => {
-      try {
-        const staff = await posApi.getPublicStaff();
-        if (staff && staff.length > 0) {
-          const profiles: CashierProfile[] = staff.map((s) => ({
-            id: s.id,
-            name: s.name,
-            role: s.role,
-            initials: s.initials,
-            tenantId: s.tenantId,
-          }));
-          setCashierProfiles(profiles);
-          setSelectedCashier(profiles[0]);
-        }
-      } catch (err) {
-        // Fallback to defaults
-      }
-    };
-    fetchStaff();
+    if (queryStoreId) {
+      loadStoreStaff(queryStoreId);
+    }
   }, []);
 
   const handlePinComplete = async (pin: string) => {
@@ -140,9 +156,11 @@ export const CashierLoginPage: React.FC = () => {
               <Badge variant="online" pulse className="px-3 py-1 bg-white border border-emerald-200 shadow-sm">
                 Cloud Synced
               </Badge>
-              <div className="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-50 text-slate-600 border border-slate-200/60 shadow-sm">
-                Osu Oxford St. Branch
-              </div>
+              {isStoreLoaded && (
+                <div className="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-50 text-slate-600 border border-slate-200/60 shadow-sm">
+                  Active Store Terminal
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -210,12 +228,47 @@ export const CashierLoginPage: React.FC = () => {
                 >
                   {mode === 'pin' ? (
                     <div className="flex flex-col items-center w-full">
-                      {/* Cashier Shift Selector */}
-                      <div className="w-full mb-8">
-                        <label className="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3 text-left">
-                          Select Shift Attendant
-                        </label>
-                        <div className="grid grid-cols-3 gap-3">
+                      {!isStoreLoaded ? (
+                        <div className="w-full space-y-4 text-left">
+                          <h3 className="text-sm font-extrabold text-slate-900">Connect to Store Terminal</h3>
+                          <p className="text-xs text-slate-500 mb-4">
+                            Enter the unique Store Code provided by your administrator, or click the direct terminal link shared with you.
+                          </p>
+                          <Input
+                            label="Store Code / ID"
+                            placeholder="e.g. ten_abc123"
+                            value={storeIdInput}
+                            onChange={(e) => setStoreIdInput(e.target.value)}
+                          />
+                          <Button 
+                            className="w-full" 
+                            isLoading={isLoading} 
+                            onClick={() => {
+                              if (storeIdInput.trim()) loadStoreStaff(storeIdInput.trim());
+                            }}
+                          >
+                            Load Terminal
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="w-full flex justify-between items-center mb-3">
+                            <label className="block text-[11px] font-bold uppercase tracking-widest text-slate-400 text-left">
+                              Select Shift Attendant
+                            </label>
+                            <button 
+                              onClick={() => {
+                                setIsStoreLoaded(false);
+                                setStoreIdInput('');
+                                navigate('/cashier-login', { replace: true });
+                              }}
+                              className="text-[10px] text-[#0D5C3A] font-bold uppercase hover:underline"
+                            >
+                              Change Store
+                            </button>
+                          </div>
+                          <div className="w-full mb-8">
+                            <div className="grid grid-cols-3 gap-3">
                           {cashierProfiles.map((profile) => {
                             const isSelected = selectedCashier.id === profile.id;
                             return (
@@ -270,13 +323,14 @@ export const CashierLoginPage: React.FC = () => {
                         </p>
                       </div>
 
-                      {/* High-Velocity Numpad */}
-                      <PinKeypad
-                        onComplete={handlePinComplete}
-                        isLoading={isLoading}
-                        error={error}
-                        onClearError={() => setError(null)}
-                      />
+                        <PinKeypad
+                          onComplete={handlePinComplete}
+                          isLoading={isLoading}
+                          error={error}
+                          onClearError={() => setError(null)}
+                        />
+                      </>
+                    )}
                     </div>
                   ) : (
                     <div className="space-y-5 text-left w-full">

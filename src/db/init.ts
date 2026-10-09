@@ -39,6 +39,12 @@ export function initializeDatabase(db?: Database.Database): Database.Database {
   safeAddColumn('sale_items', 'subtotal',     'REAL NOT NULL DEFAULT 0');
   safeAddColumn('sale_items', 'created_at',   'TEXT NOT NULL DEFAULT (DATETIME("now"))');
 
+  // tenants: add logo_url
+  safeAddColumn('tenants', 'logo_url', 'TEXT');
+
+  // products: add image_url
+  safeAddColumn('products', 'image_url', 'TEXT');
+
   // sales: reconcile amount_tendered, change_due, customer_phone, tax_breakdown_json
   safeAddColumn('sales', 'amount_tendered',    'REAL');
   safeAddColumn('sales', 'change_due',        'REAL');

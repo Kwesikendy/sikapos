@@ -15,6 +15,7 @@ export interface Product {
   cost_price: number;
   is_taxable: number;
   status: string;
+  image_url?: string | null;
   created_at: string;
   updated_at: string;
   total_stock?: number;
@@ -28,6 +29,7 @@ export interface CreateProductParams {
   costPrice?: number;
   sellingPrice: number;
   description?: string;
+  imageUrl?: string;
   isTaxable?: boolean;
 }
 
@@ -41,12 +43,12 @@ export class ProductService {
   public getProducts(tenantId: string, options?: { search?: string; categoryId?: string }): Product[] {
     let sql = `
       SELECT p.*, c.name as category_name, 
-             (SELECT SUM(quantity) FROM inventory WHERE product_id = p.id) as total_stock
+             (SELECT SUM(quantity) FROM inventory WHERE product_id = p.id AND tenant_id = ?) as total_stock
       FROM products p
       LEFT JOIN product_categories c ON p.category_id = c.id
       WHERE p.tenant_id = ? AND p.status != 'archived'
     `;
-    const params: (string | number)[] = [tenantId];
+    const params: (string | number)[] = [tenantId, tenantId];
 
     if (options?.categoryId && options.categoryId !== 'all') {
       sql += ` AND p.category_id = ?`;
@@ -67,11 +69,11 @@ export class ProductService {
   public getProductById(tenantId: string, productId: string): Product | null {
     const row = this.db.prepare(`
       SELECT p.*, c.name as category_name,
-             (SELECT SUM(quantity) FROM inventory WHERE product_id = p.id) as total_stock
+             (SELECT SUM(quantity) FROM inventory WHERE product_id = p.id AND tenant_id = ?) as total_stock
       FROM products p
       LEFT JOIN product_categories c ON p.category_id = c.id
       WHERE p.tenant_id = ? AND p.id = ?
-    `).get(tenantId, productId) as Product | undefined;
+    `).get(tenantId, tenantId, productId) as Product | undefined;
 
     return row || null;
   }
@@ -100,10 +102,10 @@ export class ProductService {
 
     this.db.prepare(`
       INSERT INTO products (
-        id, tenant_id, category_id, name, barcode, sku, description,
+        id, tenant_id, category_id, name, barcode, sku, description, image_url,
         base_price, cost_price, is_taxable, status, created_at, updated_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)
     `).run(
       id,
       tenantId,
@@ -112,6 +114,7 @@ export class ProductService {
       params.barcode?.trim() || null,
       params.sku?.trim() || null,
       params.description?.trim() || null,
+      params.imageUrl || null,
       Number(params.sellingPrice),
       Number(params.costPrice || 0),
       params.isTaxable === false ? 0 : 1,
@@ -131,6 +134,7 @@ export class ProductService {
       sku: string;
       categoryId: string;
       description: string;
+      imageUrl: string;
       costPrice: number;
       sellingPrice: number;
       isTaxable: boolean;
@@ -162,6 +166,10 @@ export class ProductService {
     if (params.description !== undefined) {
       updates.push('description = ?');
       values.push(params.description?.trim() || null);
+    }
+    if (params.imageUrl !== undefined) {
+      updates.push('image_url = ?');
+      values.push(params.imageUrl || null);
     }
     if (params.costPrice !== undefined) {
       updates.push('cost_price = ?');

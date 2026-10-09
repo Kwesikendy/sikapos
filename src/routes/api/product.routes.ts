@@ -77,7 +77,7 @@ productRouter.post('/', authenticate, enforceTenantContext, requirePermission('p
 ]), (req, res, next) => {
   try {
     const tenantId = req.tenantContext!.tenantId;
-    const { name, barcode, sku, categoryId, description, costPrice, sellingPrice, isTaxable, initialStock, branchId } = req.body;
+    const { name, barcode, sku, categoryId, description, imageUrl, costPrice, sellingPrice, isTaxable, initialStock, branchId } = req.body;
 
     const product = productService.createProduct(tenantId, {
       name,
@@ -85,6 +85,7 @@ productRouter.post('/', authenticate, enforceTenantContext, requirePermission('p
       sku,
       categoryId,
       description,
+      imageUrl,
       costPrice,
       sellingPrice,
       isTaxable

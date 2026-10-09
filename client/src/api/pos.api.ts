@@ -13,6 +13,7 @@ export interface ProductItem {
   total_stock?: number;
   is_taxable: number;
   status: string;
+  image_url?: string | null;
 }
 
 export interface SaleItemPayload {
@@ -74,6 +75,7 @@ export interface TenantDetails {
   trade_category: string;
   currency_code: string;
   status: string;
+  logo_url?: string | null;
   branches: Array<{
     id: string;
     name: string;
@@ -116,6 +118,7 @@ export const posApi = {
     barcode?: string;
     sku?: string;
     categoryId?: string;
+    imageUrl?: string;
     costPrice?: number;
     sellingPrice: number;
     initialStock?: number;
@@ -129,6 +132,7 @@ export const posApi = {
     barcode?: string;
     sku?: string;
     categoryId?: string;
+    imageUrl?: string;
     costPrice?: number;
     sellingPrice?: number;
     isTaxable?: boolean;
@@ -164,6 +168,7 @@ export const posApi = {
   updateStoreSetup: async (payload: {
     businessName: string;
     tradeCategory: string;
+    logoUrl?: string;
     primaryBranch?: {
       name?: string;
       region?: string;

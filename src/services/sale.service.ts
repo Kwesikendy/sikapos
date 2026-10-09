@@ -208,8 +208,8 @@ export class SaleService {
     if (!sale) return null;
 
     const items = this.db.prepare(`
-      SELECT * FROM sale_items WHERE sale_id = ? ORDER BY rowid ASC
-    `).all(saleId) as SaleRecord['items'];
+      SELECT * FROM sale_items WHERE sale_id = ? AND tenant_id = ? ORDER BY rowid ASC
+    `).all(saleId, tenantId) as SaleRecord['items'];
 
     const taxVal = Number((sale as any).tax_total ?? (sale as any).tax_amount ?? 0);
 
