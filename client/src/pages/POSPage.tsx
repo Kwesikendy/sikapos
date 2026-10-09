@@ -766,90 +766,110 @@ export const POSPage: React.FC = () => {
           return (
             <div className="space-y-6">
               {/* Printable Receipt Card */}
-              <div id="printable-pos-receipt" className="printable-receipt bg-white border border-slate-200 rounded-2xl p-5 space-y-4 text-slate-900 shadow-xs">
-                <div className="text-center pb-3 border-b border-dashed border-slate-300 space-y-1">
-                  {tenant?.logo_url && (
-                    <img 
-                      src={tenant.logo_url} 
-                      alt="Store Logo" 
-                      className="mx-auto h-12 object-contain mb-2" 
-                      style={{ height: '48px', width: 'auto', margin: '0 auto 8px auto', objectFit: 'contain' }}
-                    />
-                  )}
-                  <h3 className="text-lg font-black tracking-tight text-slate-900 uppercase">
-                    {tenant?.businessName || 'SikaPOS Store'}
-                  </h3>
-                  {primaryBranch && (
-                    <p className="text-xs text-slate-500 font-medium">
-                      {primaryBranch.name} • {primaryBranch.region}
+              <div 
+                id="printable-pos-receipt" 
+                className="printable-receipt relative bg-white border border-slate-200/60 rounded-[24px] p-6 sm:p-8 text-slate-900 shadow-[0_8px_30px_rgba(0,0,0,0.08)] overflow-hidden"
+              >
+                {/* Themed Dot Background */}
+                <div 
+                  className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                  style={{ backgroundImage: 'radial-gradient(#0D5C3A 2px, transparent 2px)', backgroundSize: '16px 16px' }} 
+                />
+
+                <div className="relative z-10 space-y-5">
+                  {/* Header / Logo */}
+                  <div className="text-center pb-4 border-b-2 border-dashed border-slate-200/80 space-y-1.5">
+                    {tenant?.logo_url && (
+                      <img 
+                        src={tenant.logo_url} 
+                        alt="Store Logo" 
+                        className="mx-auto" 
+                        style={{ height: '56px', width: 'auto', margin: '0 auto 12px auto', objectFit: 'contain' }}
+                      />
+                    )}
+                    <h3 className="text-xl font-black tracking-tight text-slate-900 uppercase">
+                      {tenant?.businessName || 'SikaPOS Store'}
+                    </h3>
+                    {primaryBranch && (
+                      <p className="text-[13px] text-slate-500 font-semibold tracking-wide">
+                        {primaryBranch.name} • {primaryBranch.region}
+                      </p>
+                    )}
+                    <div className="pt-2">
+                      <span className="inline-block px-3 py-1 bg-slate-100 rounded-lg text-xs font-mono font-bold text-slate-600 tracking-widest border border-slate-200">
+                        RECEIPT #{receipt.receipt_number}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 font-medium pt-1">
+                      {new Date(receipt.created_at).toLocaleString('en-GB', {
+                        dateStyle: 'medium',
+                        timeStyle: 'short',
+                      })}
                     </p>
-                  )}
-                  <p className="text-xs text-slate-600 font-mono font-bold">
-                    Receipt #{receipt.receipt_number}
-                  </p>
-                  <p className="text-[11px] text-slate-400">
-                    {new Date(receipt.created_at).toLocaleString('en-GB', {
-                      dateStyle: 'medium',
-                      timeStyle: 'short',
-                    })}
-                  </p>
-                </div>
+                  </div>
 
-                {/* Line Items */}
-                <div className="space-y-2 py-1 text-xs">
-                  {receipt.items?.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-start">
-                      <span className="font-semibold text-slate-800 pr-2">
-                        {item.quantity}x {item.product_name}
-                      </span>
-                      <span className="font-bold tabular-nums text-slate-900 shrink-0">
-                        {formatGHS(item.line_total)}
+                  {/* Line Items */}
+                  <div className="space-y-3 py-2 text-sm">
+                    {receipt.items?.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-start">
+                        <div className="pr-2">
+                          <span className="font-extrabold text-slate-800 pr-2">{item.quantity}×</span>
+                          <span className="font-semibold text-slate-600">{item.product_name}</span>
+                        </div>
+                        <span className="font-black tabular-nums text-slate-900 shrink-0">
+                          {formatGHS(item.line_total)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Subtotal, Tax Breakdown, Grand Total */}
+                  <div className="border-t-2 border-dashed border-slate-200/80 pt-4 space-y-2 text-sm">
+                    <div className="flex justify-between text-slate-500 font-semibold">
+                      <span>Subtotal</span>
+                      <span className="tabular-nums">{formatGHS(receipt.subtotal)}</span>
+                    </div>
+                    {statutoryTax > 0 && (
+                      <div className="flex justify-between text-slate-500 font-semibold">
+                        <span>Tax (Statutory 15%)</span>
+                        <span className="tabular-nums">{formatGHS(statutoryTax)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center font-black text-slate-900 text-lg pt-3 mt-2 border-t-2 border-slate-100">
+                      <span className="uppercase tracking-wider">Grand Total</span>
+                      <span className="text-2xl text-[#0D5C3A] tabular-nums bg-[#0D5C3A]/5 px-3 py-1 rounded-xl">
+                        {formatGHS(receipt.grand_total)}
                       </span>
                     </div>
-                  ))}
-                </div>
-
-                {/* Subtotal, Tax Breakdown, Grand Total */}
-                <div className="border-t border-dashed border-slate-300 pt-3 space-y-1.5 text-xs">
-                  <div className="flex justify-between text-slate-600">
-                    <span>Subtotal</span>
-                    <span className="tabular-nums font-semibold">{formatGHS(receipt.subtotal)}</span>
                   </div>
-                  {statutoryTax > 0 && (
-                    <div className="flex justify-between text-slate-600">
-                      <span>Tax (Statutory)</span>
-                      <span className="tabular-nums font-semibold">{formatGHS(statutoryTax)}</span>
+
+                  {/* Payment Breakdown */}
+                  <div className="border-t-2 border-dashed border-slate-200/80 pt-4 space-y-1.5 text-[13px]">
+                    <div className="flex justify-between text-slate-500 font-semibold">
+                      <span>Payment Method</span>
+                      <span className="font-black uppercase tracking-wider text-slate-800">
+                        {receipt.payment_method.replace('_', ' ')}
+                      </span>
                     </div>
-                  )}
-                  <div className="flex justify-between font-black text-slate-900 text-base pt-2 border-t border-slate-200">
-                    <span>GRAND TOTAL</span>
-                    <span className="text-[#0D5C3A] tabular-nums">{formatGHS(receipt.grand_total)}</span>
+                    {receipt.amount_tendered && receipt.amount_tendered > receipt.grand_total && (
+                      <>
+                        <div className="flex justify-between text-slate-500 font-semibold">
+                          <span>Amount Tendered</span>
+                          <span className="tabular-nums font-bold text-slate-700">{formatGHS(receipt.amount_tendered)}</span>
+                        </div>
+                        <div className="flex justify-between text-slate-800 font-extrabold">
+                          <span>Change Given</span>
+                          <span className="tabular-nums">{formatGHS(receipt.change_due || (receipt.amount_tendered - receipt.grand_total))}</span>
+                        </div>
+                      </>
+                    )}
                   </div>
-                </div>
 
-                {/* Payment Breakdown */}
-                <div className="border-t border-dashed border-slate-300 pt-3 space-y-1 text-xs">
-                  <div className="flex justify-between text-slate-600">
-                    <span>Payment Method:</span>
-                    <span className="font-bold uppercase text-[#0D5C3A]">{receipt.payment_method.replace('_', ' ')}</span>
+                  {/* Footer */}
+                  <div className="text-center pt-5 text-xs text-slate-400 space-y-1 font-medium">
+                    <p className="font-semibold text-slate-600">Thank you for your business!</p>
+                    <p className="text-[10px]">Powered by SikaPOS</p>
                   </div>
-                  {receipt.amount_tendered && receipt.amount_tendered > receipt.grand_total && (
-                    <>
-                      <div className="flex justify-between text-slate-600">
-                        <span>Amount Tendered:</span>
-                        <span className="tabular-nums">{formatGHS(receipt.amount_tendered)}</span>
-                      </div>
-                      <div className="flex justify-between text-slate-900 font-bold">
-                        <span>Change Given:</span>
-                        <span className="tabular-nums">{formatGHS(receipt.change_due || (receipt.amount_tendered - receipt.grand_total))}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="text-center pt-3 border-t border-dashed border-slate-300 text-[11px] text-slate-400 space-y-0.5">
-                  <p className="font-semibold text-slate-600">Thank you for your business!</p>
-                  <p className="text-[10px]">Powered by SikaPOS</p>
                 </div>
               </div>
 

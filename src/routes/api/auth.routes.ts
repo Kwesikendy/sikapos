@@ -595,9 +595,19 @@ authRouter.post('/login-pin', loginLimiter, validateBody([
  * Current Authenticated Context
  */
 authRouter.get('/me', authenticate, (req, res) => {
-  const tenant = tenantService.getTenantById(req.tenantId!);
+  const tenantRaw = tenantService.getTenantById(req.tenantId!);
   const branches = tenantService.getBranches(req.tenantId!);
   const primaryBranch = branches.find(b => b.is_primary) || branches[0] || null;
+
+  const tenant = tenantRaw ? {
+    id: tenantRaw.id,
+    businessName: tenantRaw.business_name,
+    legalName: tenantRaw.legal_name,
+    tradeCategory: tenantRaw.trade_category,
+    currency: tenantRaw.currency_code,
+    status: tenantRaw.status,
+    logo_url: tenantRaw.logo_url
+  } : null;
 
   res.json({
     success: true,
